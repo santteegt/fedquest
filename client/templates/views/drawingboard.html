@@ -1,0 +1,16 @@
+<template name="drawingboard">
+	<div class="col-xs-8 col-sm-7 col-sm-offset-2 main">
+	<!-- <div class="col-md-7 main" > -->
+		  <div class="navbar ">	
+			<div class="navbar-brand">DASHBOARD</div>
+			<ul class="nav navbar-nav pull-right">
+			    <div class="btn paper-config" id="editQuery" title="Editor de consultas"><i class="glyphicon glyphicon-edit icon"></i></div>
+				<div class="btn paper-config" id="save"><i class="glyphicon glyphicon-save icon"></i></div>
+				<div class="btn paper-config" id="open"><i class="glyphicon glyphicon-folder-open icon"></i></div>
+				<div class="btn paper-config" id="zoom-out"><i class="glyphicon glyphicon-zoom-out icon"></i></div>
+				<div class="btn paper-config" id="zoom-in"><i class="glyphicon glyphicon-zoom-in icon"></i></div>
+			</ul>
+		  </div>
+		  <div id="paper" class="paper" ondrop="App.fedQueryUtils.onDropEv(event)" ondragover="App.fedQueryUtils.allowDrop(event)"></div>
+		</div>
+</template>

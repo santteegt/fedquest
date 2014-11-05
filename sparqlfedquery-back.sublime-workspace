@@ -1,0 +1,511 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"sub",
+				"subject"
+			],
+			[
+				"gra",
+				"graphURI"
+			],
+			[
+				"in",
+				"insert"
+			],
+			[
+				"status",
+				"statusCode"
+			],
+			[
+				"statu",
+				"statusCode"
+			],
+			[
+				"stat",
+				"statusCode"
+			],
+			[
+				"de",
+				"defaultGraph"
+			],
+			[
+				"endpoin",
+				"endpointURI"
+			],
+			[
+				"Pre",
+				"Prefixes"
+			],
+			[
+				"prf",
+				"prfCursor"
+			],
+			[
+				"predi",
+				"predicate"
+			],
+			[
+				"ob",
+				"objectObj"
+			],
+			[
+				"predicate",
+				"predicateArray"
+			],
+			[
+				"pre",
+				"predicateObj"
+			],
+			[
+				"sampl",
+				"sampleValue"
+			],
+			[
+				"objec",
+				"objectObj"
+			],
+			[
+				"obj",
+				"objectEntity"
+			],
+			[
+				"obje",
+				"objectObj"
+			],
+			[
+				"sam",
+				"sampleValue"
+			],
+			[
+				"en",
+				"entity"
+			],
+			[
+				"rs",
+				"rsPredicate"
+			],
+			[
+				"end",
+				"endpointURI"
+			],
+			[
+				"va",
+				"value-of"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "client/index.html",
+			"settings":
+			{
+				"buffer_size": 246,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "if (Meteor.isServer) {\n\n\n	Meteor.startup(function () {\n		// code to run on server at startup\n		//Meteor.call('getEndpointStructure', 'http://190.15.141.102:8890/sparql', 'http://dspace.ucuenca.edu.ec/resource/');\n		//Meteor.call('pingServer', 'http://190.15.141.102:8890/sparql');\n	\n\n		Meteor.methods({\n\n			test: function() {\n				var result = HTTP.get( 'http://prefix.cc/', \n							{\n								'params':\n									{\n										'q': 'http://xmlns.com/foaf/0.1/Person',\n\n									}\n					});\n				//var xml = $(result.content);\n				console.log(result.content);\n				return {'html': result.content};\n			},\n\n			updatePrefixes: function() {\n				HTTP.get( 'http://prefix.cc/context', function(error, result){\n					if(result.statusCode == '200' && !error) {\n						result = EJSON.parse(result.content);\n						result = result['@context'];\n						var ci = 0;\n						var ce = 0;\n						if(!_.isUndefined(result)) {\n							for(var prfx in result) {\n								var prfCursor = Prefixes.find({prefix: prfx});\n								if(prfCursor.count() <= 0) {\n									Prefixes.insert({ prefix: prfx, URI: result[prfx] });\n									ci++;\n								} else {\n									ce++;\n								}\n							}\n						}\n						console.log('Updating prefixes schema using prefix.cc service: Already Saved: ' + ce + ' New Records: ' + ci);\n					} else {\n						console.log('Error while getting Prefixes from service prefix.cc. Possible cause: ' + error);\n					}\n				});\n				\n			},	\n\n			runQuery: function(endpointURI, defaultGraph, query, format, timeout) {\n				format = _.isUndefined(format) ? 'application/sparql-results+json':format;\n				timeout = _.isUndefined(timeout) ? '0': timeout;\n				return HTTP.get( endpointURI, \n						{\n							'params':\n								{\n									'default-graph-uri': defaultGraph,\n									'query': query,\n									'format': format,\n									'timeout': timeout\n								}\n						});\n\n			},\n\n			pingServer: function(endpointURI, defaultGraph) {\n				var response = {};\n				try {\n					var result = Meteor.call('runQuery', endpointURI, '', 'ask {graph <' + defaultGraph + '> {?s ?p ?o}}');\n					var content = EJSON.parse(result.content);\n					\n					response.statusCode = result.statusCode;\n					if(result.statusCode != 200) {\n						response.msg = \"Error trying to communicate with endpoint \" + endpointURI;\n					} else if(result.statusCode == 200  && content.boolean == true) {\n						response.msg = '';\n					} else if(result.statusCode == 200  && content.boolean == false) {\n						response.msg = \"Graph <\"+ defaultGraph + \"> does not exists on endpoint \" + endpointURI;\n					}\n				}catch(e){\n					response.statusCode = 404;\n					response.msg = \"Error trying to communicate with endpoint \" + endpointURI;\n					response.stack = e.stack;\n				}\n				\n				return response;\n			},\n\n			fetchGraphSchema: function(endpointURI, defaultGraph) {\n				var muestra;\n				console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');\n						\n				var result = Meteor.call('runQuery', endpointURI, defaultGraph, 'select distinct ?o where{ ?s a ?o}');\n				\n				var rsEntities = EJSON.parse(result.content);\n				_.each(rsEntities.results.bindings, function(el, idx, list) {\n					var subject = el.o.value;\n\n					console.log('=>Obtaining subject properties of: ' + subject);\n					var rsMuestra = Meteor.call('runQuery', endpointURI, defaultGraph, \n						'select distinct ?s where{ ?s a <' + subject + '>} limit 10');\n\n					var rsMuestra = EJSON.parse(rsMuestra.content);\n					var predicateArray = {};\n					_.each(rsMuestra.results.bindings, function(el, idx, list) {\n						var entity = el.s.value;\n						\n						console.log('==>Graph Entity sample: ' + entity);\n						var rsPredicate = Meteor.call('runQuery', endpointURI, defaultGraph, 'describe <' + entity + '>');\n						\n						rsPredicate = EJSON.parse(rsPredicate.content);\n						_.each(rsPredicate.results.bindings, function(el, idx, list) {\n							//console.log('Predicate:' + el.p.value);\n\n							////////////////////\n							var predicateObj = {};\n							predicateObj.fullName = el.p.value;\n							predicateObj.prefix = '';\n							predicateObj.name = '';\n							\n							/////////////////////\n\n							if(_.isUndefined(predicateArray[el.p.value])) {\n								var objectObj = {};\n								objectObj.objectEntity = '';\n								objectObj.dataType = el.o.datatype;\n								objectObj.sampleValue = el.o.value.substring(0,100);\n							\n								if(el.o.type === 'uri' && subject != el.o.value) {\n									\n									console.log('==>Looking entity type for object <' + el.o.value +'>');\n									var rsObjSubject = Meteor.call('runQuery', endpointURI, defaultGraph, \n										'select ?o where { <' + el.o.value +'> a ?o }');\n									\n									rsObjSubject = EJSON.parse(rsObjSubject.content);\n									objectObj.objectEntity = rsObjSubject.results.bindings[0].o.value;;\n								}\n								predicateArray[el.p.value] = objectObj;\n							}\n							\n							\n							muestra = predicateArray;\n							//muestra = {subjectObj: subject, predicate: predicateObj, objectP: objectObj};\n							//console.log('===>Subject: ' + subject + '| Predicate:' + el.p.value + '| Object:' + object + '| Type:' + type + '| Datatype:' + datatype);\n							/*\n							console.log('===>Subject: ' + subject + '| Predicate:' + predicateObj.fullName \n								+ '| Object:' + (objectObj.objectEntity||objectObj.dataType) + '| SampleValue:' + objectObj.sampleValue);\n							*/\n\n						});\n\n					});\n					for(var predicate in predicateArray) {\n						var idx = predicate.lastIndexOf('#') > 0 ? predicate.lastIndexOf('#'): predicate.lastIndexOf('/');\n						var uri = predicate.substring(0, idx+1);\n						var property = predicate.substring(idx+1);\n						var Prefix = Prefixes.findOne({URI: uri});\n						Prefix.prefix = _.isUndefined(Prefix) ? '': Prefix.prefix;\n						var objectObj = predicateArray[predicate];\n\n						Graphs.insert(\n				            {\n				                endpoint: endpointURI,\n				                graphURI: defaultGraph,\n				                subject: subject,\n				                predicate: { fullName: predicate, prefix: Prefix.prefix, name: property},\n				                objectType: objectObj,\n				            }\n				        );\n				        console.log('===>SAVED: Subject: ' + subject + '| Predicate:' + predicate + ' prefix: ' + Prefix.prefix + ' property: ' + property\n								+ '| Object:' + (objectObj.objectEntity||objectObj.dataType) + '| SampleValue:' + objectObj.sampleValue);\n						\n					}\n				});\n				return muestra;\n\n			},\n\n			getEndpointStructure: function(endpointURI, defaultGraph, updateGraph) {\n					var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});\n					var response = Meteor.call('pingServer', endpointURI, defaultGraph);\n					if(response.statusCode != 200 || response.msg.length > 0) return response;\n					var statusCode = response.msg.length == 0 ? 'A':'I';\n					if(_.isUndefined(endpoint)) {\n						console.log('==Inserting new endpoint');\n						Endpoints.insert({endpoint: endpointURI, graphURI: defaultGraph, status: statusCode, lastMsg: response.msg});	\n						updateGraph = true;\n					} else {\n						console.log('==Updating endpoint ' + endpointURI + '<' + defaultGraph + '>');\n						Endpoints.update({_id: endpoint._id}, {$set: {status: statusCode}});\n					}\n					if(updateGraph) {\n						Meteor.call('fetchGraphSchema', endpointURI, defaultGraph, function(error, result){\n							console.log(\"Graph Schema fetching process finished for endpoint: \" + endpointURI + ' <' + defaultGraph + '>')\n							response.results = result;\n\n						});\n\n						/*\n						console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');\n						\n						var result = Meteor.call('runQuery', endpointURI, defaultGraph, 'select distinct ?o where{ ?s a ?o}');\n						\n						var rsEntities = EJSON.parse(result.content);\n						_.each(rsEntities.results.bindings, function(el, idx, list) {\n							var subject = el.o.value;\n\n							console.log('=>Obtaining subject properties of: ' + subject);\n							var rsMuestra = Meteor.call('runQuery', endpointURI, defaultGraph, \n								'select distinct ?s where{ ?s a <' + subject + '>} limit 10');\n\n							var rsMuestra = EJSON.parse(rsMuestra.content);\n							var predicateArray = {};\n							_.each(rsMuestra.results.bindings, function(el, idx, list) {\n								var entity = el.s.value;\n								\n								console.log('==>Graph Entity sample: ' + entity);\n								var rsPredicate = Meteor.call('runQuery', endpointURI, defaultGraph, 'describe <' + entity + '>');\n								\n								rsPredicate = EJSON.parse(rsPredicate.content);\n								_.each(rsPredicate.results.bindings, function(el, idx, list) {\n									//console.log('Predicate:' + el.p.value);\n\n									////////////////////\n									var predicateObj = {};\n									predicateObj.fullName = el.p.value;\n									predicateObj.prefix = '';\n									predicateObj.name = '';\n									\n									/////////////////////\n\n									if(_.isUndefined(predicateArray[el.p.value])) {\n										var objectObj = {};\n										objectObj.objectEntity = '';\n										objectObj.dataType = el.o.datatype;\n										objectObj.sampleValue = el.o.value.substring(0,100);\n									\n										if(el.o.type === 'uri' && subject != el.o.value) {\n											\n											console.log('==>Looking entity type for object <' + el.o.value +'>');\n											var rsObjSubject = Meteor.call('runQuery', endpointURI, defaultGraph, \n												'select ?o where { <' + el.o.value +'> a ?o }');\n											\n											rsObjSubject = EJSON.parse(rsObjSubject.content);\n											objectObj.objectEntity = rsObjSubject.results.bindings[0].o.value;;\n										}\n										predicateArray[el.p.value] = objectObj;\n									}\n									\n									response.muestra = predicateArray;\n\n								});\n\n							});\n							for(var predicate in predicateArray) {\n								var idx = predicate.lastIndexOf('#') > 0 ? predicate.lastIndexOf('#'): predicate.lastIndexOf('/');\n								var uri = predicate.substring(0, idx+1);\n								var property = predicate.substring(idx+1);\n								var Prefix = Prefixes.findOne({URI: uri});\n								Prefix.prefix = _.isUndefined(Prefix) ? '': Prefix.prefix;\n								var objectObj = predicateArray[predicate];\n\n								Graphs.insert(\n						            {\n						                endpoint: endpointURI,\n						                graphURI: defaultGraph,\n						                subject: subject,\n						                predicate: { fullName: predicate, prefix: Prefix.prefix, name: property},\n						                objectType: objectObj,\n						            }\n						        );\n						        console.log('===>SAVED: Subject: ' + subject + '| Predicate:' + predicate + ' prefix: ' + Prefix.prefix + ' property: ' + property\n										+ '| Object:' + (objectObj.objectEntity||objectObj.dataType) + '| SampleValue:' + objectObj.sampleValue);\n								\n							}\n						});*/\n					}\n					return response;\n\n			}\n		});\n\n		//Update Prefixes schema on every server startup\n		Meteor.call('updatePrefixes');\n	});\n}\n",
+			"file": "server/server.js",
+			"file_size": 10924,
+			"file_write_time": 1413411605000000,
+			"settings":
+			{
+				"buffer_size": 10896,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "server/Collections/endpoint.js",
+			"settings":
+			{
+				"buffer_size": 1123,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "server/Collections/graph.js",
+			"settings":
+			{
+				"buffer_size": 1309,
+				"line_ending": "Unix",
+				"name": "###"
+			}
+		},
+		{
+			"file": "server/Collections/prefixes.js",
+			"settings":
+			{
+				"buffer_size": 924,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "client/js/main.js",
+			"settings":
+			{
+				"buffer_size": 1768,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"",
+				"Auto indent"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 125.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/santteegt/BitBucket/sparqlfedquery-back/server/sparqlfedquery-back.js",
+		"/Users/santteegt/GitRepositories/simpleBlog-backbone/views/index.ejs.html",
+		"/Users/santteegt/Desktop/Investigación/MARC21/frbr-display-tool-ext/clean.xml",
+		"/Users/santteegt/Desktop/Investigación/MARC21/frbr-display-tool-ext/match.xml",
+		"/Users/santteegt/Desktop/Investigación/MARC21/datosBiblioteca-marc/marc21loader.xml",
+		"/Applications/MAMP/htdocs/triplify/config.inc.php",
+		"/Users/santteegt/Desktop/Investigación/MARC21/CDJBV/isisToMarc21/src/isistomarc21/IsisToMarc21.java",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/d2rq-0.8.1/dspaceTEST3-0.ttl",
+		"/Users/santteegt/Desktop/jboss-eap-6.2/modules/com/log4j/mylog4j/main/module.xml",
+		"/Users/santteegt/FENICIOS/FACT_ELEC/factura-schema.json",
+		"/Users/santteegt/FENICIOS/FACT_ELEC/factura.schema-minified.json",
+		"/Users/santteegt/Documents/workspaceEclipse/electronic-voucher/src/main/resources/factura.xsd",
+		"/Users/santteegt/FENICIOS/FACT_ELEC/sri/generados/Factura.xml",
+		"/Users/santteegt/Downloads/RESTEasyEtagDemo_Tomcat/src/main/java/com/howtodoinjava/demo/rest/security/SecurityInterceptor.java",
+		"/Users/santteegt/RESPALDO/TESIS/svnrepo/branches/desarrollo/persistence/Persistence/src/main/java/com/fitnotif/persistence/util/HibernateUtil.java",
+		"/Users/santteegt/Documents/workspaceEclipse/JaxbSRI/src/com/buzz/sri/schema/factura.xsd",
+		"/Users/santteegt/Desktop/apache-jena-2.11.2/bin/rsparql",
+		"/Users/santteegt/Downloads/frbr/MARC2FRBR.BAT",
+		"/Users/santteegt/FENICIOS/SQLESQUEMA.sql",
+		"/Users/santteegt/Desktop/Reparar resultado a GP. HERNAN GONZALEZ 09242.xml",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/OAI/oai2rdf/transformers/xoai/transformer.xslt",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/OAI/dump250614/dspace.ucuenca.edu.ec/oai_request/xoai/3/a/5/3a51c6bd9f8f66437050974b5f204da1.xml",
+		"/Applications/Protege_4.3/config.xml",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/d2rq-0.8.1/dspaceTEST2.ttl",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/d2rq-0.8.1/dspaceTEST1.ttl",
+		"/Users/santteegt/GitRepositories/liferay-solutions/opensocial-gadgets/CuencaOSM.xml",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/exampleD2RQ/wordpress.ttl",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/d2rq-0.8.1/dspaceTEST3.ttl",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/semantika-cli-1/application.cfg.xml",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/semantika-cli-1/model/eperson.xml",
+		"/Users/santteegt/Desktop/Proyecto Municipio/OpenSocialGadgets/ParroquiasCuencaOSM.xml",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/d2rq-0.8.1/dspaceEperson.ttl",
+		"/Users/santteegt/fitbank/master/fuentes/negocio/billing/src/main/java/com/fitbank/billing/maintenance/RetentionSuppliers.java",
+		"/Users/santteegt/Desktop/Investigación/Analisis Extraction Apps/semantika-cli-1/eperson.xml"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"graphs",
+			"Graphs",
+			"isUn",
+			"_isUndefined",
+			"graphs",
+			"Graphs",
+			"colors",
+			"Colors",
+			"dropFromOldCatalog",
+			"subfieldSelect",
+			"chopPunctuation",
+			"subfieldSelect",
+			"http://190.15.141.102:8890/resource/",
+			"marcont.",
+			"d2rq:propertyDefinitionComment",
+			"66",
+			"d2rq:propertyDefinitionLabel",
+			"43",
+			"39",
+			"metadatavalue."
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"endpoints",
+			"Endpoints",
+			"prefixes",
+			"Prefixes",
+			"graphs",
+			"Graphs",
+			"http://biblioteca.ucuenca.edu.ec/resource/",
+			"muestra.",
+			"#d2rq:propertyDefinitionComment",
+			"d2rq:propertyDefinitionComment",
+			"dcmetadata."
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "client/index.html",
+					"settings":
+					{
+						"buffer_size": 246,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "server/server.js",
+					"settings":
+					{
+						"buffer_size": 10896,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7474,
+								7474
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 2539.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "server/Collections/endpoint.js",
+					"settings":
+					{
+						"buffer_size": 1123,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								731,
+								731
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "server/Collections/graph.js",
+					"settings":
+					{
+						"buffer_size": 1309,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								709,
+								709
+							]
+						],
+						"settings":
+						{
+							"auto_name": "###",
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 105.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "server/Collections/prefixes.js",
+					"settings":
+					{
+						"buffer_size": 924,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								223,
+								223
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 53.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "client/js/main.js",
+					"settings":
+					{
+						"buffer_size": 1768,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1000,
+								1077
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}

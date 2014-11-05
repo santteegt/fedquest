@@ -1,0 +1,39 @@
+<template name="endpoint">
+	{{#each endpointEntity}}
+	<div class="panel-group" id="accordion" style="text-align:center;">
+	    <div class="panel" style="border-color: {{colorid}}">
+	        <div class="panel-heading" style="background-color:{{colorid}}; color:white;">
+	          <h4 class="panel-title">
+	            <a data-toggle="collapse" href="#{{name}}">{{name}}</a>
+	          </h4>
+	        </div>
+	        <div id="{{name}}" class="panel-collapse collapse in" style="padding-right: 0.5em">
+
+		          <div class="row" style="margin: 0 0 0 0">
+
+		          	<h5>Entities:</h5>
+		          	{{#each endpointEntities}}
+		          		<div class="col-xs-6 col-sm-4 col-md-3">
+			              <div class="entity" style="border-color: {{../colorid}}" onclick="openpopover(event)" onselectstart="return false;" draggable="true" ondragstart="App.fedQueryUtils.dragNode(event)" data-toggle="popover" data-placement="bottom" tabindex="0" data-trigger="focus" title="Descripción" data-content="Entity 1. Descrición: datos obtenidos a partir del rdfs:label" data-endpoint="{{../endpoint}}" data-graphURI="{{../graphURI}}" data-colorid="{{../colorid}}" data-entity="{{fullName}}" data-label="{{name}}">
+			                <p>{{prefix}} {{name}}</p>
+			              </div>
+			            </div>
+		          	{{/each}}
+
+		          </div>
+
+		          <div class="row" style="margin: 0 0 0 0">
+		          	<h5>Properties:</h5>
+		          	{{#each endpointProperties}}
+			          	<div class="col-xs-6 col-sm-4 col-md-3">
+			              <div class="property" style="border-color: {{../colorid}}" onclick="openpopover(event)" onselectstart="return false;" draggable="true" ondragstart="App.fedQueryUtils.dragNode(event)" data-toggle="popover" data-placement="bottom" tabindex="0" data-trigger="focus" title="Descripción" data-content="Property 1. Descrición: datos obtenidos a partir del rdfs:label" data-endpoint="{{endpoint}}" data-graphURI="{{graphURI}}" data-colorid="{{../colorid}}" data-property="{{fullName}}" data-prefix="{{prefix}}" data-label="{{name}}">
+			                <p>{{prefix}} {{name}}</p>
+			              </div>
+			            </div>
+		            {{/each}}
+		          </div>
+	        </div>
+        </div>
+    </div>
+    {{/each}}
+</template>

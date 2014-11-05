@@ -1,0 +1,37 @@
+<template name="sparqlEditor">
+	<div class="modal-large" id="sparqlEditor">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h3>Editor de Consultas SPARQL</h3>
+	  	</div>
+  		<div class="modal-body">
+			<div class="form-group">
+				<label for="graph-title">Ingrese la consulta que desea ejecutar</label>
+				<form>
+					<textarea id="code" name="code">
+						PREFIX a: &lt;http://www.w3.org/2000/10/annotation-ns#>
+						PREFIX dc: &lt;http://purl.org/dc/elements/1.1/>
+						PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/>
+
+						# Comment!
+
+						select ?name ?titleTesis ?title
+						from <http://dspace.ucuenca.edu.ec/resource/>
+						where 
+						 {?person foaf:lastName "Ortiz Segarra "^^<http://www.w3.org/2001/XMLSchema#string> .
+						  ?tesis <http://id.loc.gov/vocabulary/relators/ths> ?person . 
+						  ?tesis <http://purl.org/dc/terms/title> ?titleTesis
+						  SERVICE <http://190.15.141.66:8890/sparql/>{
+						    select ?name ?title from <http://localhost:8890/DAV>{
+						    ?name foaf:lastName "Ortiz Segarra "^^<http://www.w3.org/2001/XMLSchema#string> .
+						    ?recurso <http://id.loc.gov/vocabulary/relators/aut> ?name . 
+							?recurso <http://purl.org/dc/terms/title> ?title
+						  }
+						  }  
+						}
+					</textarea>
+				</form>
+			</div>
+		</div>
+	</div>
+</template>
