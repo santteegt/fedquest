@@ -11,6 +11,8 @@ this.Router = Backbone.Router.extend({
   routes: { 
     '': 'index',
     'dashboard': 'dashboard',
+    'samples': 'samples',
+    'dashboard/:id': 'dashboardParam'
   },
 
   index: function () {
@@ -19,7 +21,18 @@ this.Router = Backbone.Router.extend({
 
   dashboard: function() {
     console.log('entra a dashboard');
-    new DashboardView().render();        
+    new DashboardView({}).render();        
 
+  },
+  samples: function() {
+    console.log('entra a samples');
+    new SamplesView().render();        
+  },
+  dashboardParam: function(id){
+      //this.querieCurrent= Queries.find({_id: "99ECMMzYwHC9nLWov"}).fetch();//Queries.find({_id: id}).fetch();
+        //var titulo = _.pluck(querieCurrent, 'title');
+         //var m = JSON.stringify(this.querieCurrent);
+      new DashboardView({idSample: id}).render();   
+       //console.log('entro dashboardParam ' +  this.querieCurrent);
   }
 });

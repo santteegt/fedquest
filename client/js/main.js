@@ -8,7 +8,40 @@ if (Meteor.isClient) {
   this.Endpoints = new Meteor.Collection("endpoints");
   this.Queries = new Meteor.Collection("queries");
 
+  Template.samples.helpers({
+      queriesAvailable: function(){
+        return Queries.find().fetch();
+        },
+
+      settings: function () {
+        return {
+            rowsPerPage: 10,
+            showFilter: true,
+            //showNavigation: 'auto',
+            //showColumnToggles: true,
+            fields: 
+            [
+                {
+                  key: '_id',
+                  label: 'Titulo',
+                  fn: function (_id, object) {
+                  var html = '<a href="/dashboard/' + _id + '">' + object.title + '</a>';
+                  return new Spacebars.SafeString(html);
+                  }
+                  },
+                  { key: 'description', label: 'Description' }
+            ]
+        };
+      }
+  });
+
+  Template.dashboard.helpers({
+      endpointsAvailable: function(){
+        return Endpoints.find({status: 'A'}).fetch();
+        }
+  });
   
+
   Template.endpoint.helpers({
       endpointEntity: function(){
         //var entities = Properties.find({},{fields: {'subjects': 1, _id: 1}}).fetch();

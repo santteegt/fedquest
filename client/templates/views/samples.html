@@ -1,0 +1,23 @@
+<template name="samples">
+	<div class="container-fluid" sytle="overflow: scroll">
+	<h1>Template Queries</h1>
+	    <!--<table class="table table-bordered table-striped table-hover " sytle="overflow: scroll">
+	    <thead>
+	        <tr>
+	            <th>Title</th>
+	            <th>Description</th>
+	        </tr>
+	    </thead>
+	    <tbody>
+
+	    	{{#each queriesAvailable}}
+	        <tr>
+	            <td><a href="/dashboard/{{_id}}">{{title}}</a></td>
+	            <td>{{description}}</td>
+	        </tr>
+	        {{/each}}
+	    </tbody>
+		</table-->
+		{{> reactiveTable collection=queriesAvailable settings=settings }}
+	</div>
+</template>
