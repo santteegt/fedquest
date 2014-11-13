@@ -5,6 +5,7 @@ this.DashboardView = Backbone.View.extend({
   graph: null,
   paper: null,
   graphScale: 1,
+  cellViewRight: null,
   template: null,
   tagName: "div",
   id: "dashboard",
@@ -16,6 +17,10 @@ this.DashboardView = Backbone.View.extend({
     'click button': 'newEndpoint'
   },
 
+
+  sparqlEditor: function(e){
+    alert("click ok");
+  }, 
   /////////////////////////
   //Endpoint Registration//
   /////////////////////////
@@ -30,16 +35,25 @@ this.DashboardView = Backbone.View.extend({
     Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, function (error, result) {
         $('#newEndpoint').find('button.close[data-dismiss=modal]').click();
         if(result) {
-          console.log(result);
+          console.log("Result if:" + result);
+          console.log("statusCode" + _.pluck(error, 'statusCode'));
           var counter = 0;
           for(var x in result) {
             counter++;
           }
           console.log(counter);
           console.log(Endpoints.find({}).fetch());
+          $('.top-right').notify({
+                message: { text: "Register Endpoint Success" },
+                type: 'success'
+          }).show();
           //console.log('Grafos ==>' + Graphs.findOne());
         }else {
-          console.log(error);  
+          console.log("Error:"  + error);  
+          $('.top-right').notify({
+                message: { text: "Error" },
+                type: 'danger'
+          }).show();
         }
         
       });
@@ -48,7 +62,7 @@ this.DashboardView = Backbone.View.extend({
   /////////////////////////
   // View Initialization //
   /////////////////////////
-  initialize: function() {
+  initialize: function(id) {
     var me;
     me = this;
     Tracker.autorun(function(){
@@ -58,6 +72,11 @@ this.DashboardView = Backbone.View.extend({
         Session.set('endpoints', endpoints);  
       }
       console.log("Endpoints Disponibles: " + endpoints.length);
+      var querie = Queries.find({_id: id.idSample}).fetch();
+      jsonGraph =_.pluck(querie, 'jsonGraph');
+      Session.set('querieJson', jsonGraph); 
+      Session.set('querieTitle', _.pluck(querie, 'title')); 
+      Session.set('querieDescription', _.pluck(querie, 'description')); 
     });
 
     /////////////////////////
@@ -197,6 +216,11 @@ this.DashboardView = Backbone.View.extend({
           position: { x: x, y: y }, size: { width: 100, height: 40 }, 
           attrs: { rect: {fill: color}, text: { text: label }},
         });
+        rect.attr('text/text-decoration','underline');
+        rect.attr('text/label',label);
+        rect.attr('text/resultSet',1);
+        rect.attr('text/regex',0);
+        console.log(rect.attr('text/label'));
         rect.set('endpoint', endpoint);
         rect.set('graphuri', graphURI);
         rect.set('subject', subject);
@@ -208,6 +232,23 @@ this.DashboardView = Backbone.View.extend({
       
       };
 
+
+    this.showMenu = function(control, e) {
+              var posx = e.pageX + 'px';//e.clientX + window.pageXOffset +'px'; //Left Position of Mouse Pointer
+              var posy = e.pageY + 'px';//e.clientY + window.pageYOffset + 'px'; //Top Position of Mouse Pointer
+              document.getElementById(control).style.position = 'absolute';
+              document.getElementById(control).style.display = 'inline';
+              document.getElementById(control).style.left = posx;
+              document.getElementById(control).style.top = posy; 
+          //document.getElementById(control).style.background = 'white';
+          /*document.getElementById("resultSet").click(
+            alert('change ResultSet');
+          );  */
+      };
+
+      this.hideMenu = function(control) {
+              document.getElementById(control).style.display = 'none'; 
+      };
       ///////////////////////////////////
       //New Link Instance between nodes//
       ///////////////////////////////////
@@ -270,7 +311,17 @@ this.DashboardView = Backbone.View.extend({
               //var offset = this.getnodeInsertionOffset();
               //cellView.model.translate(offset, 100);
               cellView.model.translate(200);
-            }
+              $('.top-right').notify({
+                message: { text: "Match sucess" },
+                type: 'success'
+                }).show();
+            }else{
+               cellView.model.translate(0,50); 
+               $('.top-right').notify({
+                message: { text: "Match not permition" },
+                type: 'danger'
+                }).show();
+            }   
           }
           return isCompatible;
       };
@@ -281,15 +332,24 @@ this.DashboardView = Backbone.View.extend({
 
   editQuery: function(e) {
     
-    
+    //document.getElementById('div #sparqlEditor').value = '';
     $('div #sparqlEditor').on('show.bs.modal', function(e){
-        console.log('modalEdit open event');
+          console.log('modalEdit open event');
           var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-          mode: "application/x-sparql-query",
-          matchBrackets: true
-          }); 
+            mode: "application/x-sparql-query",
+            matchBrackets: true
+          });
       });
     $('div #sparqlEditor').modal();
+   
+
+  /* $('div #sparqlEditor').on('hidden.bs.modal', function(e){
+          console.log('modalEdit close event');
+          e.preventDefault();
+    });*/
+
+    
+    //
     /*
     var viewEdit = new SparqlEditorView();
       
@@ -333,41 +393,12 @@ this.DashboardView = Backbone.View.extend({
        alert('ToJson:' + m);
   },
   
-  save: function($el){
-    
-    var svg = paper.svg;
-    //var uri = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svg)));
-      var serializer = new XMLSerializer();
-      var svgXML = serializer.serializeToString(svg);
-    console.log('save');
-    //convert svg source to URI data scheme.
-    var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgXML);
-
-    //set url value to a element's href attribute.
-    document.getElementById("save").href = url;
-    //you can download svg file by right click menu.
-    //var canvas = paper.svg[0];
-    //saveSvgAsPng(canvas, 'test.png');
-    
-    //var image = new Image;
-    //image.src = svgXML;
-    //var image = new Image();
-    //image.src = uri;
-    //saveSvgAsPng(paper.svg, 'test.png',1);
-    //console.log(svgXML);
-    //var image = new Image();
-    //image.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svgXML);
-    //saveAs(image.src, "Dashboard.png"); 
-    /*window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder ||
-                     window.MozBlobBuilder || window.MSBlobBuilder;
-    window.URL = window.URL || window.webkitURL;
-
-    var bb = new BlobBuilder();
-    //var svg = $('#designpanel').svg('get');
-    bb.append(svgXML);
-    var blob = bb.getBlob("application/svg+xml;charset=" + svg.characterSet);
-    saveAs(blob,"name.svg");
-    //img_PNG = Canvas2Image.saveAsPNG(svg);*/
+  clearDashboard: function(e){
+    App.dashboard.graph.clear();
+    $('.top-right').notify({
+                message: { text: "Clear Dashboard" },
+                type: 'success'
+          }).show();
   },
   
   ///////////////////////////
@@ -402,6 +433,29 @@ this.DashboardView = Backbone.View.extend({
     e.data.fromJSON(JSON.parse(jsonstring));
   },
 
+  
+  changeResultSet: function(){
+
+    if (cellViewRight) {
+         // The context menu was brought up when clicking a cell view in the paper.
+         if(cellViewRight.model.attr('text/text-decoration') == "underline"){
+          cellViewRight.model.attr('text/text-decoration','none');
+          cellViewRight.model.attr('text/resultSet',0);
+          $('.top-right').notify({
+            message: { text: cellViewRight.model.attr('text/text') +' no es parte del ResultSet' },
+            type: 'danger'
+            }).show(); 
+         }else{
+          cellViewRight.model.attr('text/text-decoration','underline');
+          cellViewRight.model.attr('text/resultSet',1);
+          $('.top-right').notify({
+            message: { text: cellViewRight.model.attr('text/text')+' considerado en el ResultSet' },
+            }).show();
+         }
+    }
+    App.fedQueryUtils.hideMenu('contextMenu');
+  },
+
   //////////////////////////
   //Render Dashboard Views//
   //////////////////////////
@@ -412,6 +466,18 @@ this.DashboardView = Backbone.View.extend({
     this.setEvents($('#sparql-content'));
     this.renderUtils(this.graph);
     App.dashboard = {graph: this.graph, paper: this.paper, graphScale: this.graphScale};
+    Tracker.autorun(function(){
+      var querieJson = Session.get('querieJson'); 
+      var querieTitle = Session.get('querieTitle'); 
+      var querieDescription = Session.get('querieDescription'); 
+       if(querieJson.length > 0) {
+        //Cargar el jsonGraph al graph
+        App.dashboard.graph.fromJSON(JSON.parse(querieJson));
+        $('#graph-title').val(querieTitle);
+        $('#graph-description').val(querieDescription);
+        $('#saveQuery').prop('disabled', true);
+      }
+    });
     //this.$el.html(this.template);
     return this;
   },
@@ -422,10 +488,13 @@ this.DashboardView = Backbone.View.extend({
   setEvents: function(divNode) {
 
     divNode.find('#newEndpoint #new-endpoint-form').submit(this.newEndpoint);
+    divNode.find('#sparqlEditor #sparqlEditor-form').submit(this.sparqlEditor);
     $("div.navbar #editQuery").on('click', this.editQuery);
     $("div.navbar #open").on('click', this.graph, this.openGraph);
     $("div.navbar #zoom-out").on('click', this.zoomOut);
     $("div.navbar #zoom-in").on('click', this.zoomIn);
+    $("div.navbar #clear").on('click', this.clearDashboard);
+    $("#changeResultSet").on('click', this.changeResultSet);
 
     /////////////
     //Run Query//
@@ -459,8 +528,22 @@ this.DashboardView = Backbone.View.extend({
       request.title = $('div #graph-title').val();
       request.description = $('div #graph-description').val();
       request.jsonQuery = App.dashboard.graph.toJSON();
-      var result = Meteor.call('saveQuery', request);
-      console.log(result);
+        if (request.title == null || request.title == "") {
+            $('.top-left').notify({
+            message: { text: "Title is required" },
+            type: 'danger'
+            }).show();
+            
+        }else {
+          var result = Meteor.call('saveQuery', request);
+          $('.top-left').notify({
+            message: { text: "Save query Success" },
+            type: 'success'
+            }).show();
+          console.log(result);
+        }
+
+      
     });
 
 
@@ -474,8 +557,9 @@ this.DashboardView = Backbone.View.extend({
       }
       
       //Si llega al limite inferior cambiamos el tamano del area de trabajo
-      if(cell.get('position').y >= App.dashboard.paper.options.height){
-        this.paper.setDimensions(parseInt(App.dashboard.paper.options.width , 10), parseInt(App.dashboard.paper.options.height + 100,10));
+      var yy = App.dashboard.paper.options.height-50;
+      if(cell.get('position').y >= yy){
+        App.dashboard.paper.setDimensions(parseInt(App.dashboard.paper.options.width , 10), parseInt(App.dashboard.paper.options.height + 50,10));
       }
       
       //Comparamos la posicion con el limite derecho y agrandamos el area de trabajo
@@ -514,7 +598,6 @@ this.DashboardView = Backbone.View.extend({
 
           App.fedQueryUtils.linkNodes(sourceEndpointProperties, elementBelow, cellView);
           
-
         }
     });
 
@@ -522,18 +605,66 @@ this.DashboardView = Backbone.View.extend({
     //Opening modal for node value edition//
     ////////////////////////////////////////
     this.paper.on('cell:pointerdblclick', function(cellView, evt, x, y) { 
-      if(cellView.model.get('predicate') != 'null') {
+      //if(cellView.model.get('predicate') != 'null') {
         var label = cellView.model.attr('text/text');
         $('div #nodeValue #node-value').val(label.match('^[?]')?'':label);
         $('div #nodeValue').modal({data: cellView});
+        $('div #nodeValue').on('show.bs.modal', function(e){
+            var regex = cellView.model.attr('text/regex');
+            console.log('nodeValue open event ' + regex); 
+            var checkbox = document.getElementById("checkRegex");
+            if(regex == 1) {
+              checkbox.checked = true;
+            }else {
+              checkbox.checked = false;
+            }
+            console.log('checkRegex  ' + checkbox.checked); 
+            //document.getElementById("checkRegex").checked = 'checked';            
+        });
+        $('div #nodeValue').on('hide.bs.modal', function(ev) {
+          //en el SAVE 
+          var checkbox = document.getElementById("checkRegex");
+          if(checkbox.checked) {
+             cellView.model.attr('text/regex', 1);
+             console.log('check true' + cellView.model.attr('text/regex'));
+            }
+            else {
+             cellView.model.attr('text/regex', 0);
+             console.log('check false' + cellView.model.attr('text/regex'));
+            }  
+           //SAVE   
+          if( $('div #nodeValue #node-value').val().length > 0 ) {
+            console.log(cellView);
+            cellView.model.attr('text/text', $('div #nodeValue #node-value').val() );
+            $('div #nodeValue').unbind('hide.bs.modal');
+          }
+        });
+      /*}else {
+          $('.top-right').notify({
+            message: { text: "Not is posible change text to entities" },
+            type: 'danger'
+            }).show();
+          }*/
+      
+    });
+
+    this.paper.on('blank:pointerclick', function(evt, x, y) { 
+      App.fedQueryUtils.hideMenu('contextMenu');
+    });
+
+    //Funcion que controla el click derecho
+    this.paper.$el.on('contextmenu', function(evt) { 
+      evt.stopPropagation(); // Stop bubbling so that the paper does not handle mousedown.
+      evt.preventDefault();  // Prevent displaying default browser context menu.
+      cellViewRight = App.dashboard.paper.findView(evt.target);
+      if (cellViewRight) {
+      // The context menu was brought up when clicking a cell view in the paper.
+        console.log(cellViewRight.model.id); // So now you have access to both the cell view and its model.
+      // ... display custom context menu, ...
       }
-      $('div #nodeValue').on('hide.bs.modal', function(ev) {
-        if( $('div #nodeValue #node-value').val().length > 0 ) {
-          console.log(cellView);
-          cellView.model.attr('text/text', $('div #nodeValue #node-value').val() );
-          $('div #nodeValue').unbind('hide.bs.modal');
-        }
-      });
+      //cellViewRight = this.paper.findView(evt.target);
+      App.fedQueryUtils.showMenu('contextMenu',evt);
+      //console.log(cellViewRight.model.id+ " click right");  // So now you have access to both the cell view and its model.*/
     });
 
   }
