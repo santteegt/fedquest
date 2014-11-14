@@ -103,7 +103,7 @@
 			"file": "client/index.html",
 			"settings":
 			{
-				"buffer_size": 246,
+				"buffer_size": 1594,
 				"line_ending": "Unix"
 			}
 		},
@@ -130,7 +130,7 @@
 			"file": "server/Collections/graph.js",
 			"settings":
 			{
-				"buffer_size": 1309,
+				"buffer_size": 2512,
 				"line_ending": "Unix",
 				"name": "###"
 			}
@@ -139,7 +139,7 @@
 			"file": "server/Collections/prefixes.js",
 			"settings":
 			{
-				"buffer_size": 924,
+				"buffer_size": 894,
 				"line_ending": "Unix"
 			}
 		},
@@ -147,7 +147,15 @@
 			"file": "client/js/main.js",
 			"settings":
 			{
-				"buffer_size": 1768,
+				"buffer_size": 4439,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/santteegt/BitBucket/sparqlfedquery-back/client/js/views/dashboard.js",
+			"settings":
+			{
+				"buffer_size": 34719,
 				"line_ending": "Unix"
 			}
 		}
@@ -180,6 +188,7 @@
 	},
 	"file_history":
 	[
+		"/Users/santteegt/BitBucket/sparqlfedquery-back/client/templates/views/header.html",
 		"/Users/santteegt/BitBucket/sparqlfedquery-back/server/sparqlfedquery-back.js",
 		"/Users/santteegt/GitRepositories/simpleBlog-backbone/views/index.ejs.html",
 		"/Users/santteegt/Desktop/Investigación/MARC21/frbr-display-tool-ext/clean.xml",
@@ -279,7 +288,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 6,
 			"sheets":
 			[
 				{
@@ -287,7 +296,7 @@
 					"file": "client/index.html",
 					"settings":
 					{
-						"buffer_size": 246,
+						"buffer_size": 1594,
 						"regions":
 						{
 						},
@@ -326,7 +335,8 @@
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 2539.0,
@@ -367,15 +377,15 @@
 					"file": "server/Collections/graph.js",
 					"settings":
 					{
-						"buffer_size": 1309,
+						"buffer_size": 2512,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								709,
-								709
+								0,
+								0
 							]
 						],
 						"settings":
@@ -396,15 +406,15 @@
 					"file": "server/Collections/prefixes.js",
 					"settings":
 					{
-						"buffer_size": 924,
+						"buffer_size": 894,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								223,
-								223
+								0,
+								0
 							]
 						],
 						"settings":
@@ -424,15 +434,15 @@
 					"file": "client/js/main.js",
 					"settings":
 					{
-						"buffer_size": 1768,
+						"buffer_size": 4439,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1000,
-								1077
+								0,
+								0
 							]
 						],
 						"settings":
@@ -443,6 +453,34 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 1.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/Users/santteegt/BitBucket/sparqlfedquery-back/client/js/views/dashboard.js",
+					"settings":
+					{
+						"buffer_size": 34719,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4759.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"

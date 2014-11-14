@@ -40,6 +40,7 @@ Meteor.startup(function (){
                 endpoint: "http://190.15.141.102:8890/sparql",
                 graphURI: "http://dspace.ucuenca.edu.ec/resource/",
                 status: 'A',
+                baseEndpoint: false,
                 lastMsg: ''
             }
         );

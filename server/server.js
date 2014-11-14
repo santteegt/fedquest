@@ -294,19 +294,22 @@ if (Meteor.isServer) {
 
 			},
 
-			getEndpointStructure: function(graphName, endpointURI, defaultGraph, graphDescription, updateGraph) {
+			getEndpointStructure: function(graphName, endpointURI, defaultGraph, graphDescription, colorId, baseEndpoint, updateGraph) {
 					var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
 					var response = Meteor.call('pingServer', endpointURI, defaultGraph);
 					if(response.statusCode != 200 || response.msg.length > 0) return response;
 					var statusCode = response.msg.length == 0 ? 'A':'I';
+					if(baseEndpoint) {
+						Endpoints.update({base: true},{$set: {base: false}},{multi: true});
+					}
 					if(_.isUndefined(endpoint)) {
 						console.log('==Inserting new endpoint');
-						var color_id = '#'+Math.floor(Math.random()*16777215).toString(16);
-						Endpoints.insert({name: graphName, colorid: color_id, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, status: statusCode, lastMsg: response.msg});	
+						var color_id = colorId ? colorId:'#'+Math.floor(Math.random()*16777215).toString(16);
+						Endpoints.insert({name: graphName, colorid: color_id, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg});	
 						updateGraph = true;
 					} else {
 						console.log('==Updating endpoint ' + endpointURI + '<' + defaultGraph + '>');
-						Endpoints.update({_id: endpoint._id}, {$set: {status: statusCode}});
+						Endpoints.update({_id: endpoint._id}, {$set: {status: statusCode, base: baseEndpoint, colorid: colorId, description: graphDescription, lastMsg: response.msg}});
 					}
 					if(updateGraph) {
 						Meteor.call('fetchGraphSchema', endpointURI, defaultGraph, function(error, result){
@@ -396,6 +399,14 @@ if (Meteor.isServer) {
 					}
 					return response;
 
+			},
+
+
+			updateBaseEndpoint: function(endpointURI, defaultGraph) {
+				var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
+				Endpoints.update({base: true},{$set: {base: false}},{multi: true});
+				Endpoints.update({_id: endpoint._id}, {$set: {base: true}});
+				console.log("==NEW endpoint base: " + endpointURI + " - " + defaultGraph);
 			}
 		});
 
