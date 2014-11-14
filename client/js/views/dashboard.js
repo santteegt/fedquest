@@ -30,11 +30,15 @@ this.DashboardView = Backbone.View.extend({
     var endpoint = $('#newEndpoint #new-endpoint').val();
     var graphURI = $('#newEndpoint #new-endpoint-graph').val();
     var description = $('#newEndpoint #new-endpoint-desc').val();
+    var colorId = $('#newEndpoint #new-endpoint-color').val();
+    var base = $('#newEndpoint #new-endpoint-base')[0].checked;
     //console.log('click en register' + id+endpoint+graphURI+description);
     e.preventDefault();
-    Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, function (error, result) {
+    Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, function (error, result) {
+        e.currentTarget.reset();
         $('#newEndpoint').find('button.close[data-dismiss=modal]').click();
         if(result) {
+          console.log(result);
           console.log("Result if:" + result);
           console.log("statusCode" + _.pluck(error, 'statusCode'));
           var counter = 0;
@@ -67,7 +71,7 @@ this.DashboardView = Backbone.View.extend({
     me = this;
     Tracker.autorun(function(){
       //var endpoints = Endpoints.find({status: 'A'},{fields:{endpoint: 1, graphURI: 1}}).fetch();
-      var endpoints = Endpoints.find({status: 'A'}).fetch();
+      var endpoints = Endpoints.find({status: 'A'}, {sort: {base: -1}}).fetch();
       if(endpoints.length > 0) {
         Session.set('endpoints', endpoints);  
       }
@@ -220,7 +224,6 @@ this.DashboardView = Backbone.View.extend({
         rect.attr('text/label',label);
         rect.attr('text/resultSet',1);
         rect.attr('text/regex',0);
-        console.log(rect.attr('text/label'));
         rect.set('endpoint', endpoint);
         rect.set('graphuri', graphURI);
         rect.set('subject', subject);
@@ -325,6 +328,92 @@ this.DashboardView = Backbone.View.extend({
           }
           return isCompatible;
       };
+
+      /**
+      * Parse graph to SPARQL query
+      * endpoint Endpoint ID
+      * queryNodes Query Graph nodes
+      * _entityType Triple subject
+      * _entityField Triple subject field label
+      * entityObjcs Child link nodes for current node
+      * linkNodes Link nodes on the dashboard
+      * _whereClause Current where clause
+      */
+      this.parseChilds = function(endpoint, queryNodes, _entityType, _entityField, entityObjcs, linkNodes, _whereClause) {
+          var endpointList = Session.get('endpoints');
+          //entity child nodes
+          _.each(entityObjcs, function(link) {
+            var childNode = _.find(queryNodes, function(node){ return node.id == link.target.id });
+            var _cid = childNode.id;
+            var _cstype = childNode.subject;
+            var _cptype = childNode.predicate;
+            var endpointObj = _.find(endpointList, function(obj){return obj.endpoint+'|'+obj.graphURI == childNode.endpoint+'|'+childNode.graphuri});
+            var _cfield = (childNode.attrs.text.text == childNode.attrs.text.label ? //no value specified
+              childNode.attrs.text.text:childNode.attrs.text.label) + '_' + endpointObj.name;
+            var _cfieldValue = childNode.attrs.text.text;
+            var applyRegexFilter = childNode.attrs.text.regex == '1';
+
+            //value starts with question mark (?) and its predicate
+            if(_cfieldValue.match('^[?]') && _cptype != 'null') {
+              _whereClause += "\n" + _entityField + ' <' + _cptype + '> ' + _cfield + ' .';
+            } else { //node value specified
+              if(applyRegexFilter) {
+                _whereClause += "\n" + _entityField + ' <' + _cptype + '> ?' + _cfield + ' .';
+                _whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'") .';
+              } else {
+                var endpointGraph =Session.get(endpoint);
+                var property = _.find(endpointGraph.properties,function(obj){return obj.fullName == _cptype});
+                var propertySubject = _.find(property.subjects, function(obj){return obj.fullName == _entityType});
+                var index = _.indexOf(property.subjects, propertySubject);
+                var dataType = property.objectTypes[index].dataType;
+                _whereClause += "\n" + _entityField + ' <' + _cptype + '> "' + _cfieldValue + '"^^' + dataType + ' .';
+              }
+            }
+            var childObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _cid});
+            if(childObjcs.length > 0) {
+              var endpointGraph =Session.get(endpoint);
+              var property = _.find(endpointGraph.properties,function(obj){return obj.fullName == _cptype});
+              var propertySubject = _.find(property.subjects, function(obj){return obj.fullName == _entityType});
+              var index = _.indexOf(property.subjects, propertySubject);
+              var objectType = property.objectTypes[index].objectEntity.fullName;
+              //recursive function
+              _whereClause = App.fedQueryUtils.parseChilds(endpoint, queryNodes, objectType, _cfield, childObjcs, linkNodes, _whereClause);
+            }
+
+          });
+          return _whereClause;
+      };
+
+      /**
+      * parse endpoint fields
+      * endpoint Endpoint the parser is evaluating
+      * queryNodes: Nodes involved in the query
+      * linkNodes Links involved in the query
+      * childsId Child nodes ids for the entity currently evaluated 
+      * fields Current endpoint array of fields
+      */
+      this.parseQueryFields = function(endpoint, queryNodes, linkNodes, childsId, fields) {
+        
+          _.each(childsId, function(childId) {
+            var subfields = _.filter(linkNodes, function(obj){return obj.source.id == childId});
+            if(subfields.length > 0) {
+                var subfieldsId = _.pluck( _.pluck(subfields, 'target') ,'id' );
+                fields = App.fedQueryUtils.parseQueryFields(endpoint, queryNodes, linkNodes, subfieldsId, fields);
+            } else {
+              var childNode = _.find(queryNodes, function(obj){return obj.id == childId});
+              if(childNode.attrs.text.resultSet == '1' && childNode.attrs.text.text == childNode.attrs.text.label) { //if field has to be shown on result
+                var endpointList = Session.get('endpoints');
+                var endpointObj = _.find(endpointList, function(obj){return obj.endpoint+'|'+obj.graphURI == childNode.endpoint+'|'+childNode.graphuri});
+                //includes fields belonging to the current endpoint
+                if(endpoint == endpointObj.endpoint+'|'+endpointObj.graphURI) {
+                  fields.push(childNode.attrs.text.text + '_' + endpointObj.name);  
+                }
+              }
+            }
+            
+          });
+          return fields;
+      };
     }
     App.fedQueryUtils = new fedQueryUtils(this.graph);
 
@@ -395,10 +484,13 @@ this.DashboardView = Backbone.View.extend({
   
   clearDashboard: function(e){
     App.dashboard.graph.clear();
+    $('div #saveQuery').removeAttr('disabled');
+    $('div #graph-title').val('');
+    $('div #graph-description').val('');
     $('.top-right').notify({
-                message: { text: "Clear Dashboard" },
-                type: 'success'
-          }).show();
+      message: { text: "Clear Dashboard" },
+      type: 'success'
+    }).show();
   },
   
   ///////////////////////////
@@ -430,6 +522,7 @@ this.DashboardView = Backbone.View.extend({
   ////////////////////////
   openGraph: function(e) {
     var jsonstring = '{"cells":[{"type":"html.Element","position":{"x":60,"y":50},"size":{"width":100,"height":40},"id":"630b11e8-dd63-45f6-b78c-d6ef599ef7ea","predicate":"null","endpoint":"1","data":"Tesis","z":5,"attrs":{"rect":{"fill":"blue"},"text":{"text":"Tesis"}}},{"type":"html.Element","position":{"x":60,"y":190},"size":{"width":100,"height":40},"id":"bd8d50bb-b63f-40f3-8e1e-80a4b2156115","predicate":"ths","endpoint":"1","data":"?director","z":6,"attrs":{"rect":{"fill":"blue"},"text":{"text":"?director"}}},{"type":"link","source":{"id":"bd8d50bb-b63f-40f3-8e1e-80a4b2156115"},"target":{"id":"630b11e8-dd63-45f6-b78c-d6ef599ef7ea"},"id":"e6d54def-7e57-43f8-9558-ba0f27952cd9","labels":[{"position":0.5,"attrs":{"text":{"text":"ths"}}}],"smooth":true,"z":7,"attrs":{".connection":{"stroke":"black","stroke-width":"2"}}},{"type":"html.Element","position":{"x":340,"y":220},"size":{"width":100,"height":40},"id":"fb6e8078-6be1-482c-9ff6-5bc9accd1210","predicate":"foaf:lastName","endpoint":"1","data":"?lastName","z":8,"attrs":{"rect":{"fill":"blue"},"text":{"text":"Ortiz Segarra"}}},{"type":"link","source":{"id":"fb6e8078-6be1-482c-9ff6-5bc9accd1210"},"target":{"id":"bd8d50bb-b63f-40f3-8e1e-80a4b2156115"},"id":"22eccf8e-22f3-4c27-96f5-268122ca928f","labels":[{"position":0.5,"attrs":{"text":{"text":"foaf:lastName"}}}],"smooth":true,"z":9,"attrs":{".connection":{"stroke":"black","stroke-width":"2"}}},{"type":"html.Element","position":{"x":350,"y":20},"size":{"width":100,"height":40},"id":"bac365f2-229e-4bd8-a4aa-587f3e0aef40","predicate":"title","endpoint":"1","data":"?title","z":10,"attrs":{"rect":{"fill":"blue"},"text":{"text":"?titleTesis"}}},{"type":"link","source":{"id":"bac365f2-229e-4bd8-a4aa-587f3e0aef40"},"target":{"id":"630b11e8-dd63-45f6-b78c-d6ef599ef7ea"},"id":"d1b71a79-c97c-4e96-ab9e-7dd37afd6132","labels":[{"position":0.5,"attrs":{"text":{"text":"title"}}}],"smooth":true,"z":11,"attrs":{".connection":{"stroke":"black","stroke-width":"2"}}},{"type":"html.Element","position":{"x":60,"y":390},"size":{"width":100,"height":40},"id":"e3f1fe35-d916-4ea7-ac0c-fff720386377","predicate":"null","endpoint":"1","data":"Article","z":12,"attrs":{"rect":{"fill":"red"},"text":{"text":"Article"}}},{"type":"html.Element","position":{"x":60,"y":280},"size":{"width":100,"height":40},"id":"d3633ce1-7a71-49bb-93a9-1421effcabac","predicate":"aut","endpoint":"1","data":"?aut","z":13,"attrs":{"rect":{"fill":"red"},"text":{"text":"?aut"}}},{"type":"link","source":{"id":"d3633ce1-7a71-49bb-93a9-1421effcabac"},"target":{"id":"e3f1fe35-d916-4ea7-ac0c-fff720386377"},"id":"f2c5301b-fc26-43bd-98a0-212c7ad1d5e1","labels":[{"position":0.5,"attrs":{"text":{"text":"aut"}}}],"smooth":true,"z":14,"attrs":{".connection":{"stroke":"black","stroke-width":"2"}}},{"type":"html.Element","position":{"x":350,"y":430},"size":{"width":100,"height":40},"id":"6c62590d-0018-4efe-9eb3-f0fe71c98e0b","predicate":"title","endpoint":"1","data":"?title","z":15,"attrs":{"rect":{"fill":"red"},"text":{"text":"?title"}}},{"type":"link","source":{"id":"6c62590d-0018-4efe-9eb3-f0fe71c98e0b"},"target":{"id":"e3f1fe35-d916-4ea7-ac0c-fff720386377"},"id":"caaee3f7-c43a-49be-ac1b-01531188cc11","labels":[{"position":0.5,"attrs":{"text":{"text":"title"}}}],"smooth":true,"z":16,"attrs":{".connection":{"stroke":"black","stroke-width":"2"}}},{"type":"link","source":{"id":"fb6e8078-6be1-482c-9ff6-5bc9accd1210"},"target":{"id":"d3633ce1-7a71-49bb-93a9-1421effcabac"},"id":"b777d4c9-4a1d-4145-906d-6b3c3995fada","labels":[{"position":0.5,"attrs":{"text":{"text":"foaf:lastName"}}}],"smooth":true,"z":17,"attrs":{".connection":{"stroke":"black","stroke-width":"2"}}}]}';
+    jsonstring = '{"cells":[{"type":"html.Element","position":{"x":260,"y":50},"size":{"width":100,"height":40},"angle":0,"id":"a0c7456c-d8fc-4053-91b3-1efe91d2a256","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"http://purl.org/ontology/bibo/Thesis","predicate":"null","z":1,"attrs":{"rect":{"fill":"#6d419d"},"text":{"text":"Thesis","text-decoration":"underline","label":"Thesis","resultSet":1,"regex":0}}},{"type":"html.Element","position":{"x":280,"y":190},"size":{"width":100,"height":40},"angle":0,"id":"99eab531-ca7b-4d8c-befa-1a572617a1d0","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"null","predicate":"http://id.loc.gov/vocabulary/relators/ths","z":2,"attrs":{"rect":{"fill":"#6d419d"},"text":{"text":"?ths","text-decoration":"underline","label":"?ths","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"a0c7456c-d8fc-4053-91b3-1efe91d2a256"},"target":{"id":"99eab531-ca7b-4d8c-befa-1a572617a1d0"},"id":"8fcb7c4e-5dc0-4e78-9931-8d9b2db3bde8","labels":[{"position":0.5,"attrs":{"text":{"text":"marcrel:ths"}}}],"connector":{"name":"smooth"},"z":3,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":470,"y":50},"size":{"width":100,"height":40},"angle":0,"id":"1a624643-fc35-46fe-b018-366b5410929a","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"null","predicate":"http://purl.org/dc/terms/title","z":4,"attrs":{"rect":{"fill":"#6d419d"},"text":{"text":"?title","text-decoration":"underline","label":"?title","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"a0c7456c-d8fc-4053-91b3-1efe91d2a256"},"target":{"id":"1a624643-fc35-46fe-b018-366b5410929a"},"id":"8ee0a375-cb6e-4002-ab13-2badbeb6aaf8","labels":[{"position":0.5,"attrs":{"text":{"text":"dcterms:title"}}}],"connector":{"name":"smooth"},"z":5,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":650,"y":260},"size":{"width":100,"height":40},"angle":0,"id":"92950559-6d60-4b28-ba01-0fb7dd5e4cb6","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"null","predicate":"http://xmlns.com/foaf/0.1/name","z":6,"attrs":{"rect":{"fill":"#6d419d"},"text":{"text":"?name","text-decoration":"underline","label":"?name","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"99eab531-ca7b-4d8c-befa-1a572617a1d0"},"target":{"id":"92950559-6d60-4b28-ba01-0fb7dd5e4cb6"},"id":"b7c5356c-7319-46ab-8e29-6015dff278a9","labels":[{"position":0.5,"attrs":{"text":{"text":"foaf:name"}}}],"connector":{"name":"smooth"},"z":7,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":250,"y":380},"size":{"width":100,"height":40},"angle":0,"id":"d0a94036-0a1d-4a38-a3b8-6ca1190ac050","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resources/","subject":"http://purl.org/ontology/bibo/Article","predicate":"null","z":8,"attrs":{"rect":{"fill":"#e7d90f"},"text":{"text":"Article","text-decoration":"underline","label":"Article","resultSet":1,"regex":0}}},{"type":"html.Element","position":{"x":370,"y":300},"size":{"width":100,"height":40},"angle":0,"id":"a6b41f22-e612-426a-878d-d7e632ca9512","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resources/","subject":"null","predicate":"http://id.loc.gov/vocabulary/relators/aut","z":9,"attrs":{"rect":{"fill":"#e7d90f"},"text":{"text":"?aut","text-decoration":"underline","label":"?aut","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"d0a94036-0a1d-4a38-a3b8-6ca1190ac050"},"target":{"id":"a6b41f22-e612-426a-878d-d7e632ca9512"},"id":"dbb33cb3-e74b-410b-8220-b5579135152c","labels":[{"position":0.5,"attrs":{"text":{"text":"marcrel:aut"}}}],"connector":{"name":"smooth"},"z":10,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"link","source":{"id":"a6b41f22-e612-426a-878d-d7e632ca9512"},"target":{"id":"92950559-6d60-4b28-ba01-0fb7dd5e4cb6"},"id":"7e166e49-89d7-4145-b1f4-cd8a1ebb0e87","labels":[{"position":0.5,"attrs":{"text":{"text":"foaf:name"}}}],"connector":{"name":"smooth"},"z":11,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":470,"y":390},"size":{"width":100,"height":40},"angle":0,"id":"bb518607-ae0c-4e19-9fce-c529a19125ca","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resources/","subject":"null","predicate":"http://purl.org/dc/terms/title","z":12,"attrs":{"rect":{"fill":"#e7d90f"},"text":{"text":"?title","text-decoration":"underline","label":"?title","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"d0a94036-0a1d-4a38-a3b8-6ca1190ac050"},"target":{"id":"bb518607-ae0c-4e19-9fce-c529a19125ca"},"id":"c05c3a9b-c39f-4651-9884-15606a276f1c","labels":[{"position":0.5,"attrs":{"text":{"text":"dcterms:title"}}}],"connector":{"name":"smooth"},"z":13,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}}]}';
     e.data.fromJSON(JSON.parse(jsonstring));
   },
 
@@ -465,7 +558,7 @@ this.DashboardView = Backbone.View.extend({
     this.paper = new joint.dia.Paper({ el: $('#paper'), width: $('#paper').width(), height: $('#paper').height(), gridSize: 10, model: this.graph });
     this.setEvents($('#sparql-content'));
     this.renderUtils(this.graph);
-    App.dashboard = {graph: this.graph, paper: this.paper, graphScale: this.graphScale};
+    App.dashboard = {graph: this.graph, paper: this.paper, graphScale: this.graphScale, defaultColor: '#428bca'};
     Tracker.autorun(function(){
       var querieJson = Session.get('querieJson'); 
       var querieTitle = Session.get('querieTitle'); 
@@ -486,7 +579,21 @@ this.DashboardView = Backbone.View.extend({
   //set Dashboard View Events//
   /////////////////////////////
   setEvents: function(divNode) {
+    divNode.find('#newEndpoint').on('show.bs.modal', function(e){
+      var colorId;
+      var endpoints = Session.get('endpoints');
+      if(endpoints && endpoints.length > 0) {
+        colorId = '#'+Math.floor(Math.random()*16777215).toString(16);
+        divNode.find('#new-endpoint-base')[0].disabled=false;
+      } else {
+        colorId = App.dashboard.defaultColor;
+        divNode.find('#new-endpoint-base')[0].checked=true;
+        divNode.find('#new-endpoint-base')[0].disabled=true;
+      }
+      divNode.find('#newEndpoint #new-endpoint-color').val(colorId);
 
+    });
+    
     divNode.find('#newEndpoint #new-endpoint-form').submit(this.newEndpoint);
     divNode.find('#sparqlEditor #sparqlEditor-form').submit(this.sparqlEditor);
     $("div.navbar #editQuery").on('click', this.editQuery);
@@ -496,28 +603,70 @@ this.DashboardView = Backbone.View.extend({
     $("div.navbar #clear").on('click', this.clearDashboard);
     $("#changeResultSet").on('click', this.changeResultSet);
 
+    //////////////////////////////////
+    //Update base endpoint from list//
+    //////////////////////////////////
+    $('#availableEndpoint .base-endpoint').on('click',function(e) {
+      console.log('entra');
+      var endpoint = $(e.currentTarget).attr('data-endpoint');
+      var graphURI = $(e.currentTarget).attr('data-graphuri');
+      Meteor.call('updateBaseEndpoint', endpoint, graphURI, function(error, result){
+        //non-implemented
+      });
+    });
+
     /////////////
     //Run Query//
     /////////////
-    $('div #runQuery').on('click', function(ev){
-      var jsonQuery = App.dashboard.graph.toJSON();
-      var queryNodes = _.filter(jsonQuery.cells,function(obj){return obj.type=='html.Element'});
-      var linkNodes = _.filter(jsonQuery.cells,function(obj){return obj.type=='link'});
-      var endpoints = Session.get('endpoints');
-      _.each(endpoints, function(obj){
-        var endpoint = obj.endpoint + '|' + obj.graphURI;
-        var endpointNodes = _.filter(queryNodes, function(node){return node.endpoint+'|'+node.graphuri == endpoint;});
-        var entities = _.filter(endpointNodes, function(node){return node.subject != 'null';});
-        
+    $('div #runQuery').on('click', function(ev) {
+      if (App.dashboard.graph.toJSON().cells.length == 0) {
+        $('.top-right').notify({
+          message: { text: "The Query Graph must have at least 1 triple" },
+          type: 'danger'
+          }).show();
+      } else {
+        var jsonQuery = App.dashboard.graph.toJSON();
+        var queryNodes = _.filter(jsonQuery.cells,function(obj){return obj.type=='html.Element'});
+        var linkNodes = _.filter(jsonQuery.cells,function(obj){return obj.type=='link'});
+        var endpoints = Session.get('endpoints');
+        _.each(endpoints, function(objEndpoint) {
+          var fields = [];
+          var triples = [];
+          var endpoint = objEndpoint.endpoint + '|' + objEndpoint.graphURI;
+          var endpointNodes = _.filter(queryNodes, function(node){return node.endpoint+'|'+node.graphuri == endpoint;});
+          var entities = _.filter(endpointNodes, function(node){return node.subject != 'null';});
+          var query = squel.select().from('<'+objEndpoint.graphURI+'>');
+          var _whereClause = "";
+          //nodes with subject value
+          _.each(entities, function(obj){
+            var _id = obj.id;
+            var _type = obj.subject;
+            var _entityField = '?' + obj.attrs.text.text;
+            //query.field(_entityField);
+            _entityField += '_' + objEndpoint.name;
+            fields.push(_entityField);
+            _whereClause += _whereClause + "\n" + _entityField + ' a <' + _type + '> .';
+            var entityObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _id});
 
-      });
+            //get fields
+            var childsId =_.pluck( _.pluck(entityObjcs, 'target') ,'id' );
+            fields = App.fedQueryUtils.parseQueryFields(endpoint, queryNodes, linkNodes, childsId, fields);
+            var strfields = fields.toString().replace(/,/g, ' ');
+            query.field(strfields);
 
-      
-      jsonQuery.cells.length;
-      var a = _.filter(jsonQuery.cells, function(obj){return obj.type=='html.Element'});
-      Meteor.call('doQuery', jsonQuery, function(error, result){
+            ////////////
+            
+            //get conditions
+            _whereClause = App.fedQueryUtils.parseChilds(endpoint, queryNodes, _type, _entityField, entityObjcs, linkNodes, _whereClause);
+            query.where(_whereClause);
+            ////////////////
+          });
+          console.log(query.toString());
+          /*Meteor.call('doQuery', jsonQuery, function(error, result){
 
-      });
+          });*/
+        });
+      }
     });
 
     //////////////////
@@ -528,22 +677,25 @@ this.DashboardView = Backbone.View.extend({
       request.title = $('div #graph-title').val();
       request.description = $('div #graph-description').val();
       request.jsonQuery = App.dashboard.graph.toJSON();
-        if (request.title == null || request.title == "") {
-            $('.top-left').notify({
-            message: { text: "Title is required" },
-            type: 'danger'
-            }).show();
-            
-        }else {
-          var result = Meteor.call('saveQuery', request);
-          $('.top-left').notify({
+      var errorMessage = "";
+      //at least one triple
+      errorMessage = request.jsonQuery.cells.length == 0 ? "The Query Graph must have at least 1 triple":"";
+      errorMessage = request.title == null || request.title == "" ? "Title is required":errorMessage;
+      if (errorMessage.length > 0) {
+        $('.top-right').notify({
+          message: { text: errorMessage },
+          type: 'danger'
+          }).show();
+      } else {
+        var result = Meteor.call('saveQuery', request, function(error, result) {
+          $('div #saveQuery').attr('disabled','true');
+          $('.top-right').notify({
             message: { text: "Save query Success" },
             type: 'success'
-            }).show();
-          console.log(result);
-        }
-
-      
+          }).show();
+        });
+        
+      }
     });
 
 

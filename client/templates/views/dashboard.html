@@ -8,17 +8,17 @@
             <div class="panel-body">
               <form role="form">
                 <div class="form-group">
-                  <label for="graph-title">*Title</label>
-                  <input required type="text" class="form-control" id="graph-title" placeholder="Título del grafo de consulta" >
+                  <label for="graph-title">Title</label>
+                  <input required type="text" class="form-control" id="graph-title" placeholder="(*)Query Title" >
                 </div>
                 <div class="form-group">
                   <label for="graph-description">Description</label>
-                  <textarea required class="form-control" rows="3" id="graph-description" placeholder="Descripción del grafo de consulta"></textarea>
+                  <textarea required class="form-control" rows="3" id="graph-description" placeholder="Query Description"></textarea>
                 </div>
-                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="down" title="Ejecutar" id="runQuery">
+                <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="down" title="Run Query" id="runQuery">
                   <span class="glyphicon glyphicon-play"></span>
                 </button>
-                <button type="button" class="btn btn-default btn-xs" title="Guardar" id="saveQuery">
+                <button type="button" class="btn btn-default btn-xs" title="Save Query" id="saveQuery">
                   <span class="glyphicon glyphicon-floppy-disk"></span>
                 </button>
               </form>
@@ -51,10 +51,10 @@
           </div>
           <div class="col-xs-10">
             <div style="position:absolute; right:0; padding: 0 25px;">
-              <small class="footer-legend"><strong>Desarrollado por:</strong></small>
-              <img src="images/ucuenca-logo.png" alt="ucuenca" style="height:40px">
-              <small class="footer-legend"><strong>Con el apoyo de:</strong></small>
-              <img src="images/cepra-logo.png" alt="ucuenca" style="height:30px">
+              <small class="footer-legend"><strong>Developed by:</strong></small>
+              <img src="images/ucuenca-logo.png" alt="ucuenca" style="height:40px" draggable="false">
+              <small class="footer-legend"><strong>Powered by:</strong></small>
+              <img src="images/cepra-logo.png" alt="ucuenca" style="height:30px" draggable="false">
             </div>
           </div>
           <!--
@@ -101,7 +101,7 @@
       </div>
 
       <!-- Modal for New endpoint -->
-      <div class="modal fade" id="newEndpoint" tabindex="-1" role="dialog" aria-labelledby="New Endpoint Register" aria-hidden="true">
+      <div class="modal fade" id="newEndpoint" tabindex="-1" role="dialog" aria-labelledby="New Endpoint" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
@@ -113,45 +113,43 @@
                 <form role="form" id="new-endpoint-form">
                   <div class="form-group">
                   	<div class="input-group input-group-sm">
-      					     <span class="input-group-addon">*@</span>
-      					     <input type="text" required class="form-control" placeholder="Identifier" id="new-endpoint-identifier">
+      					     <span class="input-group-addon">@</span>
+      					     <input type="text" required pattern="[a-zA-Z0-9]+" class="form-control" placeholder="Identifier (Required)" id="new-endpoint-identifier" oninvalid="setCustomValidity('Alphanumeric and no spaces required')" onchange="try{setCustomValidity('')}catch(e){}" />
       				      </div>
                   </div>
                   <div class="form-group">
                     <div class="input-group input-group-sm">
-                     <span class="input-group-addon">*http://</span>
-                     <input type="url" required class="form-control" placeholder="Endpoint URL" id="new-endpoint">
+                     <span class="input-group-addon">http://</span>
+                     <input type="url" required class="form-control" placeholder="Endpoint URL (Required)" id="new-endpoint" />
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="input-group input-group-sm">
-                      <span class="input-group-addon">*http://</span>
-                      <input type="url" required class="form-control" placeholder="Graph URL" id="new-endpoint-graph">
+                      <span class="input-group-addon">http://</span>
+                      <input type="url" required class="form-control" placeholder="Graph URL (Required)" id="new-endpoint-graph" />
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="input-group input-group-sm">
                       <span class="input-group-addon">Color:</span>
-                      <input type="color" id="new-endpoint-color" value="#ff0000" class="form-control" placeholder="Graph Color">
+                      <input type="color" id="new-endpoint-color" value="#ff0000" class="form-control" placeholder="Graph Color" />
                     </div>
                   </div>
                   <div class="form-group">
                     <label class="sr-only" for="new-endpoint-desc">Description</label>
                     <textarea class="form-control" rows="3" id="new-endpoint-desc" placeholder="Description"></textarea>
-                    <!--
-                    <div class="input-group input-group-sm">
-                      <span class="input-group-addon">-></span>
-                      <input type="text" class="form-control" placeholder="Description" id="new-endpoint-desc">
-                    </div>
-
-                    -->
                   </div>
-                  <button type="submit" class="btn btn-primary">Register</button>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="new-endpoint-base" id="new-endpoint-base" />
+                      Base Endpoint
+                    </label>
+                  </div>
+                  <button type="submit" class="btn btn-sm btn-primary">Register</button>
                 </form>
               </div>
             
             <div class="modal-footer">
-              <div role="alert" class="alert alert-warning">Something happend</div>
              <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
               <!-- <button type="button" class="btn btn-primary new-endpoint-btn" id="new-endpoint-btn">Register</button> -->
             </div>
@@ -190,56 +188,58 @@
         </div>
       </div>
 
+      <!-- Modal for sparql Editor -->
       <div class="modal fade" id="sparqlEditor" tabindex="-1" role="dialog" aria-labelledby="Node Value" aria-hidden="true">
       
-      <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h3>Editor de Consultas SPARQL</h3>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-          <label for="graph-title">Ingrese la consulta que desea ejecutar</label>
-          <form id="sparqlEditor-form">
-            <textarea id="code" style="background= #646464">
-              PREFIX a: <http://www.w3.org/2000/10/annotation-ns#>
-              PREFIX dc: <http://purl.org/dc/elements/1.1/>
-              PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              <h3>Editor de Consultas SPARQL</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                <label for="graph-title">Ingrese la consulta que desea ejecutar</label>
+                <form id="sparqlEditor-form">
+                  <textarea id="code" style="background= #646464">
+                    PREFIX a: <http://www.w3.org/2000/10/annotation-ns#>
+                    PREFIX dc: <http://purl.org/dc/elements/1.1/>
+                    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 
-              # Comment!
+                    # Comment!
 
-              select ?name ?titleTesis ?title
-              from <http://dspace.ucuenca.edu.ec/resource/>
-              where 
-               {?person foaf:lastName "Ortiz Segarra "^^<http://www.w3.org/2001/XMLSchema#string> .
-                ?tesis <http://id.loc.gov/vocabulary/relators/ths> ?person . 
-                ?tesis <http://purl.org/dc/terms/title> ?titleTesis
-                SERVICE <http://190.15.141.66:8890/sparql/>{
-                  select ?name ?title from <http://localhost:8890/DAV>{
-                  ?name foaf:lastName "Ortiz Segarra "^^<http://www.w3.org/2001/XMLSchema#string> .
-                  ?recurso <http://id.loc.gov/vocabulary/relators/aut> ?name . 
-                ?recurso <http://purl.org/dc/terms/title> ?title
-                }
-                }  
-              }
-            </textarea>
-          </form>
+                    select ?name ?titleTesis ?title
+                    from <http://dspace.ucuenca.edu.ec/resource/>
+                    where 
+                     {?person foaf:lastName "Ortiz Segarra "^^<http://www.w3.org/2001/XMLSchema#string> .
+                      ?tesis <http://id.loc.gov/vocabulary/relators/ths> ?person . 
+                      ?tesis <http://purl.org/dc/terms/title> ?titleTesis
+                      SERVICE <http://190.15.141.66:8890/sparql/>{
+                        select ?name ?title from <http://localhost:8890/DAV>{
+                        ?name foaf:lastName "Ortiz Segarra "^^<http://www.w3.org/2001/XMLSchema#string> .
+                        ?recurso <http://id.loc.gov/vocabulary/relators/aut> ?name . 
+                      ?recurso <http://purl.org/dc/terms/title> ?title
+                      }
+                      }  
+                    }
+                  </textarea>
+                </form>
+              </div>
+            </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ejecutar</button>
+              </div>
+          </div>  
         </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ejecutar</button>
-        </div>
-    </div>
-  </div>
-  </div>
+      </div>
 
-  <div class="modal fade" id="availableEndpoint" tabindex="-1" role="dialog" aria-labelledby="Available Endpoint" aria-hidden="true">
+      <!--Modal for Available Endpoints -->
+      <div class="modal fade" id="availableEndpoint" tabindex="-1" role="dialog" aria-labelledby="Available Endpoints" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-              <h4 class="modal-title" id="myModalLabel">Available Endpoint</h4>
+              <h4 class="modal-title" id="myModalLabel">Available Endpoints</h4>
             </div>
             
               <div class="modal-body">
@@ -248,17 +248,23 @@
                       <tr>
                           <th>Name</th>
                           <th>Description</th>
+                          <th>Graph</th>
                           <th>Color</th>
+                          <th>Status</th>
+                          <th>Base</th>
                       </tr>
                   </thead>
                   <tbody>
                     {{#each endpointsAvailable}}
                       <tr>
-                          <td>{{name}}</td>
+                          <td><a href="{{endpoint}}" target="_blank">{{name}}</a></td>
                           <td>{{description}}</td>
+                          <td><input type="input" value="{{graphURI}}" disabled ></td>
                           <td><input type="color" value="{{colorid}}" disabled ></td>
+                          <td><span>{{status}}</span></td>
+                          <td><input type="radio" name="baseRadios" checked="{{base}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" class="base-endpoint" ></td>
                       </tr>
-                      {{/each}}
+                    {{/each}}
                   </tbody>
                 </table>
               </div>
