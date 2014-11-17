@@ -407,6 +407,12 @@ if (Meteor.isServer) {
 				Endpoints.update({base: true},{$set: {base: false}},{multi: true});
 				Endpoints.update({_id: endpoint._id}, {$set: {base: true}});
 				console.log("==NEW endpoint base: " + endpointURI + " - " + defaultGraph);
+			},
+
+			deleteEndpoint: function(id, endpointURI, defaultGraph) {
+				Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
+				Endpoints.remove(id);
+				console.log("==Endpoint removed: " + endpointURI + " - " + defaultGraph);	
 			}
 		});
 

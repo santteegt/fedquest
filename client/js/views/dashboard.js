@@ -73,6 +73,8 @@ this.DashboardView = Backbone.View.extend({
       var endpoints = Endpoints.find({status: 'A'}, {sort: {base: -1}}).fetch();
       if(endpoints.length > 0) {
         Session.set('endpoints', endpoints);  
+      } else {
+        Session.set('endpoints', []);  
       }
       console.log("Endpoints Disponibles: " + endpoints.length);
       var querie = Queries.find({_id: id.idSample}).fetch();
@@ -861,6 +863,15 @@ this.DashboardView = Backbone.View.extend({
     var endpointId = $(e.currentTarget).attr('data-endpoint-id');
     var endpointURI = $(e.currentTarget).attr('data-endpoint');
     var graphURI = $(e.currentTarget).attr('data-graphuri');
+    Meteor.call('deleteEndpoint', endpointId, endpointURI, graphURI, function(error, result) {
+      if(!error){
+        $('.top-right').notify({
+            message: { text: "Endpoint delete Success" },
+            type: 'success'
+        }).show();
+
+      }
+    });
     console.log("delete Endpoint id:" + endpointId); 
     console.log("endpoint:" + endpointURI); 
     console.log("graph:" + graphURI);

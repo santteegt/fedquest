@@ -17,7 +17,7 @@ this.Router = Backbone.Router.extend({
 
   index: function () {
     console.log('Inicio Router index');
-    $("div.main").onepage_scroll({
+    $("div.main-ops").onepage_scroll({
       sectionContainer: "section",
       responsiveFallback: 600,
       loop: true
@@ -25,7 +25,7 @@ this.Router = Backbone.Router.extend({
   },
 
   disableOnepageScroll: function() {
-    $("div.main").hide();
+    $("div.main-ops").hide();
     $(document).bind('mousewheel DOMMouseScroll MozMousePixelScroll');
   },
 
