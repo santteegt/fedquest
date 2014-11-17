@@ -17,7 +17,6 @@ this.DashboardView = Backbone.View.extend({
     'click button': 'newEndpoint'
   },
 
-
   sparqlEditor: function(e){
     alert("click ok");
   }, 
@@ -81,6 +80,7 @@ this.DashboardView = Backbone.View.extend({
       Session.set('querieJson', jsonGraph); 
       Session.set('querieTitle', _.pluck(querie, 'title')); 
       Session.set('querieDescription', _.pluck(querie, 'description')); 
+      Session.set('endpointEdit', []);
     });
 
     /////////////////////////
@@ -173,6 +173,10 @@ this.DashboardView = Backbone.View.extend({
         this.nodeInsertionOffset += 120;
         return this.initOffset = this.initOffset + this.nodeInsertionOffset;
       }
+
+      this.allowDrop = function (ev) {
+          ev.preventDefault();
+      };
       /////////////////////////
       //    Drag the node    //
       /////////////////////////
@@ -579,8 +583,20 @@ this.DashboardView = Backbone.View.extend({
   //set Dashboard View Events//
   /////////////////////////////
   setEvents: function(divNode) {
+
     divNode.find('#newEndpoint').on('show.bs.modal', function(e){
       var colorId;
+      var endpointEdit = Session.get('endpointEdit');
+      if(endpointEdit.length > 0) {
+        console.log("entro show modal newEndpoint " + endpointEdit[0].graphURI);
+        $('#newEndpoint #new-endpoint').val(endpointEdit[0].endpoint);
+        $('#newEndpoint #new-endpoint-graph').val(endpointEdit[0].graphURI);
+        $('#newEndpoint #new-endpoint-color').val(endpointEdit[0].colorid);
+        $('#newEndpoint #new-endpoint-identifier').val(endpointEdit[0].name);
+        $('#newEndpoint #new-endpoint-desc').val(endpointEdit[0].description);
+        $('#newEndpoint #new-endpoint-base').disable=endpointEdit[0].base;
+        Session.set('endpointEdit',[]);
+      }
       var endpoints = Session.get('endpoints');
       if(endpoints && endpoints.length > 0) {
         colorId = '#'+Math.floor(Math.random()*16777215).toString(16);
@@ -592,6 +608,16 @@ this.DashboardView = Backbone.View.extend({
       }
       divNode.find('#newEndpoint #new-endpoint-color').val(colorId);
 
+    });
+
+    divNode.find('#newEndpoint').on('hide.bs.modal', function(ev) {
+        $('#newEndpoint #new-endpoint').val('');
+        $('#newEndpoint #new-endpoint-graph').val('');
+        $('#newEndpoint #new-endpoint-color').val('');
+        $('#newEndpoint #new-endpoint-identifier').val('');
+        $('#newEndpoint #new-endpoint-desc').val('');
+        $('#newEndpoint #new-endpoint-base').disable=false;
+        Session.set('endpointEdit',[]);
     });
     
     divNode.find('#newEndpoint #new-endpoint-form').submit(this.newEndpoint);
@@ -613,7 +639,7 @@ this.DashboardView = Backbone.View.extend({
       Meteor.call('updateBaseEndpoint', endpoint, graphURI, function(error, result){
         //non-implemented
       });
-    });
+    }); 
 
     /////////////
     //Run Query//
@@ -818,6 +844,27 @@ this.DashboardView = Backbone.View.extend({
       App.fedQueryUtils.showMenu('contextMenu',evt);
       //console.log(cellViewRight.model.id+ " click right");  // So now you have access to both the cell view and its model.*/
     });
+
+
+    /////////////////////////
+    // EDIT ENDPOINT ////////
+    /////////////////////////
+  editEndpoint=function (e) {
+    var endpointId = $(e.currentTarget).attr('data-endpoint-id');
+    var endpoint = Endpoints.find({_id: endpointId}).fetch();
+    Session.set('endpointEdit', endpoint);
+    $('div #newEndpoint').modal();
+    
+  };
+
+  deleteEndpoint=function (e) {
+    var endpointId = $(e.currentTarget).attr('data-endpoint-id');
+    var endpointURI = $(e.currentTarget).attr('data-endpoint');
+    var graphURI = $(e.currentTarget).attr('data-graphuri');
+    console.log("delete Endpoint id:" + endpointId); 
+    console.log("endpoint:" + endpointURI); 
+    console.log("graph:" + graphURI);
+  };
 
   }
 });
