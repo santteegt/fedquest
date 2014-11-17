@@ -22,10 +22,10 @@ if (Meteor.isClient) {
             fields: 
             [
                 {
-                  key: '_id',
+                  key: 'title',
                   label: 'Title',
-                  fn: function (_id, object) {
-                  var html = '<a href="/dashboard/' + _id + '">' + object.title + '</a>';
+                  fn: function (title, object) {
+                  var html = '<a href="/dashboard/' + object._id + '">' + title + '</a>';
                   return new Spacebars.SafeString(html);
                   }
                   },
