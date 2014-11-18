@@ -22,6 +22,10 @@ this.Router = Backbone.Router.extend({
       responsiveFallback: 600,
       loop: true
     });
+    $('div.slider').wmuSlider({
+            touch: true,
+            animation: 'slide'
+        }); 
   },
 
   disableOnepageScroll: function() {
