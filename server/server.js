@@ -134,7 +134,7 @@ if (Meteor.isServer) {
 
 					console.log('=>Obtaining subject properties of: ' + subject);
 					var rsMuestra = Meteor.call('runQuery', endpointURI, defaultGraph, 
-						'select distinct ?s where{ ?s a <' + subject + '>} limit 10');
+						'select distinct ?s where{ ?s a <' + subject + '>} limit 1');
 
 					var rsMuestra = EJSON.parse(rsMuestra.content);
 					var predicateArray = {};
@@ -160,7 +160,7 @@ if (Meteor.isServer) {
 								var objectObj = {};
 								objectObj.objectEntity = {};
 								objectObj.dataType = el.o.datatype;
-								objectObj.sampleValue = el.o.value.substring(0,100);
+								objectObj.sampleValue = isNaN(el.o.value) ? el.o.value.substring(0,100):el.o.value;
 							
 								if(el.o.type === 'uri' && subject != el.o.value) {
 									
@@ -313,9 +313,13 @@ if (Meteor.isServer) {
 					}
 					if(updateGraph) {
 						Meteor.call('fetchGraphSchema', endpointURI, defaultGraph, function(error, result){
-							console.log("Graph Schema fetching process finished for endpoint: " + endpointURI + ' <' + defaultGraph + '>')
-							response.results = result;
-
+							if(error) {
+								console.log("Error ==>" + error);
+								response.statusCode = '500';
+								response.results = error;	
+							}else {
+								console.log("Graph Schema fetching process finished for endpoint: " + endpointURI + ' <' + defaultGraph + '>');
+							}
 						});
 
 						/*
