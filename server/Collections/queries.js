@@ -5,9 +5,9 @@
 // Declare the collection
 Queries = new Meteor.Collection("queries");
 // Publish the collection to the client
-/*Meteor.publish("queries", function() {
+Meteor.publish("queries", function() {
     return Queries.find();
-});*/
+});
     
 
 // Set permissions on this collection

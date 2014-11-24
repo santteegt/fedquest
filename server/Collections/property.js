@@ -5,10 +5,10 @@
 // Declare the collection
 Properties = new Meteor.Collection("properties");
 
-/*
-Meteor.publish("allproperties", function(endpointURI, PGraphURI){
-    return Properties.find({endpoint: endpointURI, graphURI: PGraphURI});
-});*/
+
+Meteor.publish("allproperties", function(){
+    return Properties.find();
+});
 // Publish the collection to the client
 //Meteor.publish("propertiesAll", function(endpointURI, graphURI) {
     //var array = Properties.find({endpoint: endpointURI, graphURI: graphURI}, {fields: {'subject.prefix': 0, 'subject.name': 0}}).fetch();

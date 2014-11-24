@@ -1,5 +1,12 @@
 
 if (Meteor.isClient) {
+
+  //Suscribe to Collections
+  Tracker.autorun(function () {
+    Meteor.subscribe("allproperties");
+    Meteor.subscribe("endpoints");
+    Meteor.subscribe("queries");
+  });
   
   this.App = {};
   this.Graphs = new Meteor.Collection("graphs");

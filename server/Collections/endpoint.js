@@ -5,9 +5,9 @@
 // Declare the collection
 Endpoints = new Meteor.Collection("endpoints");
 // Publish the collection to the client
-/*Meteor.publish("endpoints", function() {
+Meteor.publish("endpoints", function() {
     return Endpoints.find();
-});*/
+});
     
 
 // Set permissions on this collection
