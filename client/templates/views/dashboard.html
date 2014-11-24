@@ -15,7 +15,7 @@
                   <label for="graph-description">Description</label>
                   <textarea required class="form-control" rows="3" id="graph-description" placeholder="Query Description"></textarea>
                 </div>
-                <button type="button" class="btn btn-default btn-xs runQuery" data-toggle="tooltip" data-placement="down" title="Run Query" id="runQuery">
+                <button type="button" class="btn btn-default btn-xs runQuery" data-toggle="modal" data-target="#resultQuery" data-placement="down" title="Run Query" id="runQuery">
                   <span class="glyphicon glyphicon-play"></span>
                 </button>
                 <button type="button" class="btn btn-default btn-xs" title="Save Query" id="saveQuery">
@@ -293,6 +293,26 @@
                     {{/each}}
                   </tbody>
                 </table>
+              </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--Modal for Result Query -->
+      <div class="modal fade" id="resultQuery" tabindex="-1" role="dialog" aria-labelledby="Result Query" aria-hidden="true">
+        <div class="modal-dialog  modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title" id="myModalLabel">Result Query</h4>
+            </div>
+            
+              <div class="modal-body">
+                {{> reactiveTable collection=resultQuery settings=settings }}
               </div>
             
             <div class="modal-footer">
