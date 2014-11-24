@@ -702,23 +702,24 @@ this.DashboardView = Backbone.View.extend({
         console.log("entro show modal newEndpoint " + endpointEdit[0].graphURI);
         $('#newEndpoint #new-endpoint').val(endpointEdit[0].endpoint);
         $('#newEndpoint #new-endpoint-graph').val(endpointEdit[0].graphURI);
+        console.log("colorid" + endpointEdit[0].colorid);
         $('#newEndpoint #new-endpoint-color').val(endpointEdit[0].colorid);
         $('#newEndpoint #new-endpoint-identifier').val(endpointEdit[0].name);
         $('#newEndpoint #new-endpoint-desc').val(endpointEdit[0].description);
         $('#newEndpoint #new-endpoint-base').disable=endpointEdit[0].base;
         Session.set('endpointEdit',[]);
+      }else{
+        var endpoints = Session.get('endpoints');
+        if(endpoints && endpoints.length > 0) {
+          //colorId = '#'+Math.floor(Math.random()*16777215).toString(16);
+          divNode.find('#new-endpoint-base')[0].disabled=false;
+        } else {
+          //colorId = App.dashboard.defaultColor;
+          divNode.find('#new-endpoint-base')[0].checked=true;
+          divNode.find('#new-endpoint-base')[0].disabled=true;
+        }
+        divNode.find('#newEndpoint #new-endpoint-color').val(colorId);
       }
-      var endpoints = Session.get('endpoints');
-      if(endpoints && endpoints.length > 0) {
-        //colorId = '#'+Math.floor(Math.random()*16777215).toString(16);
-        divNode.find('#new-endpoint-base')[0].disabled=false;
-      } else {
-        //colorId = App.dashboard.defaultColor;
-        divNode.find('#new-endpoint-base')[0].checked=true;
-        divNode.find('#new-endpoint-base')[0].disabled=true;
-      }
-      divNode.find('#newEndpoint #new-endpoint-color').val(colorId);
-
     });
 
     divNode.find('#sparqlEditor').on('show.bs.modal', function(e) {
@@ -1019,18 +1020,19 @@ this.DashboardView = Backbone.View.extend({
     var endpointId = $(e.currentTarget).attr('data-endpoint-id');
     var endpointURI = $(e.currentTarget).attr('data-endpoint');
     var graphURI = $(e.currentTarget).attr('data-graphuri');
-    Meteor.call('deleteEndpoint', endpointId, endpointURI, graphURI, function(error, result) {
-      if(!error){
-        $('.top-right').notify({
-            message: { text: "Endpoint delete Success" },
-            type: 'success'
-        }).show();
+    $('div #dialogConfirm').modal();
+    $('#okDelete').on('click', function(event){
+      console.log('Delete endpointURI' + endpointURI);
+      Meteor.call('deleteEndpoint', endpointId, endpointURI, graphURI, function(error, result) {
+        if(!error){
+          $('.top-right').notify({
+              message: { text: "Endpoint delete Success" },
+              type: 'success'
+          }).show();
 
-      }
+        }
+      });
     });
-    console.log("delete Endpoint id:" + endpointId); 
-    console.log("endpoint:" + endpointURI); 
-    console.log("graph:" + graphURI);
   };
 
   }
