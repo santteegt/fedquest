@@ -2,13 +2,23 @@
 	<div class="col-xs-8 col-sm-7 col-sm-offset-2 main">
 	<!-- <div class="col-md-7 main" > -->
 		  <div class="navbar ">	
-			<div class="navbar-brand">DASHBOARD</div>
+			<div class="navbar-brand" style="padding: 8px 15px;">DASHBOARD</div>
 			<ul class="nav navbar-nav pull-right">
-			    <div class="btn paper-config" id="editQuery" title="Query editor"><i class="glyphicon glyphicon-edit icon"></i></div>
-				<div class="btn paper-config" id="clear" title="Clean dashboard"><i class="glyphicon glyphicon-trash icon"></i></div>
-				<div class="btn paper-config" id="open" title="Load JSON"><i class="glyphicon glyphicon-folder-open icon"></i></div>
-				<div class="btn paper-config" id="zoom-out" title="Zoom out"><i class="glyphicon glyphicon-zoom-out icon"></i></div>
-				<div class="btn paper-config" id="zoom-in" title="Zomm in"><i class="glyphicon glyphicon-zoom-in icon"></i></div>
+				<button type="button " class="btn btn-default paper-config" aria-label="Left Align" data-toggle="modal" data-target="#sparqlEditor" title="Query Editor">
+				  <span class="glyphicon glyphicon-edit icon" aria-hidden="true" ></span>
+				</button>
+				<button type="button " class="btn btn-default paper-config" aria-label="Left Align" id="clear" title="Clear dashboard">
+				  <span class="glyphicon glyphicon-trash icon" aria-hidden="true"></span>
+				</button>
+				<button type="button " class="btn btn-default paper-config" aria-label="Left Align" id="open" title="Load JSON">
+				  <span class="glyphicon glyphicon-folder-open icon" aria-hidden="true"></span>
+				</button>
+				<button type="button " class="btn btn-default paper-config" aria-label="Left Align" id="zoom-out" title="Zoom out">
+				  <span class="glyphicon glyphicon-zoom-out icon" aria-hidden="true"></span>
+				</button>
+				<button type="button " class="btn btn-default paper-config" aria-label="Left Align" id="zoom-in" title="Zoom in">
+				  <span class="glyphicon glyphicon-zoom-in icon" aria-hidden="true"></span>
+				</button>
 			</ul>
 		  </div>
 		  <div id="paper" class="paper" ondrop="App.fedQueryUtils.onDropEv(event)" ondragover="App.fedQueryUtils.allowDrop(event)"></div>

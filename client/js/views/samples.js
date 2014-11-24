@@ -1,5 +1,5 @@
 /*
-    View logic for the dashboard component
+    View logic for the query samples list component
  */
 this.SamplesView = Backbone.View.extend({
   tagName: "div",
@@ -11,14 +11,14 @@ this.SamplesView = Backbone.View.extend({
   initialize: function() {
     var me;
     me = this;
+    /*
     Tracker.autorun(function(){
-      //var endpoints = Endpoints.find({status: 'A'},{fields:{endpoint: 1, graphURI: 1}}).fetch();
       var queries = Queries.find().fetch();
       if(queries.length > 0) {
         Session.set('queries', queries);  
       }
       console.log("Queries Disponibles: " + queries.length);
-    });
+    });*/
 
   },
 

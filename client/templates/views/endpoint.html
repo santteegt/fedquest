@@ -1,4 +1,29 @@
 <template name="endpoint">
+	<div class="panel-group" id="accordion" style="text-align:center;">
+	    <div class="panel" style="border-color: {{colorid}}">
+	        <div class="panel-heading" style="background-color:#428bca; color:white;">
+	          <h4 class="panel-title">
+	            <a data-toggle="collapse" href="#rawnodes">Raw Nodes</a>
+	          </h4>
+	        </div>
+	        <div id="rawnodes" class="panel-collapse collapse in" style="padding-right: 0.5em">
+
+		          <div class="row" style="margin: 0 0 0 0">
+		          		<div class="col-xs-6 col-sm-4 col-md-3">
+			              <div class="entity raw" style="border-color: #428bca" onclick="openpopover(event)" onselectstart="return false;" draggable="true" ondragstart="App.fedQueryUtils.dragNode(event)" data-toggle="popover" data-placement="bottom" tabindex="0" data-trigger="focus" title="Descripción" data-content="Entity 1. Descrición: datos obtenidos a partir del rdfs:label" data-endpoint="" data-graphURI="" data-colorid="#428bca" data-entity="" data-label="s" data-raw="true">
+			                <p>Entity</p>
+			              </div>
+			            </div>
+
+			            <div class="col-xs-6 col-sm-4 col-md-3">
+			              <div class="property raw" style="border-color: #428bca" onclick="openpopover(event)" onselectstart="return false;" draggable="true" ondragstart="App.fedQueryUtils.dragNode(event)" data-toggle="popover" data-placement="bottom" tabindex="0" data-trigger="focus" title="Descripción" data-content="Property 1. Descrición: datos obtenidos a partir del rdfs:label" data-endpoint="" data-graphURI="" data-colorid="#428bca" data-property="" data-prefix="" data-label="o" data-raw="true">
+			                <p>property</p>
+			              </div>
+			            </div>
+		          </div>
+	        </div>
+        </div>
+    </div>
 	{{#each endpointEntity}}
 	<div class="panel-group" id="accordion" style="text-align:center;">
 	    <div class="panel" style="border-color: {{colorid}}">

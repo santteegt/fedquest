@@ -16,6 +16,7 @@ this.Router = Backbone.Router.extend({
   },
 
   index: function () {
+    new IndexView().render();
     console.log('Inicio Router index');
     $("div.main-ops").onepage_scroll({
       sectionContainer: "section",
@@ -34,17 +35,18 @@ this.Router = Backbone.Router.extend({
   },
 
   dashboard: function() {
-    this.disableOnepageScroll();
+    //this.disableOnepageScroll();
     console.log('entra a dashboard');
     new DashboardView({}).render();        
 
   },
   samples: function() {
-    this.disableOnepageScroll();
+    //this.disableOnepageScroll();
     console.log('entra a samples');
     new SamplesView().render();        
   },
-  dashboardParam: function(id){
+  dashboardParam: function(id) {
+      //this.disableOnepageScroll();
       //this.querieCurrent= Queries.find({_id: "99ECMMzYwHC9nLWov"}).fetch();//Queries.find({_id: id}).fetch();
         //var titulo = _.pluck(querieCurrent, 'title');
          //var m = JSON.stringify(this.querieCurrent);

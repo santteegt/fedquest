@@ -253,7 +253,8 @@ html {
       text-align: center;
     }
     .main-ops section.page2 {
-      background: #8BD4D4 url(back-phone.png) no-repeat center -150px ;
+      /*background: #8BD4D4 url(back-phone.png) no-repeat center -150px ;*/
+      background: #8BD4D4;
     }
     .main-ops section.page2 > img {
       position: absolute;
@@ -307,7 +308,8 @@ html {
     }
 
     .main-ops section.page3 {
-      background: #A6ED9B url(tilted-phone.png) no-repeat 156px -150px ;
+      /*background: #A6ED9B url(tilted-phone.png) no-repeat 156px -150px ;*/
+      background: #A6ED9B;
     }
     .main-ops section.page3 .page_container {
       overflow: hidden;

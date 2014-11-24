@@ -40,7 +40,6 @@ if (Meteor.isClient) {
         return Endpoints.find({status: 'A'}).fetch();
         }
   });
-  
 
   Template.endpoint.helpers({
       endpointEntity: function(){
@@ -88,7 +87,7 @@ if (Meteor.isClient) {
           response.endpointEntities = _.uniq(values, false, function(obj){return obj.fullName;});
           response.endpointProperties = entities;
           Session.set('entities', entities);*/
-          Session.set('graphs', response);
+          //Session.set('graphs', response);
         }
         //console.log(response);
         return response;

@@ -17,14 +17,12 @@ this.DashboardView = Backbone.View.extend({
     'click button': 'newEndpoint'
   },
 
-  sparqlEditor: function(e){
-    alert("click ok");
-  }, 
   /////////////////////////
   //Endpoint Registration//
   /////////////////////////
   newEndpoint: function(e) {
-    
+    $("#newEndpoint button[type='submit']").attr('disabled','')
+    $('#newEndpoint #loadingEndpoint img').show();
     var id = $('#newEndpoint #new-endpoint-identifier').val();
     var endpoint = $('#newEndpoint #new-endpoint').val();
     var graphURI = $('#newEndpoint #new-endpoint-graph').val();
@@ -34,9 +32,22 @@ this.DashboardView = Backbone.View.extend({
     //console.log('click en register' + id+endpoint+graphURI+description);
     e.preventDefault();
     Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, function (error, result) {
-        e.currentTarget.reset();
-        $('#newEndpoint').find('button.close[data-dismiss=modal]').click();
-        if(result) {
+      if(error) {
+        $('#newEndpoint #loadingEndpoint img').hide();
+        console.log("Error:"  + error);  
+        $('.top-right').notify({
+              message: { text: "Error" },
+              type: 'danger'
+        }).show();
+
+      } else {
+        if(result.statusCode != 200) {
+          $('#newEndpoint #loadingEndpoint img').hide();
+          $('.top-right').notify({
+                message: { text: result.msg },
+                type: 'danger'
+          }).show();
+        } else {
           console.log(result);
           console.log("Result if:" + result);
           console.log("statusCode" + _.pluck(error, 'statusCode'));
@@ -46,20 +57,18 @@ this.DashboardView = Backbone.View.extend({
           }
           console.log(counter);
           console.log(Endpoints.find({}).fetch());
+          $('#newEndpoint').find('button.close[data-dismiss=modal]').click();
+          e.currentTarget.reset();
+          $('#newEndpoint #loadingEndpoint img').hide();
           $('.top-right').notify({
-                message: { text: "Register Endpoint Success" },
+                message: { text: "Endpoint Registered Successful" },
                 type: 'success'
           }).show();
-          //console.log('Grafos ==>' + Graphs.findOne());
-        }else {
-          console.log("Error:"  + error);  
-          $('.top-right').notify({
-                message: { text: "Error" },
-                type: 'danger'
-          }).show();
+
         }
-        
-      });
+      }
+      $("#newEndpoint button[type='submit']").removeAttr('disabled');
+    });
   },
 
   /////////////////////////
@@ -68,6 +77,12 @@ this.DashboardView = Backbone.View.extend({
   initialize: function(id) {
     var me;
     me = this;
+    var query = Queries.find({_id: id.idSample}).fetch();
+    //jsonGraph =_.pluck(querie, 'jsonGraph');
+    Session.set('graphQuery', id.idSample); 
+    /*Session.set('querieTitle', _.pluck(querie, 'title')); 
+    Session.set('querieDescription', _.pluck(querie, 'description')); */
+    Session.set('endpointEdit', []);
     Tracker.autorun(function(){
       //var endpoints = Endpoints.find({status: 'A'},{fields:{endpoint: 1, graphURI: 1}}).fetch();
       var endpoints = Endpoints.find({status: 'A'}, {sort: {base: -1}}).fetch();
@@ -77,12 +92,6 @@ this.DashboardView = Backbone.View.extend({
         Session.set('endpoints', []);  
       }
       console.log("Endpoints Disponibles: " + endpoints.length);
-      var querie = Queries.find({_id: id.idSample}).fetch();
-      jsonGraph =_.pluck(querie, 'jsonGraph');
-      Session.set('querieJson', jsonGraph); 
-      Session.set('querieTitle', _.pluck(querie, 'title')); 
-      Session.set('querieDescription', _.pluck(querie, 'description')); 
-      Session.set('endpointEdit', []);
     });
 
     /////////////////////////
@@ -191,6 +200,7 @@ this.DashboardView = Backbone.View.extend({
         ev.dataTransfer.setData("predicate", ev.target.getAttribute('data-property'));
         ev.dataTransfer.setData("predicatePrefix", ev.target.getAttribute('data-prefix'));
         ev.dataTransfer.setData("propertyLabel", ev.target.getAttribute('data-label'));
+        ev.dataTransfer.setData("raw", ev.target.getAttribute('data-raw'));
 
         //how to get data from specific property
         //var predicate = ev.target.getAttribute('data-property');
@@ -219,6 +229,7 @@ this.DashboardView = Backbone.View.extend({
         var predicate = ev.dataTransfer.getData('predicate');
         var predicatePrefix = ev.dataTransfer.getData('predicatePrefix');
         var property = ev.dataTransfer.getData('propertyLabel');
+        var rawNode = ev.dataTransfer.getData('raw');
 
         var label = nodeClass == 'entity' ? property:'?'+property;
 
@@ -234,6 +245,7 @@ this.DashboardView = Backbone.View.extend({
         rect.set('graphuri', graphURI);
         rect.set('subject', subject);
         rect.set('predicate', predicate);
+        rect.set('rawNode', rawNode != "null");
         
         
 
@@ -258,12 +270,69 @@ this.DashboardView = Backbone.View.extend({
       this.hideMenu = function(control) {
               document.getElementById(control).style.display = 'none'; 
       };
+
       ///////////////////////////////////
       //New Link Instance between nodes//
       ///////////////////////////////////
+      this.createLink = function(elementBelow, cellView, nodeLabel) {
+        var link = new joint.dia.Link({
+                  source: { id: elementBelow.id },
+                  target: { id: cellView.model.id }
+                  
+        });
+
+        link.attr({
+          '.connection': { stroke: 'black' , 'stroke-width': '2'},
+          //'.marker-source': { fill: 'red', d: 'M 10 0 L 0 5 L 10 10 z' }, //flecha
+          '.marker-target': { fill: 'black', d: 'M 10 0 L 0 5 L 10 10 z' } //flecha
+        });
+
+        link.label(0, {position: 0.5, attrs: {text: {text: nodeLabel } } })
+         
+        //link.set('vertices', [{ x: 300, y: 60 }, { x: 400, y: 60 }, { x: 400, y: 20 }]);
+        link.set('connector', { name: 'smooth' });
+        //link.set('smooth', true);
+
+        App.dashboard.graph.addCells([link]);
+        
+        // Move the element a bit to the side.
+        //var offset = this.getnodeInsertionOffset();
+        //cellView.model.translate(offset, 100);
+        cellView.model.translate(200);
+        /*$('.top-right').notify({
+          message: { text: "Match sucess" },
+          type: 'success'
+        }).show();*/
+      };
+
+      /**
+      *endpointProperties 
+      *elementBelow source node
+      *cellView node requesting the link
+      */
       this.linkNodes = function(endpointProperties, elementBelow, cellView) {
         var predicate = cellView.model.get('predicate');
-        var predicateDef = _.find(endpointProperties.properties, function(obj){return obj.fullName == predicate});
+        var isRaw = cellView.model.get('rawNode');
+        if(isRaw) {
+          if(cellView.model.get('subject') == 'null') {
+            var nodeLabel = predicate.length > 0 ? predicate:'?p';
+            App.fedQueryUtils.createLink(elementBelow, cellView, nodeLabel);
+          } else { //It's entity node
+            $('.top-right').notify({
+              message: { text: "Match not allowed" },
+              type: 'danger'
+            }).show();
+          }
+          return isRaw;
+        }
+        if(!endpointProperties) { //parent node is raw
+          var targetEndpoint = cellView.model.get('endpoint')+'|'+cellView.model.get('graphuri');;
+          endpointProperties = Session.get(targetEndpoint);
+          
+
+        } /*else {*/
+        
+          var predicateDef = _.find(endpointProperties.properties, function(obj){return obj.fullName == predicate});
           
           var subjectSource = elementBelow.attributes.subject;
           var isCompatible;
@@ -295,44 +364,18 @@ this.DashboardView = Backbone.View.extend({
             }
 
             if(isCompatible) {
-                
-              var link = new joint.dia.Link({
-                  source: { id: elementBelow.id },
-                  target: { id: cellView.model.id }
-                  
-              });
-
-              link.attr({
-                '.connection': { stroke: 'black' , 'stroke-width': '2'},
-                //'.marker-source': { fill: 'red', d: 'M 10 0 L 0 5 L 10 10 z' }, //flecha
-                '.marker-target': { fill: 'black', d: 'M 10 0 L 0 5 L 10 10 z' } //flecha
-              });
-
-              link.label(0, {position: 0.5, attrs: {text: {text: predicateDef.prefix+':'+predicateDef.name } } })
-               
-              //link.set('vertices', [{ x: 300, y: 60 }, { x: 400, y: 60 }, { x: 400, y: 20 }]);
-              link.set('connector', { name: 'smooth' });
-              //link.set('smooth', true);
-
-              App.dashboard.graph.addCells([link]);
-              
-              // Move the element a bit to the side.
-              //var offset = this.getnodeInsertionOffset();
-              //cellView.model.translate(offset, 100);
-              cellView.model.translate(200);
-              $('.top-right').notify({
-                message: { text: "Match sucess" },
-                type: 'success'
-                }).show();
+              var nodeLabel = predicateDef.prefix+':'+predicateDef.name;
+              App.fedQueryUtils.createLink(elementBelow, cellView, nodeLabel);
             }else{
                cellView.model.translate(0,50); 
                $('.top-right').notify({
-                message: { text: "Match not permition" },
+                message: { text: "Match not allowed" },
                 type: 'danger'
                 }).show();
             }   
           }
           return isCompatible;
+        //}
       };
 
       /**
@@ -353,26 +396,35 @@ this.DashboardView = Backbone.View.extend({
             var _cid = childNode.id;
             var _cstype = childNode.subject;
             var _cptype = childNode.predicate;
+            var rawNode = childNode.rawNode;
             var endpointObj = _.find(endpointList, function(obj){return obj.endpoint+'|'+obj.graphURI == childNode.endpoint+'|'+childNode.graphuri});
+            var endpointIdprefix = rawNode ? 'rawNode':endpointObj.name;
             var _cfield = (childNode.attrs.text.text == childNode.attrs.text.label ? //no value specified
-              childNode.attrs.text.text:childNode.attrs.text.label) + '_' + endpointObj.name;
+            childNode.attrs.text.text:childNode.attrs.text.label) + '_' + endpointIdprefix;
             var _cfieldValue = childNode.attrs.text.text;
             var applyRegexFilter = childNode.attrs.text.regex == '1';
-
             //value starts with question mark (?) and its predicate
             if(_cfieldValue.match('^[?]') && _cptype != 'null') {
-              _whereClause += "\n" + _entityField + ' <' + _cptype + '> ' + _cfield + ' .';
+              _whereClause += "\n" + _entityField 
+                            + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
+                            + _cfield + ' .';
             } else { //node value specified
               if(applyRegexFilter) {
-                _whereClause += "\n" + _entityField + ' <' + _cptype + '> ?' + _cfield + ' .';
+                _whereClause += "\n" + _entityField
+                              + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
+                              + _cfield + ' .';
                 _whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'") .';
               } else {
                 var endpointGraph =Session.get(endpoint);
-                var property = _.find(endpointGraph.properties,function(obj){return obj.fullName == _cptype});
-                var propertySubject = _.find(property.subjects, function(obj){return obj.fullName == _entityType});
-                var index = _.indexOf(property.subjects, propertySubject);
-                var dataType = property.objectTypes[index].dataType;
-                _whereClause += "\n" + _entityField + ' <' + _cptype + '> "' + _cfieldValue + '"^^' + dataType + ' .';
+                var property = rawNode ? undefined:_.find(endpointGraph.properties,function(obj){return obj.fullName == _cptype});
+                var propertySubject = rawNode ? undefined:_.find(property.subjects, function(obj){return obj.fullName == _entityType});
+                var index = rawNode ? undefined:_.indexOf(property.subjects, propertySubject);
+                var dataType = rawNode ? '':property.objectTypes[index].dataType; //rawNode case waiting for development
+                _whereClause += rawNode ? ("\n" + _entityField
+                                          + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
+                                          + (_cfieldValue.match('^http')?'<'+_cfieldValue+'>':'"'+_cfieldValue+'"') 
+                                          + ' .')
+                                : "\n" + _entityField + ' <' + _cptype + '> "' + _cfieldValue + '"^^' + dataType + ' .';
               }
             }
             var childObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _cid});
@@ -410,8 +462,15 @@ this.DashboardView = Backbone.View.extend({
               if(childNode.attrs.text.resultSet == '1' && childNode.attrs.text.text == childNode.attrs.text.label) { //if field has to be shown on result
                 var endpointList = Session.get('endpoints');
                 var endpointObj = _.find(endpointList, function(obj){return obj.endpoint+'|'+obj.graphURI == childNode.endpoint+'|'+childNode.graphuri});
+                if(childNode.rawNode) {
+                  var predicate = _.find(linkNodes, function(obj){return obj.target.id == childId});
+                  if(predicate.labels[0].attrs.text.text.match('^[?]')) {//predicate as variable
+                    fields.push(predicate.labels[0].attrs.text.text + '_rawNode');    
+                  }
+                  fields.push(childNode.attrs.text.text + '_rawNode');  
+                }
                 //includes fields belonging to the current endpoint
-                if(endpoint == endpointObj.endpoint+'|'+endpointObj.graphURI) {
+                else if(endpoint == endpointObj.endpoint+'|'+endpointObj.graphURI) {
                   fields.push(childNode.attrs.text.text + '_' + endpointObj.name);  
                 }
               }
@@ -420,74 +479,104 @@ this.DashboardView = Backbone.View.extend({
           });
           return fields;
       };
+
+      ///////////////////////////////////
+      //////// Node to SPARQL Parser/////
+      ///////////////////////////////////
+      this.graphToSPARQL = function(warning) {
+        var result = undefined;
+        if (App.dashboard.graph.toJSON().cells.length == 0) {
+          $('.top-right').notify({
+            message: { text: "The Query Graph must have at least 1 triple" },
+            type: warning?'warning':'danger'
+            }).show();
+        } else {
+          var jsonQuery = App.dashboard.graph.toJSON();
+          var queryNodes = _.filter(jsonQuery.cells,function(obj){return obj.type=='html.Element'});
+          var rootNode = queryNodes[0];
+          var linkNodes = _.filter(jsonQuery.cells,function(obj){return obj.type=='link'});
+          var endpoints = Session.get('endpoints');
+          var queryCount = 0;
+          var queryList = []; 
+          if(rootNode.endpoint == '') {
+            var endpointBase = endpoints[0];
+            rootNode.endpoint = endpointBase.endpoint;
+            rootNode.graphuri = endpointBase.graphURI; 
+          }
+          _.each(endpoints, function(objEndpoint) {
+            var fields = [];
+            var triples = [];
+            var endpoint = objEndpoint.endpoint + '|' + objEndpoint.graphURI;
+            var endpointNodes = _.filter(queryNodes, function(node){return node.endpoint+'|'+node.graphuri == endpoint;});
+            var entities = _.filter(endpointNodes, function(node){return node.subject != 'null';});
+            //var query = squel.select().from('<'+objEndpoint.graphURI+'>');
+            var query = {endpoint: '<'+objEndpoint.endpoint+'>', graphURI: '<'+objEndpoint.graphURI+'>', base: objEndpoint.base};          
+            query.fields = [];
+            query.from = '<'+objEndpoint.graphURI+'>';
+            query.where = [];
+            //var query = 'select ';
+            var _whereClause = "";
+            //nodes with subject value
+            _.each(entities, function(obj) {
+              var _id = obj.id;
+              var _type = obj.subject;
+              var _entityField = (obj.rawNode ? '':'?') + obj.attrs.text.text;
+              //query.field(_entityField);
+              _entityField += '_' + objEndpoint.name;
+              fields.push(_entityField);
+              _whereClause += obj.rawNode ? '':_whereClause + "\n" + _entityField + ' a <' + _type + '> .';
+              var entityObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _id});
+
+              //get fields
+              var childsId =_.pluck( _.pluck(entityObjcs, 'target') ,'id' );
+              fields = App.fedQueryUtils.parseQueryFields(endpoint, queryNodes, linkNodes, childsId, fields);
+              query.fields = _.union(query.fields, fields);
+              //var strfields = fields.toString().replace(/,/g, ' ');
+              //query.field(strfields);
+              //query += strfields + ' from <'+objEndpoint.graphURI+'> ';
+              
+              
+
+              ////////////
+              
+              //get conditions
+              _whereClause = App.fedQueryUtils.parseChilds(endpoint, queryNodes, _type, _entityField, entityObjcs, linkNodes, _whereClause);
+              query.where.push(_whereClause);
+              //query.where(_whereClause);
+              //query += 'where {' + _whereClause + '}';
+              ////////////////
+            });
+            queryList[queryCount++] = query;
+            //console.log(query.toString());
+            /*Meteor.call('doQuery', jsonQuery, function(error, result){
+
+            });*/
+          });
+          var globalVars = _.pluck(queryList, 'fields').toString().replace(/,/g, ' ');
+          var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/,/g, '\n');
+          for(var i=1; i<queryList.length; i++) {
+            var queryEndpoint = queryList[i];
+            var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
+                                            + ' \nFROM ' + queryEndpoint.graphURI + '{';
+            for(var o=0; o<queryEndpoint.where.length; o++) {
+              queryService += queryEndpoint.where[o];
+            }
+            queryService += '}\n}'
+            stringSPARQL += '\n' + queryService;
+          }
+          stringSPARQL += '\n}';
+          result = stringSPARQL;
+        }
+        return result;
+      };
     }
     App.fedQueryUtils = new fedQueryUtils(this.graph);
 
   },
-
-  editQuery: function(e) {
-    
-    //document.getElementById('div #sparqlEditor').value = '';
-    $('div #sparqlEditor').on('show.bs.modal', function(e){
-          console.log('modalEdit open event');
-          var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-            mode: "application/x-sparql-query",
-            matchBrackets: true
-          });
-      });
-    $('div #sparqlEditor').modal();
-   
-
-  /* $('div #sparqlEditor').on('hidden.bs.modal', function(e){
-          console.log('modalEdit close event');
-          e.preventDefault();
-    });*/
-
-    
-    //
-    /*
-    var viewEdit = new SparqlEditorView();
-      
-      
-       var modalEdit = new Backbone.BootstrapModal({
-        animate: true,
-        content: viewEdit
-      });
-      
-      modalEdit.open();
-      
-      modalEdit.on('shown',function(){
-        console.log('modalEdit open event');
-        var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-          mode: "application/x-sparql-query",
-          matchBrackets: true
-          }); 
-      });*/
-      
-      //modalEdit.on('ok', function() {
-        //cellView.model.attr('text/text', $("#filtro").val());
-        //alert('ok');
-      //});
-  },
   
-  ejecutar: function(e){
-    var aux= graph.toJSON();
-      var f=".marker-target";
-      var count = 0;
-      for(item in aux.cells) {
-        console.log('variable ' + aux.cells[count].attrs);
-        if(aux.cells.hasOwnProperty(item)) {
-        count++;
-        }
-        delete aux.cells[count-1].angle;
-      }
-      console.log('leght ' + count);
-      
-      console.log('despues ' + JSON.stringify(aux) );
-       var m = JSON.stringify(aux);
-       alert('ToJson:' + m);
-  },
-  
+  //////////////////////////////////
+  // CLear dashboard for New query//
+  //////////////////////////////////
   clearDashboard: function(e){
     App.dashboard.graph.clear();
     $('div #saveQuery').removeAttr('disabled');
@@ -532,7 +621,9 @@ this.DashboardView = Backbone.View.extend({
     e.data.fromJSON(JSON.parse(jsonstring));
   },
 
-  
+  ///////////////////////////////////////////////
+  //Establish node var as part of the resultset//
+  ///////////////////////////////////////////////
   changeResultSet: function(){
 
     if (cellViewRight) {
@@ -541,14 +632,14 @@ this.DashboardView = Backbone.View.extend({
           cellViewRight.model.attr('text/text-decoration','none');
           cellViewRight.model.attr('text/resultSet',0);
           $('.top-right').notify({
-            message: { text: cellViewRight.model.attr('text/text') +' no es parte del ResultSet' },
-            type: 'danger'
+            message: { text: cellViewRight.model.attr('text/text') +' not considered as part of the ResultSet' },
+            type: 'warning'
             }).show(); 
          }else{
           cellViewRight.model.attr('text/text-decoration','underline');
           cellViewRight.model.attr('text/resultSet',1);
           $('.top-right').notify({
-            message: { text: cellViewRight.model.attr('text/text')+' considerado en el ResultSet' },
+            message: { text: cellViewRight.model.attr('text/text')+' considered as part of the ResultSet' },
             }).show();
          }
     }
@@ -562,18 +653,28 @@ this.DashboardView = Backbone.View.extend({
     Blaze.render(Template.dashboard, $('#sparql-content')[0]);
     this.graph = new joint.dia.Graph;
     this.paper = new joint.dia.Paper({ el: $('#paper'), width: $('#paper').width(), height: $('#paper').height(), gridSize: 10, model: this.graph });
-    this.setEvents($('#sparql-content'));
-    this.renderUtils(this.graph);
     App.dashboard = {graph: this.graph, paper: this.paper, graphScale: this.graphScale, defaultColor: '#428bca'};
-    Tracker.autorun(function(){
+    this.renderUtils(this.graph);
+    this.setEvents($('#sparql-content'));
+    /*Tracker.autorun(function(){
       var querieJson = Session.get('querieJson'); 
       var querieTitle = Session.get('querieTitle'); 
       var querieDescription = Session.get('querieDescription'); 
        if(querieJson.length > 0) {
-        //Cargar el jsonGraph al graph
         App.dashboard.graph.fromJSON(JSON.parse(querieJson));
         $('#graph-title').val(querieTitle);
         $('#graph-description').val(querieDescription);
+        $('#saveQuery').prop('disabled', true);
+      }
+    });*/
+    Tracker.autorun(function() {
+      var queryId = Session.get('graphQuery');
+      var query = Queries.findOne({_id: queryId});
+      if(query) {
+        $('#graph-title').val(query.title);
+        $('#graph-description').val(query.description);
+        App.dashboard.graph.fromJSON(JSON.parse(query.jsonGraph));
+        App.dashboard.sparqlEditor.setValue(query.sparql);
         $('#saveQuery').prop('disabled', true);
       }
     });
@@ -586,8 +687,16 @@ this.DashboardView = Backbone.View.extend({
   /////////////////////////////
   setEvents: function(divNode) {
 
+    App.dashboard.sparqlEditor = CodeMirror.fromTextArea($('#sparqlEditor #code')[0], {
+        mode: "application/x-sparql-query",
+        matchBrackets: true,
+        lineNumbers: true,
+        smartIndent: true,
+        electricChars: true
+    });
+
     divNode.find('#newEndpoint').on('show.bs.modal', function(e){
-      var colorId;
+      var colorId = '#'+Math.floor(Math.random()*16777215).toString(16);
       var endpointEdit = Session.get('endpointEdit');
       if(endpointEdit.length > 0) {
         console.log("entro show modal newEndpoint " + endpointEdit[0].graphURI);
@@ -601,15 +710,23 @@ this.DashboardView = Backbone.View.extend({
       }
       var endpoints = Session.get('endpoints');
       if(endpoints && endpoints.length > 0) {
-        colorId = '#'+Math.floor(Math.random()*16777215).toString(16);
+        //colorId = '#'+Math.floor(Math.random()*16777215).toString(16);
         divNode.find('#new-endpoint-base')[0].disabled=false;
       } else {
-        colorId = App.dashboard.defaultColor;
+        //colorId = App.dashboard.defaultColor;
         divNode.find('#new-endpoint-base')[0].checked=true;
         divNode.find('#new-endpoint-base')[0].disabled=true;
       }
       divNode.find('#newEndpoint #new-endpoint-color').val(colorId);
 
+    });
+
+    divNode.find('#sparqlEditor').on('show.bs.modal', function(e) {
+      var sparql = App.fedQueryUtils.graphToSPARQL('warning');
+      if(sparql) {
+        App.dashboard.sparqlEditor.setValue(sparql);
+      }
+      //App.dashboard.sparqlEditor.refresh();
     });
 
     divNode.find('#newEndpoint').on('hide.bs.modal', function(ev) {
@@ -623,8 +740,6 @@ this.DashboardView = Backbone.View.extend({
     });
     
     divNode.find('#newEndpoint #new-endpoint-form').submit(this.newEndpoint);
-    divNode.find('#sparqlEditor #sparqlEditor-form').submit(this.sparqlEditor);
-    $("div.navbar #editQuery").on('click', this.editQuery);
     $("div.navbar #open").on('click', this.graph, this.openGraph);
     $("div.navbar #zoom-out").on('click', this.zoomOut);
     $("div.navbar #zoom-in").on('click', this.zoomIn);
@@ -646,53 +761,12 @@ this.DashboardView = Backbone.View.extend({
     /////////////
     //Run Query//
     /////////////
-    $('div #runQuery').on('click', function(ev) {
-      if (App.dashboard.graph.toJSON().cells.length == 0) {
-        $('.top-right').notify({
-          message: { text: "The Query Graph must have at least 1 triple" },
-          type: 'danger'
-          }).show();
-      } else {
-        var jsonQuery = App.dashboard.graph.toJSON();
-        var queryNodes = _.filter(jsonQuery.cells,function(obj){return obj.type=='html.Element'});
-        var linkNodes = _.filter(jsonQuery.cells,function(obj){return obj.type=='link'});
-        var endpoints = Session.get('endpoints');
-        _.each(endpoints, function(objEndpoint) {
-          var fields = [];
-          var triples = [];
-          var endpoint = objEndpoint.endpoint + '|' + objEndpoint.graphURI;
-          var endpointNodes = _.filter(queryNodes, function(node){return node.endpoint+'|'+node.graphuri == endpoint;});
-          var entities = _.filter(endpointNodes, function(node){return node.subject != 'null';});
-          var query = squel.select().from('<'+objEndpoint.graphURI+'>');
-          var _whereClause = "";
-          //nodes with subject value
-          _.each(entities, function(obj){
-            var _id = obj.id;
-            var _type = obj.subject;
-            var _entityField = '?' + obj.attrs.text.text;
-            //query.field(_entityField);
-            _entityField += '_' + objEndpoint.name;
-            fields.push(_entityField);
-            _whereClause += _whereClause + "\n" + _entityField + ' a <' + _type + '> .';
-            var entityObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _id});
-
-            //get fields
-            var childsId =_.pluck( _.pluck(entityObjcs, 'target') ,'id' );
-            fields = App.fedQueryUtils.parseQueryFields(endpoint, queryNodes, linkNodes, childsId, fields);
-            var strfields = fields.toString().replace(/,/g, ' ');
-            query.field(strfields);
-
-            ////////////
-            
-            //get conditions
-            _whereClause = App.fedQueryUtils.parseChilds(endpoint, queryNodes, _type, _entityField, entityObjcs, linkNodes, _whereClause);
-            query.where(_whereClause);
-            ////////////////
-          });
-          console.log(query.toString());
-          /*Meteor.call('doQuery', jsonQuery, function(error, result){
-
-          });*/
+    $('button.runQuery').on('click', function(ev) {
+      //if id user is running sparql query from sentence editor
+      var sparql = $(ev.target).attr('id') ? App.dashboard.sparqlEditor.getValue():App.fedQueryUtils.graphToSPARQL();
+      if(sparql && sparql.length > 0) {
+        Meteor.call('validateSPARQL', sparql, function(error, result){
+          console.log(result);
         });
       }
     });
@@ -709,6 +783,12 @@ this.DashboardView = Backbone.View.extend({
       //at least one triple
       errorMessage = request.jsonQuery.cells.length == 0 ? "The Query Graph must have at least 1 triple":"";
       errorMessage = request.title == null || request.title == "" ? "Title is required":errorMessage;
+      var sparql;
+      try {
+        request.sparql = App.fedQueryUtils.graphToSPARQL();
+      }catch(e) {
+        errorMessage = e.toString();
+      }
       if (errorMessage.length > 0) {
         $('.top-right').notify({
           message: { text: errorMessage },
@@ -718,8 +798,8 @@ this.DashboardView = Backbone.View.extend({
         var result = Meteor.call('saveQuery', request, function(error, result) {
           $('div #saveQuery').attr('disabled','true');
           $('.top-right').notify({
-            message: { text: "Save query Success" },
-            type: 'success'
+            message: { text: result.statusCode == 200 ?"Query saved Successful":result.msg },
+            type: result.statusCode == 200 ?'success':'danger'
           }).show();
         });
         
@@ -749,7 +829,6 @@ this.DashboardView = Backbone.View.extend({
       }
     });
 
-    // Control de sobreponer un elemento sobre otro para crear el enlace.
     ///////////////////////////////////
     //new Link instance between Nodes//
     ///////////////////////////////////
@@ -781,44 +860,121 @@ this.DashboardView = Backbone.View.extend({
         }
     });
 
+    ///////////////////////////////////////////
+    ///////Submit raw node value edition///////
+    //delegate functionality to hide.bs.modal//
+    ///////////////////////////////////////////
+    $('div #rawnodeform').submit(function(ev) {
+      ev.preventDefault();
+      $('div #rawnodeValue').find('button.close[data-dismiss=modal]').click();
+    });
+
     ////////////////////////////////////////
     //Opening modal for node value edition//
     ////////////////////////////////////////
     this.paper.on('cell:pointerdblclick', function(cellView, evt, x, y) { 
       //if(cellView.model.get('predicate') != 'null') {
-        var label = cellView.model.attr('text/text');
-        $('div #nodeValue #node-value').val(label.match('^[?]')?'':label);
-        $('div #nodeValue').modal({data: cellView});
-        $('div #nodeValue').on('show.bs.modal', function(e){
-            var regex = cellView.model.attr('text/regex');
-            console.log('nodeValue open event ' + regex); 
+        var rawNode = cellView.model.attributes.rawNode;
+        if(rawNode) {
+          
+          $('div #rawnodeValue').on('show.bs.modal', function(e){
+            var cellViewModel = App.dashboard.graph.getCell(cellView.model.id);
+            $('div #rawnodeValue #rawnode-uri').val('');
+            $('div #rawnodeValue #rawnode-value').val('');
+            document.getElementById("rawnode-checkRegex").checked = false;
+
+
+            if(cellViewModel.attributes.subject != "null") { //entity raw node
+              //$('div #rawnodeValue #rawnode-value').removeAttr('required');
+              if(cellViewModel.attributes.subject == '') {
+                $('div #rawnodeValue #rawnode-uri').attr('placeholder','Entity URI');
+                $('div #rawnodeValue .rawnode-group').hide();
+                $('div #rawnodeValue .checkbox').hide();
+              } else  {
+                $('div #rawnodeValue #rawnode-uri').val(cellViewModel.attributes.subject);
+                $('div #rawnodeValue .rawnode-group').hide();
+                $('div #rawnodeValue .checkbox').hide();
+              }
+            }
+            if(cellViewModel.attributes.predicate != "null") { //property raw node
+              //$('div #rawnodeValue #rawnode-value').attr('required','');
+              if(cellViewModel.attributes.predicate == '') {
+                $('div #rawnodeValue #rawnode-uri').attr('placeholder','Predicate URI');
+                $('div #rawnodeValue .rawnode-group').show();
+                $('div #rawnodeValue .checkbox').show();
+              } else {
+                $('div #rawnodeValue #rawnode-uri').val(cellViewModel.attributes.predicate);
+                $('div #rawnodeValue .rawnode-group').show();
+                $('div #rawnodeValue .checkbox').show();
+                $('div #rawnodeValue #rawnode-value').val(cellViewModel.attr('text/text'));
+                var regex = cellViewModel.attr('text/regex');
+                var checkbox = document.getElementById("rawnode-checkRegex");
+                checkbox.checked = regex == 1;
+              }
+            }
+            $('div #rawnodeValue').unbind('show.bs.modal');
+          });
+
+          $('div #rawnodeValue').on('hide.bs.modal', function(ev) {
+            var cellViewModel = App.dashboard.graph.getCell(cellView.model.id);
+            if(cellViewModel.attributes.subject != "null") { //entity raw node
+              cellViewModel.attributes.subject = $('div #rawnodeValue #rawnode-uri').val();
+              cellViewModel.attr('text/text','Entity X');
+            } 
+            if(cellViewModel.attributes.predicate != "null") {
+              cellViewModel.attributes.predicate = $('div #rawnodeValue #rawnode-uri').val();
+              var jsonGraph = App.dashboard.graph.toJSON();
+              var linkNodes = _.filter(jsonGraph.cells,function(obj){return obj.type=='link'});
+              var link = _.find(linkNodes, function(obj){return obj.target.id == cellViewModel.id});
+              if(link) {
+                App.dashboard.graph.getCell(link.id).label(0,{attrs:{text: {text: '<' + $('div #rawnodeValue #rawnode-uri').val() + '>'}}});
+              }
+              var checkbox = document.getElementById("rawnode-checkRegex");
+              cellViewModel.attr('text/regex', checkbox.checked?1:0);
+              var objectValue = $('div #rawnodeValue #rawnode-value').val();
+              if( objectValue.length > 0 ) {
+                cellViewModel.attr('text/text', objectValue );
+              }
+            }
+            $('div #rawnodeValue').unbind('hide.bs.modal');
+          });
+          $('div #rawnodeValue').modal();
+        } else { //normal node
+
+          var label = cellView.model.attr('text/text');
+          $('div #nodeValue #node-value').val(label.match('^[?]')?'':label);
+          $('div #nodeValue').on('show.bs.modal', function(e){
+              var regex = cellView.model.attr('text/regex');
+              console.log('nodeValue open event ' + regex); 
+              var checkbox = document.getElementById("checkRegex");
+              if(regex == 1) {
+                checkbox.checked = true;
+              }else {
+                checkbox.checked = false;
+              }
+              console.log('checkRegex  ' + checkbox.checked); 
+              //document.getElementById("checkRegex").checked = 'checked';            
+          });
+          $('div #nodeValue').on('hide.bs.modal', function(ev) {
+            //en el SAVE 
             var checkbox = document.getElementById("checkRegex");
-            if(regex == 1) {
-              checkbox.checked = true;
-            }else {
-              checkbox.checked = false;
+            if(checkbox.checked) {
+               cellView.model.attr('text/regex', 1);
+               console.log('check true' + cellView.model.attr('text/regex'));
+              }
+              else {
+               cellView.model.attr('text/regex', 0);
+               console.log('check false' + cellView.model.attr('text/regex'));
+              }  
+             //SAVE   
+            if( $('div #nodeValue #node-value').val().length > 0 ) {
+              console.log(cellView);
+              cellView.model.attr('text/text', $('div #nodeValue #node-value').val() );
+              $('div #nodeValue').unbind('hide.bs.modal');
             }
-            console.log('checkRegex  ' + checkbox.checked); 
-            //document.getElementById("checkRegex").checked = 'checked';            
-        });
-        $('div #nodeValue').on('hide.bs.modal', function(ev) {
-          //en el SAVE 
-          var checkbox = document.getElementById("checkRegex");
-          if(checkbox.checked) {
-             cellView.model.attr('text/regex', 1);
-             console.log('check true' + cellView.model.attr('text/regex'));
-            }
-            else {
-             cellView.model.attr('text/regex', 0);
-             console.log('check false' + cellView.model.attr('text/regex'));
-            }  
-           //SAVE   
-          if( $('div #nodeValue #node-value').val().length > 0 ) {
-            console.log(cellView);
-            cellView.model.attr('text/text', $('div #nodeValue #node-value').val() );
-            $('div #nodeValue').unbind('hide.bs.modal');
-          }
-        });
+          });
+          $('div #nodeValue').modal();
+        }
       /*}else {
           $('.top-right').notify({
             message: { text: "Not is posible change text to entities" },
