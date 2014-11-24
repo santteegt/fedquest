@@ -34,7 +34,6 @@ this.DashboardView = Backbone.View.extend({
     Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, function (error, result) {
       if(error) {
         $('#newEndpoint #loadingEndpoint img').hide();
-        console.log("Error:"  + error);  
         $('.top-right').notify({
               message: { text: "Error" },
               type: 'danger'
@@ -48,15 +47,10 @@ this.DashboardView = Backbone.View.extend({
                 type: 'danger'
           }).show();
         } else {
-          console.log(result);
-          console.log("Result if:" + result);
-          console.log("statusCode" + _.pluck(error, 'statusCode'));
           var counter = 0;
           for(var x in result) {
             counter++;
           }
-          console.log(counter);
-          console.log(Endpoints.find({}).fetch());
           $('#newEndpoint').find('button.close[data-dismiss=modal]').click();
           e.currentTarget.reset();
           $('#newEndpoint #loadingEndpoint img').hide();
@@ -424,7 +418,7 @@ this.DashboardView = Backbone.View.extend({
                                           + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
                                           + (_cfieldValue.match('^http')?'<'+_cfieldValue+'>':'"'+_cfieldValue+'"') 
                                           + ' .')
-                                : "\n" + _entityField + ' <' + _cptype + '> "' + _cfieldValue + '"^^' + dataType + ' .';
+                                : "\n" + _entityField + ' <' + _cptype + '> "' + _cfieldValue + '"^^<' + dataType + '> .';
               }
             }
             var childObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _cid});
@@ -553,7 +547,7 @@ this.DashboardView = Backbone.View.extend({
             });*/
           });
           var globalVars = _.pluck(queryList, 'fields').toString().replace(/,/g, ' ');
-          var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/,/g, '\n');
+          var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
           for(var i=1; i<queryList.length; i++) {
             var queryEndpoint = queryList[i];
             var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
@@ -567,6 +561,7 @@ this.DashboardView = Backbone.View.extend({
           stringSPARQL += '\n}';
           result = stringSPARQL;
         }
+        //console.log(result);
         return result;
       };
     }
@@ -699,10 +694,8 @@ this.DashboardView = Backbone.View.extend({
       var colorId = '#'+Math.floor(Math.random()*16777215).toString(16);
       var endpointEdit = Session.get('endpointEdit');
       if(endpointEdit.length > 0) {
-        console.log("entro show modal newEndpoint " + endpointEdit[0].graphURI);
         $('#newEndpoint #new-endpoint').val(endpointEdit[0].endpoint);
         $('#newEndpoint #new-endpoint-graph').val(endpointEdit[0].graphURI);
-        console.log("colorid" + endpointEdit[0].colorid);
         $('#newEndpoint #new-endpoint-color').val(endpointEdit[0].colorid);
         $('#newEndpoint #new-endpoint-identifier').val(endpointEdit[0].name);
         $('#newEndpoint #new-endpoint-desc').val(endpointEdit[0].description);
@@ -751,7 +744,6 @@ this.DashboardView = Backbone.View.extend({
     //Update base endpoint from list//
     //////////////////////////////////
     $('#availableEndpoint .base-endpoint').on('click',function(e) {
-      console.log('entra');
       var endpoint = $(e.currentTarget).attr('data-endpoint');
       var graphURI = $(e.currentTarget).attr('data-graphuri');
       Meteor.call('updateBaseEndpoint', endpoint, graphURI, function(error, result){
@@ -766,10 +758,23 @@ this.DashboardView = Backbone.View.extend({
       //if id user is running sparql query from sentence editor
       var sparql = $(ev.target).attr('id') ? App.dashboard.sparqlEditor.getValue():App.fedQueryUtils.graphToSPARQL();
       if(sparql && sparql.length > 0) {
-        Meteor.call('validateSPARQL', sparql, function(error, result){
-          console.log(result);
+        var jsonRequest = {"sparql": sparql};
+        Meteor.call('doQuery', jsonRequest, function(error, result) {
+          if(result.statusCode != 200) {
+            console.log(result.stack);
+            var message = result.msg + (result.stack ? (': ' + result.stack.substring(0, 30) + '...'):'');
+            $('.top-right').notify({
+              message: { text: message },
+              type: 'danger'
+            }).show();
+          }
+          if(result.resultSet) {
+            $('#resultQuery').modal();
+          }
+          
         });
       }
+
     });
 
     //////////////////
@@ -946,14 +951,12 @@ this.DashboardView = Backbone.View.extend({
           $('div #nodeValue #node-value').val(label.match('^[?]')?'':label);
           $('div #nodeValue').on('show.bs.modal', function(e){
               var regex = cellView.model.attr('text/regex');
-              console.log('nodeValue open event ' + regex); 
               var checkbox = document.getElementById("checkRegex");
               if(regex == 1) {
                 checkbox.checked = true;
               }else {
                 checkbox.checked = false;
               }
-              console.log('checkRegex  ' + checkbox.checked); 
               //document.getElementById("checkRegex").checked = 'checked';            
           });
           $('div #nodeValue').on('hide.bs.modal', function(ev) {
@@ -961,15 +964,12 @@ this.DashboardView = Backbone.View.extend({
             var checkbox = document.getElementById("checkRegex");
             if(checkbox.checked) {
                cellView.model.attr('text/regex', 1);
-               console.log('check true' + cellView.model.attr('text/regex'));
               }
               else {
                cellView.model.attr('text/regex', 0);
-               console.log('check false' + cellView.model.attr('text/regex'));
               }  
              //SAVE   
             if( $('div #nodeValue #node-value').val().length > 0 ) {
-              console.log(cellView);
               cellView.model.attr('text/text', $('div #nodeValue #node-value').val() );
               $('div #nodeValue').unbind('hide.bs.modal');
             }
@@ -1020,20 +1020,27 @@ this.DashboardView = Backbone.View.extend({
     var endpointId = $(e.currentTarget).attr('data-endpoint-id');
     var endpointURI = $(e.currentTarget).attr('data-endpoint');
     var graphURI = $(e.currentTarget).attr('data-graphuri');
+    $('#dialogConfirm #okDelete').attr('data-endpointId', endpointId);
+    $('#dialogConfirm #okDelete').attr('data-endpointURI', endpointURI);
+    $('#dialogConfirm #okDelete').attr('data-graphURI', graphURI);
     $('div #dialogConfirm').modal();
-    $('#okDelete').on('click', function(event){
-      console.log('Delete endpointURI' + endpointURI);
-      Meteor.call('deleteEndpoint', endpointId, endpointURI, graphURI, function(error, result) {
-        if(!error){
-          $('.top-right').notify({
-              message: { text: "Endpoint delete Success" },
-              type: 'success'
-          }).show();
-
-        }
-      });
-    });
   };
 
-  }
+  confirmEndpointDelete = function(ev) {
+    console.log('entra delete');
+    var endpointId = $('#dialogConfirm #okDelete').attr('data-endpointId');
+    var endpointURI = $('#dialogConfirm #okDelete').attr('data-endpointURI');
+    var graphURI = $('#dialogConfirm #okDelete').attr('data-graphURI');
+    Meteor.call('deleteEndpoint', endpointId, endpointURI, graphURI, function(error, result) {
+      if(!error){
+        $('.top-right').notify({
+            message: { text: "Endpoint delete Successful" },
+            type: 'success'
+        }).show();
+      }
+    });
+
+  };
+}
+
 });
