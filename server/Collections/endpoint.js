@@ -37,10 +37,12 @@ Meteor.startup(function (){
         console.log('insertanto Endpoint de ejemplo');
         Endpoints.insert(
             {
+                colorid: "#FFFFFF",
                 endpoint: "http://190.15.141.102:8890/sparql",
                 graphURI: "http://dspace.ucuenca.edu.ec/resource/",
+                description: "test"
                 status: 'A',
-                baseEndpoint: false,
+                base: false,
                 lastMsg: ''
             }
         );

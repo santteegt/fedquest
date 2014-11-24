@@ -30,14 +30,28 @@ if (Meteor.isServer) {
 				return response;
 			},
 
-			doQuery: function(jsonQuery) {
-				console.log(jsonQuery);
-				try{
-					console.log( parserInstance.parse('PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' +
-		                         'SELECT * { ?mickey foaf:name "Mickey Mouse"@en; foaf:knows ?other. }') );
-				}catch(e){
-					console.log(e);
+			doQuery: function(jsonRequest) {
+				var timeout = jsonRequest.timeout ? jsonRequest.timeout: 30000
+				var response = {}
+				response.statusCode = 200;
+				response.msg = undefined;
+				response.stack = undefined;
+				var endpointBase = Endpoints.findOne({base: true});
+				if(!endpointBase) {
+					response.statusCode = 400;
+					response.msg = "Base Endpoint is not registered!";
+				} else {
+					try{
+						parserInstance.parse(jsonRequest.sparql);
+						response.resultSet = Meteor.call('runQuery', endpointBase.endpoint, endpointBase.graphURI, jsonRequest.sparql, undefined, timeout);
+					}catch(e){
+						console.log(e);
+						response.statusCode = 400;
+						response.msg = "Error executing SPARQL Query: See console for details";
+						response.stack = e.toString();
+					}
 				}
+				return response;
 
 			},
 
@@ -46,9 +60,6 @@ if (Meteor.isServer) {
 				result.statusCode = 200;
 				result.msg = 'OK';
 				try{
-					console.log( parserInstance.parse('PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' +
-		                         'SELECT * { ?mickey foaf:name "Mickey Mouse"@en; foaf:knows ?other. }') );
-					console.log('user ==> ' + this.userId);
 					Queries.insert({user: '', title: request.title, description: request.description, 
 						jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql});
 				}catch(e){
@@ -58,8 +69,6 @@ if (Meteor.isServer) {
 				}
 				return result;
 			},
-
-
 
 			updatePrefixes: function() {
 				HTTP.get( 'http://prefix.cc/context', function(error, result){
