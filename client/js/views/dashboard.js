@@ -209,15 +209,15 @@ this.DashboardView = Backbone.View.extend({
       this.onDropEv = function(ev) {
         ev.preventDefault();    
         // just for example
-         var OFFSET = $('#paper').offset();
-         var x = ev.pageX - OFFSET.left;
-         var y = ev.pageY - OFFSET.top;   
-        
+        var OFFSET = $('#paper').offset();
+        var x = ev.pageX - OFFSET.left;
+        var y = ev.pageY - OFFSET.top;   
+        var endpointList = Session.get('endpoints'); 
         var nodeClass = ev.dataTransfer.getData('class');
         var endpoint = ev.dataTransfer.getData('endpoint');
-        endpoint = endpoint == '' ? Session.get('endpoints')[0].endpoint:endpoint; //if rawNode
+        endpoint = endpoint == '' && endpointList.length > 0 ? endpointList[0].endpoint:endpoint; //if rawNode
         var graphURI = ev.dataTransfer.getData('graphURI'); 
-        graphURI = graphURI == '' ? Session.get('endpoints')[0].graphURI:graphURI; //if rawNode
+        graphURI = graphURI == '' && endpointList.length > 0 ? endpointList[0].graphURI:graphURI; //if rawNode
         var subject = ev.dataTransfer.getData('subject');
         var predicate = ev.dataTransfer.getData('predicate');
         var color = ev.dataTransfer.getData('color');
