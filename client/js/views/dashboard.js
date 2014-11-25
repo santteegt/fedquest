@@ -71,7 +71,6 @@ this.DashboardView = Backbone.View.extend({
   initialize: function(id) {
     var me;
     me = this;
-    var query = Queries.find({_id: id.idSample}).fetch();
     //jsonGraph =_.pluck(querie, 'jsonGraph');
     Session.set('graphQuery', id.idSample); 
     /*Session.set('querieTitle', _.pluck(querie, 'title')); 
@@ -554,8 +553,10 @@ this.DashboardView = Backbone.View.extend({
           var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
           for(var i=1; i<queryList.length; i++) {
             var queryEndpoint = queryList[i];
-            var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
-                                            + ' \nFROM ' + queryEndpoint.graphURI + '{';
+            /*var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
+                                            + ' \nFROM ' + queryEndpoint.graphURI + '{';*/
+            var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ') + ' {';
+
             for(var o=0; o<queryEndpoint.where.length; o++) {
               queryService += queryEndpoint.where[o];
             }
@@ -656,7 +657,7 @@ this.DashboardView = Backbone.View.extend({
     this.renderUtils(this.graph);
     this.setEvents($('#sparql-content'));
 
-    //Tracker.autorun(function() {
+    Tracker.autorun(function() {
       var queryId = Session.get('graphQuery');
       var query = Queries.findOne({_id: queryId});
       if(query) {
@@ -666,7 +667,7 @@ this.DashboardView = Backbone.View.extend({
         App.dashboard.sparqlEditor.setValue(query.sparql);
         $('#saveQuery').prop('disabled', true);
       }
-    //});
+    });
     return this;
   },
 
@@ -904,6 +905,7 @@ this.DashboardView = Backbone.View.extend({
         if(rawNode) {
           
           $('div #rawnodeValue').on('show.bs.modal', function(e){
+            $('#rawnodeValue select').val($('#rawnodeValue select option:first').val()); // set endpoint base as default value
             var cellViewModel = App.dashboard.graph.getCell(cellView.model.id);
             $('div #rawnodeValue #rawnode-uri').val('');
             $('div #rawnodeValue #rawnode-value').val('');
@@ -943,9 +945,11 @@ this.DashboardView = Backbone.View.extend({
 
           $('div #rawnodeValue').on('hide.bs.modal', function(ev) {
             var cellViewModel = App.dashboard.graph.getCell(cellView.model.id);
+            cellViewModel.attributes.endpoint = $('#rawnodeValue select option:selected').attr('data-endpoint');
+            cellViewModel.attributes.graphURI = $('#rawnodeValue select option:selected').attr('data-graphuri');
             if(cellViewModel.attributes.subject != "null") { //entity raw node
               cellViewModel.attributes.subject = $('div #rawnodeValue #rawnode-uri').val();
-              cellViewModel.attr('text/text','Entity X');
+              //cellViewModel.attr('text/text','Entity X');
             } 
             if(cellViewModel.attributes.predicate != "null") {
               cellViewModel.attributes.predicate = $('div #rawnodeValue #rawnode-uri').val();
@@ -965,6 +969,7 @@ this.DashboardView = Backbone.View.extend({
             $('div #rawnodeValue').unbind('hide.bs.modal');
           });
           $('div #rawnodeValue').modal();
+
         } else { //normal node
 
           var label = cellView.model.attr('text/text');
