@@ -324,52 +324,58 @@ this.DashboardView = Backbone.View.extend({
           endpointProperties = Session.get(targetEndpoint);
           
 
-        } /*else {*/
+        }
         
-          var predicateDef = _.find(endpointProperties.properties, function(obj){return obj.fullName == predicate});
-          
-          var subjectSource = elementBelow.attributes.subject;
-          var isCompatible;
-          //subject as source node. Validate from predicates
-          if(predicateDef) {
+        var predicateDef = _.find(endpointProperties.properties, function(obj){return obj.fullName == predicate});
+        
+        var subjectSource = elementBelow.attributes.subject;
+        var isCompatible;
+        //subject as source node. Validate from predicates
+        if(predicateDef) {
 
 
-            if(subjectSource && subjectSource != 'null') {
-              isCompatible = _.find(predicateDef.subjects, function(obj){return obj.fullName == subjectSource});
-            } else { //predicate as source node. Validate from subjects
-              //var subjectType = _.find(predicateDef.subjects, function(obj){return obj.fullName == subjectSource});
-              _.each(predicateDef.subjects, function(subject, idx) {
-                var subjectType = subject.fullName;
-              
-              //var predicateValidation = elementBelow.attributes.predicate;
-              //var subjectValidation = cellView.model.attributes.subject;
-              var availableProperties = _.filter(endpointProperties.properties, 
-                function(obj){
-                  return _.find(obj.subjects, function(ob){
-                    //return ob.fullName == subjectValidation;
-                    return ob.fullName == subjectType;
-                  })
-                }
-              );
-              //isCompatible = _.find(availableProperties, function(obj){return obj.fullName == predicateValidation;});
-              isCompatible = _.find(availableProperties, function(obj){return obj.fullName == cellView.model.attributes.predicate;});
-              if(isCompatible) return;
-              });
-            }
-
-            if(isCompatible) {
-              var nodeLabel = predicateDef.prefix+':'+predicateDef.name;
-              App.fedQueryUtils.createLink(elementBelow, cellView, nodeLabel);
-            }else{
-               cellView.model.translate(0,50); 
-               $('.top-right').notify({
-                message: { text: "Match not allowed" },
-                type: 'danger'
-                }).show();
-            }   
+          if(subjectSource && subjectSource != 'null') {
+            isCompatible = _.find(predicateDef.subjects, function(obj){return obj.fullName == subjectSource});
+          } else { //predicate as source node. Validate from subjects
+            //var subjectType = _.find(predicateDef.subjects, function(obj){return obj.fullName == subjectSource});
+            _.each(predicateDef.subjects, function(subject, idx) {
+              var subjectType = subject.fullName;
+            
+            //var predicateValidation = elementBelow.attributes.predicate;
+            //var subjectValidation = cellView.model.attributes.subject;
+            var availableProperties = _.filter(endpointProperties.properties, 
+              function(obj){
+                return _.find(obj.subjects, function(ob){
+                  //return ob.fullName == subjectValidation;
+                  return ob.fullName == subjectType;
+                })
+              }
+            );
+            //isCompatible = _.find(availableProperties, function(obj){return obj.fullName == predicateValidation;});
+            isCompatible = _.find(availableProperties, function(obj){return obj.fullName == cellView.model.attributes.predicate;});
+            if(isCompatible) return;
+            });
           }
-          return isCompatible;
-        //}
+
+          if(isCompatible) {
+            var nodeLabel = predicateDef.prefix+':'+predicateDef.name;
+            App.fedQueryUtils.createLink(elementBelow, cellView, nodeLabel);
+          }else{
+             cellView.model.translate(0,50); 
+             $('.top-right').notify({
+              message: { text: "Match not allowed" },
+              type: 'danger'
+              }).show();
+          }   
+        } else { //predicate not defined in source Endpoint
+          cellView.model.translate(0,50); 
+             $('.top-right').notify({
+              message: { text: "Match not allowed: Predicate type not bound to Subject source" },
+              type: 'danger'
+            }).show();
+
+        }
+        return isCompatible;
       };
 
       /**
@@ -418,7 +424,7 @@ this.DashboardView = Backbone.View.extend({
                                           + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
                                           + (_cfieldValue.match('^http')?'<'+_cfieldValue+'>':'"'+_cfieldValue+'"') 
                                           + ' .')
-                                : "\n" + _entityField + ' <' + _cptype + '> "' + _cfieldValue + '"^^<' + dataType + '> .';
+                                : "\n" + _entityField + ' <' + _cptype + '> "' + _cfieldValue + (dataType == null ? '" .':'"^^<' + dataType + '> .');
               }
             }
             var childObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _cid});
@@ -504,47 +510,45 @@ this.DashboardView = Backbone.View.extend({
             var endpointNodes = _.filter(queryNodes, function(node){return node.endpoint+'|'+node.graphuri == endpoint;});
             var entities = _.filter(endpointNodes, function(node){return node.subject != 'null';});
             //var query = squel.select().from('<'+objEndpoint.graphURI+'>');
-            var query = {endpoint: '<'+objEndpoint.endpoint+'>', graphURI: '<'+objEndpoint.graphURI+'>', base: objEndpoint.base};          
-            query.fields = [];
-            query.from = '<'+objEndpoint.graphURI+'>';
-            query.where = [];
-            //var query = 'select ';
-            var _whereClause = "";
-            //nodes with subject value
-            _.each(entities, function(obj) {
-              var _id = obj.id;
-              var _type = obj.subject;
-              var _entityField = (obj.rawNode ? '':'?') + obj.attrs.text.text;
-              //query.field(_entityField);
-              _entityField += '_' + objEndpoint.name;
-              fields.push(_entityField);
-              _whereClause += obj.rawNode ? '':_whereClause + "\n" + _entityField + ' a <' + _type + '> .';
-              var entityObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _id});
+            if(endpointNodes.length > 0) {
+              var query = {endpoint: '<'+objEndpoint.endpoint+'>', graphURI: '<'+objEndpoint.graphURI+'>', base: objEndpoint.base};          
+              query.fields = [];
+              query.from = '<'+objEndpoint.graphURI+'>';
+              query.where = [];
+              //var query = 'select ';
+              var _whereClause = "";
+              //nodes with subject value
+              _.each(entities, function(obj) {
+                var _id = obj.id;
+                var _type = obj.subject;
+                var _entityField = (obj.rawNode ? '':'?') + obj.attrs.text.text;
+                //query.field(_entityField);
+                _entityField += '_' + objEndpoint.name;
+                fields.push(_entityField);
+                _whereClause += obj.rawNode ? '':_whereClause + "\n" + _entityField + ' a <' + _type + '> .';
+                var entityObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _id});
 
-              //get fields
-              var childsId =_.pluck( _.pluck(entityObjcs, 'target') ,'id' );
-              fields = App.fedQueryUtils.parseQueryFields(endpoint, queryNodes, linkNodes, childsId, fields);
-              query.fields = _.union(query.fields, fields);
-              //var strfields = fields.toString().replace(/,/g, ' ');
-              //query.field(strfields);
-              //query += strfields + ' from <'+objEndpoint.graphURI+'> ';
-              
-              
+                //get fields
+                var childsId =_.pluck( _.pluck(entityObjcs, 'target') ,'id' );
+                fields = App.fedQueryUtils.parseQueryFields(endpoint, queryNodes, linkNodes, childsId, fields);
+                query.fields = _.union(query.fields, fields);
+                //var strfields = fields.toString().replace(/,/g, ' ');
+                //query.field(strfields);
+                //query += strfields + ' from <'+objEndpoint.graphURI+'> ';
+                
+                
 
-              ////////////
-              
-              //get conditions
-              _whereClause = App.fedQueryUtils.parseChilds(endpoint, queryNodes, _type, _entityField, entityObjcs, linkNodes, _whereClause);
-              query.where.push(_whereClause);
-              //query.where(_whereClause);
-              //query += 'where {' + _whereClause + '}';
-              ////////////////
-            });
-            queryList[queryCount++] = query;
-            //console.log(query.toString());
-            /*Meteor.call('doQuery', jsonQuery, function(error, result){
-
-            });*/
+                ////////////
+                
+                //get conditions
+                _whereClause = App.fedQueryUtils.parseChilds(endpoint, queryNodes, _type, _entityField, entityObjcs, linkNodes, _whereClause);
+                query.where.push(_whereClause);
+                //query.where(_whereClause);
+                //query += 'where {' + _whereClause + '}';
+                ////////////////
+              });
+              queryList[queryCount++] = query;
+            }
           });
           var globalVars = _.pluck(queryList, 'fields').toString().replace(/,/g, ' ');
           var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
@@ -651,18 +655,8 @@ this.DashboardView = Backbone.View.extend({
     App.dashboard = {graph: this.graph, paper: this.paper, graphScale: this.graphScale, defaultColor: '#428bca'};
     this.renderUtils(this.graph);
     this.setEvents($('#sparql-content'));
-    /*Tracker.autorun(function(){
-      var querieJson = Session.get('querieJson'); 
-      var querieTitle = Session.get('querieTitle'); 
-      var querieDescription = Session.get('querieDescription'); 
-       if(querieJson.length > 0) {
-        App.dashboard.graph.fromJSON(JSON.parse(querieJson));
-        $('#graph-title').val(querieTitle);
-        $('#graph-description').val(querieDescription);
-        $('#saveQuery').prop('disabled', true);
-      }
-    });*/
-    Tracker.autorun(function() {
+
+    //Tracker.autorun(function() {
       var queryId = Session.get('graphQuery');
       var query = Queries.findOne({_id: queryId});
       if(query) {
@@ -672,8 +666,7 @@ this.DashboardView = Backbone.View.extend({
         App.dashboard.sparqlEditor.setValue(query.sparql);
         $('#saveQuery').prop('disabled', true);
       }
-    });
-    //this.$el.html(this.template);
+    //});
     return this;
   },
 
@@ -699,7 +692,8 @@ this.DashboardView = Backbone.View.extend({
         $('#newEndpoint #new-endpoint-color').val(endpointEdit[0].colorid);
         $('#newEndpoint #new-endpoint-identifier').val(endpointEdit[0].name);
         $('#newEndpoint #new-endpoint-desc').val(endpointEdit[0].description);
-        $('#newEndpoint #new-endpoint-base').disable=endpointEdit[0].base;
+        $('#newEndpoint #new-endpoint-base')[0].checked=endpointEdit[0].base;
+        divNode.find('#new-endpoint-base')[0].disabled=true;
         Session.set('endpointEdit',[]);
       }else{
         var endpoints = Session.get('endpoints');
@@ -723,6 +717,10 @@ this.DashboardView = Backbone.View.extend({
       //App.dashboard.sparqlEditor.refresh();
     });
 
+    divNode.find('#sparqlEditor').on('shown.bs.modal', function(e) {
+      App.dashboard.sparqlEditor.refresh();
+    });
+
     divNode.find('#newEndpoint').on('hide.bs.modal', function(ev) {
         $('#newEndpoint #new-endpoint').val('');
         $('#newEndpoint #new-endpoint-graph').val('');
@@ -730,7 +728,39 @@ this.DashboardView = Backbone.View.extend({
         $('#newEndpoint #new-endpoint-identifier').val('');
         $('#newEndpoint #new-endpoint-desc').val('');
         $('#newEndpoint #new-endpoint-base').disable=false;
+        $('#newEndpoint #new-endpoint-base').checked=false;
         Session.set('endpointEdit',[]);
+    });
+
+    //////////////////////////////////
+    //Update base endpoint from list//
+    //////////////////////////////////
+    divNode.find('#availableEndpoint').on('show.bs.modal', function(e) {
+      $('#availableEndpoint input:radio').on('click', function(ev){
+        var endpoint = $(ev.currentTarget).attr('data-endpoint');
+        var graphURI = $(ev.currentTarget).attr('data-graphuri');
+        Meteor.call('updateBaseEndpoint', endpoint, graphURI, function(error, result){
+          console.log('base changed');
+          //non-implemented
+        });
+      });  
+    });
+
+    divNode.find('#availableEndpoint').on('hide.bs.modal', function(e) {
+      $('#availableEndpoint input:radio').unbind('click');
+    });
+    /*divNode.find('#availableEndpoint .base-endpoint').on('click', function(ev) {
+      console.log('entra');*/
+      /*var endpoint = $(ev.currentTarget).attr('data-endpoint');
+      var graphURI = $(ev.currentTarget).attr('data-graphuri');
+      Meteor.call('updateBaseEndpoint', endpoint, graphURI, function(error, result){
+        console.log('base changed');
+        //non-implemented
+      });*/
+    //});
+
+    divNode.find('#resultQuery').on('hide.bs.modal', function(ev) {
+      App.resultCollection.remove({});
     });
     
     divNode.find('#newEndpoint #new-endpoint-form').submit(this.newEndpoint);
@@ -739,17 +769,6 @@ this.DashboardView = Backbone.View.extend({
     $("div.navbar #zoom-in").on('click', this.zoomIn);
     $("div.navbar #clear").on('click', this.clearDashboard);
     $("#changeResultSet").on('click', this.changeResultSet);
-
-    //////////////////////////////////
-    //Update base endpoint from list//
-    //////////////////////////////////
-    $('#availableEndpoint .base-endpoint').on('click',function(e) {
-      var endpoint = $(e.currentTarget).attr('data-endpoint');
-      var graphURI = $(e.currentTarget).attr('data-graphuri');
-      Meteor.call('updateBaseEndpoint', endpoint, graphURI, function(error, result){
-        //non-implemented
-      });
-    }); 
 
     /////////////
     //Run Query//
@@ -769,6 +788,7 @@ this.DashboardView = Backbone.View.extend({
             }).show();
           }
           if(result.resultSet) {
+            App.resultCollection.insert(result.resultSet);
             $('#resultQuery').modal();
           }
           
