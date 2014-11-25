@@ -47,7 +47,11 @@ if (Meteor.isClient) {
   Template.dashboard.helpers({
       endpointsAvailable: function(){
         return Endpoints.find({status: 'A'}).fetch();
-        },
+      },
+
+      listEndpointsAvailable: function(){
+        return Endpoints.find({status: 'A'}, {sort: {base: -1}}).fetch();
+      },
 
       resultQuery: function(){
         var response = App.resultCollection.findOne();

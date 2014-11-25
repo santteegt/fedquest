@@ -249,6 +249,15 @@
             
             <div class="modal-body">
               <form role="form" id="rawnodeform">
+
+                <div class="form-group">
+                  <label for="endpoint">Endpoint</label>
+                  <select class="form-control" id="endpoint">
+                    {{#each listEndpointsAvailable}}
+                      <option value="{{name}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-colorid="{{colorid}}">{{name}}</option>
+                    {{/each}}
+                  </select>
+                </div>
                 <div class="form-group">
                   <div class="input-group input-group-sm">
                    <span class="input-group-addon">http://</span>
