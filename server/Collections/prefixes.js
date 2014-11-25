@@ -5,9 +5,9 @@
 // Declare the collection
 Prefixes = new Meteor.Collection("prefixes");
 // Publish the collection to the client
-/*Meteor.publish("prefixes", function() {
+Meteor.publish("prefixes", function() {
     return Prefixes.find();
-});*/
+});
     
 
 // Set permissions on this collection

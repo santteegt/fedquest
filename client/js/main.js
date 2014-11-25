@@ -6,6 +6,7 @@ if (Meteor.isClient) {
     Meteor.subscribe("allproperties");
     Meteor.subscribe("endpoints");
     Meteor.subscribe("queries");
+    Meteor.subscribe("prefixes");
   });
   
   this.App = {};
@@ -14,6 +15,7 @@ if (Meteor.isClient) {
   this.Prefixes = new Meteor.Collection("prefixes");
   this.Endpoints = new Meteor.Collection("endpoints");
   this.Queries = new Meteor.Collection("queries");
+  this.App.resultCollection = new Meteor.Collection(null);
 
   Template.samples.helpers({
       queriesAvailable: function(){
@@ -48,38 +50,49 @@ if (Meteor.isClient) {
         },
 
       resultQuery: function(){
-        var respuesta= '{ "head": { "link": [], "vars": ["recurso", "data"] }, "results": { "distinct": false, "ordered": true, "bindings": [ { "recurso": { "type": "uri", "value": "http://repositorio.cedia.org.ec/resource/recurso/43" }  , "data": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Proyectos de Telesalud" }}, { "recurso": { "type": "uri", "value": "http://repositorio.cedia.org.ec/resource/recurso/44" }  , "data": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Curso de IPV6" }}, { "recurso": { "type": "uri", "value": "http://repositorio.cedia.org.ec/resource/recurso/48" }  , "data": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "perfSONAR" }},      { "recurso": { "type": "uri", "value": "http://repositorio.cedia.org.ec/resource/recurso/56" }  , "data": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Agenda Estrategica para la E-Ciencia en Am\u00E9rica Latina" }} ] } }';
-        //var respuesta= '{ "head": { "link": [], "vars": ["person"] }, "results": { "distinct": false, "ordered": true, "bindings": [ { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "ALDE00C1N AGUIRRE, WILMAN EDUARDO" }}, { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Achig Balarezo, Rosario" }}, { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Achig, Rosario M. " }}, { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Alvarado, David" }}, { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Andrade, Gabriela" }} ] } }'; 
-        return JSON.parse(respuesta).results.bindings;
+        var response = App.resultCollection.findOne();
+        return response ? JSON.parse(response.content).results.bindings: [];
       },
 
       settings: function () {
-        var respuesta= '{ "head": { "link": [], "vars": ["recurso", "data"] }, "results": { "distinct": false, "ordered": true, "bindings": [ { "recurso": { "type": "uri", "value": "http://repositorio.cedia.org.ec/resource/recurso/43" }  , "data": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Proyectos de Telesalud" }}, { "recurso": { "type": "uri", "value": "http://repositorio.cedia.org.ec/resource/recurso/44" }  , "data": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Curso de IPV6" }}, { "recurso": { "type": "uri", "value": "http://repositorio.cedia.org.ec/resource/recurso/48" }  , "data": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "perfSONAR" }},      { "recurso": { "type": "uri", "value": "http://repositorio.cedia.org.ec/resource/recurso/56" }  , "data": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Agenda Estrategica para la E-Ciencia en Am\u00E9rica Latina" }} ] } }';
-        //var respuesta= '{ "head": { "link": [], "vars": ["person"] }, "results": { "distinct": false, "ordered": true, "bindings": [ { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "ALDE00C1N AGUIRRE, WILMAN EDUARDO" }}, { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Achig Balarezo, Rosario" }}, { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Achig, Rosario M. " }}, { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Alvarado, David" }}, { "person": { "type": "typed-literal", "datatype": "http://www.w3.org/2001/XMLSchema#string", "value": "Andrade, Gabriela" }} ] } }'; 
-        var fields=JSON.parse(respuesta).head.vars;
-        var dataField=[];
-        _.forEach(fields,function(field){
-            var item={};
-            item.key=field;
-            item.label=field;
-            item.fn= function (object) {
-                  if(object.type == 'uri') {
-                    var html = '<a href="' + object.value + '">' + object.value + '</a>';
-                  }else{
-                    var html = '<p> '+ object.value + '</p>';
-                  } 
-                  return new Spacebars.SafeString(html);
-                  };
-            dataField.push(item);
-          });      
+        var response = App.resultCollection.findOne();
+        if(response) {
+          var prefixService = Prefixes.find().fetch();
+          var endpoints = Endpoints.find().fetch();
+          var fields=JSON.parse(response.content).head.vars;
+          var dataField=[];
+          _.forEach(fields,function(field){
+              var item={};
+              item.key=field;
+              item.label=field;
+              item.fn= function (object) {
+                    if(object.type == 'uri') {
+                      var prefix = _.find(prefixService,function(obj){return object.value.indexOf(obj.URI) == 0});
+                      var showValue;
+                      if(!prefix) { //find endpoint name as prefix
+                        var endpoint = _.find(endpoints,function(obj){return object.value.indexOf(obj.graphURI) == 0});
+                        showValue = endpoint ? (endpoint.name + ':' + object.value.substring(endpoint.graphURI.length)):object.value;
+                      } else {
+                        showValue = prefix.prefix + ':' + object.value.substring(prefix.URI.length);
+                      }
+                      //var showValue = prefix ? (prefix.prefix+':'+object.value.substring(prefix.URI.length)):object.value;
+                      var html = '<a href="' + object.value + '">' + showValue + '</a>';
+                    }else{
+                      var html = '<p> '+ object.value + '</p>';
+                    } 
+                    return new Spacebars.SafeString(html);
+                    };
+              dataField.push(item);
+            });      
 
-        return {
-            rowsPerPage: 10,
-           // showFilter: true,
-            showNavigation: 'auto',
-            showColumnToggles: true,
-            fields: dataField,
-        };
+          return {
+              rowsPerPage: 10,
+             // showFilter: true,
+              showNavigation: 'auto',
+              showColumnToggles: true,
+              fields: dataField,
+          };
+        }
       }
   });
 
