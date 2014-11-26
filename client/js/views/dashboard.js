@@ -1038,6 +1038,62 @@ this.DashboardView = Backbone.View.extend({
       //console.log(cellViewRight.model.id+ " click right");  // So now you have access to both the cell view and its model.*/
     });
 
+    ////////////////////////////////
+    //////// RESIZE ///////////////
+    ///////////////////////////////
+    
+    this.graph.on("change:attrs", _.bind(function (cell, attrs, opt) {
+    if (cell.previousAttributes().attrs.text && attrs.text) {
+        if (cell.previousAttributes().attrs.text.text != attrs.text.text) { //test if label changed
+            var view = this.paper.findViewByModel(cell),
+                text = view.$("text"); //get shape element
+
+            if (text.length > 0) {
+                if (!cell.get("originalSize")) cell.set("originalSize", cell.get("size")); //store original/default size
+
+                var originalSize = cell.get("originalSize"),
+                    position = cell.get("position"),
+                    size = cell.get("size"),
+
+                    newX = position.x,
+                    newY = position.y,
+                    newCornerX = position.x + originalSize.width,
+                    newCornerY = position.y + originalSize.height,
+                    bbox = text[0].getClientRects()[0], //text box dimensions
+                    paddingX = 5, // horz padding for label
+                    paddingY = 5, // vert padding for label
+                    isResize;
+
+                if (bbox.width + (paddingX * 2) >= originalSize.width) {
+                    newX -= (bbox.width - originalSize.width + (paddingX * 2)) / 2;
+                    newCornerX = newX + bbox.width + (paddingX * 2);
+                    isResize = true;
+                } else if (size.width != originalSize.width) { //if text is smaller than original box size
+                    newX += (size.width - originalSize.width) / 2;
+                    newCornerX = newX + originalSize.width;
+                    isResize = true;
+                }
+
+                if (bbox.height + (paddingY * 2) >= originalSize.height) {
+                    newY -= (bbox.height - originalSize.height + (paddingY * 2)) / 2;
+                    newCornerY = newY + bbox.height + (paddingY * 2);
+                    isResize = true;
+                } else if (size.height != originalSize.height) { //if text is smaller than original box size
+                    newY += (size.height - originalSize.height) / 2;
+                    newCornerY = newY + originalSize.height;
+                    isResize = true;
+                }
+
+                if (isResize) {
+                    cell.set({
+                        position: { x: newX, y: newY },
+                        size: { width: newCornerX - newX, height: newCornerY - newY }
+                    });
+                }
+            }
+        }
+    }
+}, this));
 
     /////////////////////////
     // EDIT ENDPOINT ////////
