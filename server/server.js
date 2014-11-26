@@ -13,19 +13,15 @@ if (Meteor.isServer) {
 		Meteor.methods({
 
 			validateSPARQL: function(sparqlQuery) {
-				console.log('==Validating SPARQL')
 				var response = {};
 				try{
-					parserInstance.parse('PREFIX foaf: <http://xmlns.com/foaf/0.1/> ' +
-		                         'SELECT * { ?mickey foaf:name "Mickey Mouse"@en; foaf:knows ?other. }');
+					parserInstance.parse(sparqlQuery);
 					response.statusCode = 200;
 					response.msg = "OK";
-
 				}catch(e) {
-					console.log(e);
 					response.statusCode = 400;
 					response.msg = 'Error parsing SPARQL Query';
-					response.stack = e;
+					response.stack = e.toString();
 				}
 				return response;
 			},
@@ -42,7 +38,11 @@ if (Meteor.isServer) {
 					response.msg = "Base Endpoint is not registered!";
 				} else {
 					try{
-						parserInstance.parse(jsonRequest.sparql);
+						if(jsonRequest.validateQuery) {
+							parserInstance.parse(jsonRequest.sparql);
+						} else {
+							console.log('==Avoiding SPARQL validation on client');
+						}
 						response.resultSet = Meteor.call('runQuery', endpointBase.endpoint, endpointBase.graphURI, jsonRequest.sparql, undefined, timeout);
 					}catch(e){
 						console.log(e);
