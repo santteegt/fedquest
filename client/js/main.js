@@ -67,22 +67,23 @@ if (Meteor.isClient) {
           var dataField=[];
           _.forEach(fields,function(field){
               var item={};
-              item.key=field;
+              item.key=field+".value";
               item.label=field;
-              item.fn= function (object) {
-                    if(object.type == 'uri') {
-                      var prefix = _.find(prefixService,function(obj){return object.value.indexOf(obj.URI) == 0});
+              item.fn= function (data,object) {
+                    var typeObject= object[field].type;
+                    if(typeObject == 'uri') {
+                      var prefix = _.find(prefixService,function(obj){return object[field].value.indexOf(obj.URI) == 0});
                       var showValue;
                       if(!prefix) { //find endpoint name as prefix
-                        var endpoint = _.find(endpoints,function(obj){return object.value.indexOf(obj.graphURI) == 0});
-                        showValue = endpoint ? (endpoint.name + ':' + object.value.substring(endpoint.graphURI.length)):object.value;
+                        var endpoint = _.find(endpoints,function(obj){return object[field].value.indexOf(obj.graphURI) == 0});
+                        showValue = endpoint ? (endpoint.name + ':' + object[field].value.substring(endpoint.graphURI.length)):object[field].value;
                       } else {
-                        showValue = prefix.prefix + ':' + object.value.substring(prefix.URI.length);
+                        showValue = prefix.prefix + ':' + object[field].value.substring(prefix.URI.length);
                       }
                       //var showValue = prefix ? (prefix.prefix+':'+object.value.substring(prefix.URI.length)):object.value;
-                      var html = '<a href="' + object.value + '">' + showValue + '</a>';
+                      var html = '<a href="' + object[field].value + '">' + showValue + '</a>';
                     }else{
-                      var html = '<p> '+ object.value + '</p>';
+                      var html = '<p> '+ object[field].value + '</p>';
                     } 
                     return new Spacebars.SafeString(html);
                     };
