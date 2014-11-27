@@ -16,6 +16,7 @@ this.Router = Backbone.Router.extend({
   },
 
   index: function () {
+    $('div.navbar .collapse li a#options').hide();
     new IndexView().render();
     console.log('Inicio Router index');
     $("div.main-ops").onepage_scroll({
@@ -29,28 +30,21 @@ this.Router = Backbone.Router.extend({
         }); 
   },
 
+  //deprecated
   disableOnepageScroll: function() {
     $("div.main-ops").hide();
     $(document).bind('mousewheel DOMMouseScroll MozMousePixelScroll');
   },
-
   dashboard: function() {
-    //this.disableOnepageScroll();
     console.log('entra a dashboard');
     new DashboardView({}).render();        
-
   },
   samples: function() {
-    //this.disableOnepageScroll();
+    $('div.navbar .collapse li a#options').css('pointer-events','none');
     console.log('entra a samples');
     new SamplesView().render();        
   },
   dashboardParam: function(id) {
-      //this.disableOnepageScroll();
-      //this.querieCurrent= Queries.find({_id: "99ECMMzYwHC9nLWov"}).fetch();//Queries.find({_id: id}).fetch();
-        //var titulo = _.pluck(querieCurrent, 'title');
-         //var m = JSON.stringify(this.querieCurrent);
-      new DashboardView({idSample: id}).render();   
-       //console.log('entro dashboardParam ' +  this.querieCurrent);
+    new DashboardView({idSample: id}).render();   
   }
 });

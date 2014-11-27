@@ -733,7 +733,6 @@ this.DashboardView = Backbone.View.extend({
       if(sparql) {
         App.dashboard.sparqlEditor.setValue(sparql);
         Meteor.call('validateSPARQL', App.dashboard.sparqlEditor.getValue(), function(error, result) {
-          console.log('entra ' + result.statusCode);
           if(result.statusCode != 200) {
             $('#modalLog .console-log').html(result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>'));
             var message = result.msg + (result.stack ? (': ' + result.stack.substring(0, 30) + '...'):'');
