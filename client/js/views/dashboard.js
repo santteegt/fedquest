@@ -29,9 +29,10 @@ this.DashboardView = Backbone.View.extend({
     var description = $('#newEndpoint #new-endpoint-desc').val();
     var colorId = $('#newEndpoint #new-endpoint-color').val();
     var base = $('#newEndpoint #new-endpoint-base')[0].checked;
+    var loadschema = $('#newEndpoint #loadschema')[0].checked;
     //console.log('click en register' + id+endpoint+graphURI+description);
     e.preventDefault();
-    Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, function (error, result) {
+    Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, loadschema, function (error, result) {
       if(error) {
         $('#newEndpoint #loadingEndpoint img').hide();
         $('.top-right').notify({
@@ -714,14 +715,15 @@ this.DashboardView = Backbone.View.extend({
       }
     });
 
-    divNode.find('#newEndpoint').on('hide.bs.modal', function(ev) {
+    divNode.find('#newEndpoint').on('hidden.bs.modal', function(ev) {
         $('#newEndpoint #new-endpoint').val('');
         $('#newEndpoint #new-endpoint-graph').val('');
         $('#newEndpoint #new-endpoint-color').val('');
         $('#newEndpoint #new-endpoint-identifier').val('');
         $('#newEndpoint #new-endpoint-desc').val('');
         $('#newEndpoint #new-endpoint-base').disable=false;
-        $('#newEndpoint #new-endpoint-base').checked=false;
+        $('#newEndpoint #new-endpoint-base')[0].checked=false;
+        $('#newEndpoint #loadschema')[0].checked=false;
         Session.set('endpointEdit',[]);
     });
 
@@ -810,7 +812,7 @@ this.DashboardView = Backbone.View.extend({
         Meteor.call('doQuery', jsonRequest, function(error, result) {
           if(result.statusCode != 200) {
             console.log(result.stack);
-            $('#modalLog .console-log').html(result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>'));
+            $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
             //$('#sparqlEditor button#consoleError').show();
             var message = result.msg + (result.stack ? (': ' + result.stack.substring(0, 30) + '...'):'');
             $('.top-right').notify({
@@ -820,6 +822,8 @@ this.DashboardView = Backbone.View.extend({
             if(!$(ev.target).attr('id')) {
               $('#sparqlEditor').attr('data-run','true');
               $('#sparqlEditor').modal();
+            } else {
+              $('#sparqlEditor button#consoleError').show();
             }
           } else {
             if(result.resultSet) {

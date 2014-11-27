@@ -150,7 +150,12 @@ if (Meteor.isServer) {
 				var muestra;
 				console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');
 						
-				var result = Meteor.call('runQuery', endpointURI, defaultGraph, 'select distinct ?o where{ ?s a ?o}');
+				var result = Meteor.call('runQuery', endpointURI, defaultGraph, 
+					'select distinct ?o where{ ?s a ?o . '
+					+'BIND(STR(?s) AS ?strVal) '
+  					+'FILTER(STRLEN(?strVal) >= '+ defaultGraph.length + ' && SUBSTR(?strVal, 1, ' + defaultGraph.length + ' ) = "' 
+  					+ defaultGraph +'")}'
+					);
 				
 				var rsEntities = EJSON.parse(result.content);
 
@@ -161,7 +166,7 @@ if (Meteor.isServer) {
 
 					console.log('=>Obtaining subject properties of: ' + subject);
 					var rsMuestra = Meteor.call('runQuery', endpointURI, defaultGraph, 
-						'select distinct ?s where{ ?s a <' + subject + '>} limit 10');
+						'select distinct ?s where{ ?s a <' + subject + '>} limit 5');
 
 					var rsMuestra = EJSON.parse(rsMuestra.content);
 					var predicateArray = {};
@@ -463,34 +468,37 @@ if (Meteor.isServer) {
 			},
 
 			getEndpointStructure: function(graphName, endpointURI, defaultGraph, graphDescription, colorId, baseEndpoint, updateGraph) {
-					var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
-					var response = Meteor.call('pingServer', endpointURI, defaultGraph);
-					if(response.statusCode != 200 || response.msg.length > 0) return response;
-					var statusCode = response.msg.length == 0 ? 'A':'I';
-					if(baseEndpoint) {
-						Endpoints.update({base: true},{$set: {base: false}},{multi: true});
-					}
-					if(_.isUndefined(endpoint)) {
-						console.log('==Inserting new endpoint');
-						var color_id = colorId ? colorId:'#'+Math.floor(Math.random()*16777215).toString(16);
-						Endpoints.insert({name: graphName, colorid: color_id, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg});	
-						updateGraph = true;
-					} else {
-						console.log('==Updating endpoint ' + endpointURI + '<' + defaultGraph + '>');
-						Endpoints.update({_id: endpoint._id}, {$set: {status: statusCode, base: baseEndpoint, colorid: colorId, description: graphDescription, lastMsg: response.msg}});
-					}
-					if(updateGraph) {
-						Meteor.call('fetchGraphSchema', endpointURI, defaultGraph, function(error, result){
-							if(error) {
-								console.log("Error ==>" + error);
-								response.statusCode = 500;
-								response.results = error;	
-							}else {
-								console.log("Graph Schema fetching process finished for endpoint: " + endpointURI + ' <' + defaultGraph + '>');
-							}
-						});
-					}
-					return response;
+				var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
+				var response = Meteor.call('pingServer', endpointURI, defaultGraph);
+				if(response.statusCode != 200 || response.msg.length > 0) return response;
+				var statusCode = response.msg.length == 0 ? 'A':'I';
+				if(baseEndpoint) {
+					Endpoints.update({base: true},{$set: {base: false}},{multi: true});
+				}
+				if(_.isUndefined(endpoint)) {
+					console.log('==Inserting new endpoint');
+					var color_id = colorId ? colorId:'#'+Math.floor(Math.random()*16777215).toString(16);
+					Endpoints.insert({name: graphName, colorid: color_id, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg});	
+					//updateGraph = true;
+				} else {
+					console.log('==Updating endpoint ' + endpointURI + '<' + defaultGraph + '>');
+					Endpoints.update({_id: endpoint._id}, {$set: {name: graphName, colorid: colorId, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg}});
+				}
+				if(updateGraph) {
+					Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
+					Meteor.call('fetchGraphSchema', endpointURI, defaultGraph, function(error, result){
+						if(error) {
+							console.log("Error ==>" + error);
+							response.statusCode = 500;
+							response.stack = error;	
+						}else {
+							console.log("Graph Schema fetching process finished for endpoint: " + endpointURI + ' <' + defaultGraph + '>');
+						}
+					});
+				} else {
+					console.log("Skipping Graph Schema fetching process for endpoint: " + endpointURI + ' <' + defaultGraph + '>');
+				}
+				return response;
 
 			},
 
