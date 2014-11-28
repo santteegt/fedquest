@@ -60,8 +60,9 @@ if (Meteor.isServer) {
 				result.statusCode = 200;
 				result.msg = 'OK';
 				try{
-					Queries.insert({user: '', title: request.title, description: request.description, 
-						jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql});
+					var id = Queries.insert({user: '', title: request.title, description: request.description, 
+						jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData});
+					result.queryId = id;
 				}catch(e){
 					console.log(e);
 					result.statusCode = 500;

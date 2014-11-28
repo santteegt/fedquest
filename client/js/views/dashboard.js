@@ -430,7 +430,7 @@ this.DashboardView = Backbone.View.extend({
               }
             }
             var childObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _cid});
-            if(childObjcs.length > 0) {
+            if(childObjcs.length > 0 && endpoint == endpointObj.endpoint+'|'+endpointObj.graphURI) { //just treat endpoint Child Nodes
               var endpointGraph =Session.get(endpoint);
               var property = _.find(endpointGraph.properties,function(obj){return obj.fullName == _cptype});
               var propertySubject = _.find(property.subjects, function(obj){return obj.fullName == _entityType});
@@ -511,6 +511,17 @@ this.DashboardView = Backbone.View.extend({
             var endpoint = objEndpoint.endpoint + '|' + objEndpoint.graphURI;
             var endpointNodes = _.filter(queryNodes, function(node){return node.endpoint+'|'+node.graphuri == endpoint;});
             var entities = _.filter(endpointNodes, function(node){return node.subject != 'null';});
+            var endpointLinks = _.filter(linkNodes, function(obj){return _.contains(_.pluck(endpointNodes,'id'), obj.target.id ) });
+            endpointLinks = _.pluck(_.pluck(endpointLinks,'source'),'id');
+            var sourceNodes = _.filter(queryNodes, function(obj){return _.contains(endpointLinks, obj.id ) });
+            _.each(sourceNodes, function(node){
+              if((node.endpoint+'|'+node.graphuri) != endpoint) { //if source node on link belong to other endpoint, the current endpoint predicate should be treated as entity
+                var nodeLinks = _.filter(linkNodes, function(obj){return obj.source.id == node.id });
+                nodeLinks = _.pluck(_.pluck(nodeLinks,'target'),'id');
+                entities = _.union(entities, _.filter(endpointNodes, function(obj){return _.contains(nodeLinks, obj.id ) }) );
+              }
+              
+            });
             //var query = squel.select().from('<'+objEndpoint.graphURI+'>');
             if(endpointNodes.length > 0) {
               var query = {endpoint: '<'+objEndpoint.endpoint+'>', graphURI: '<'+objEndpoint.graphURI+'>', base: objEndpoint.base};          
@@ -525,7 +536,7 @@ this.DashboardView = Backbone.View.extend({
                 var _type = obj.subject;
                 var _entityField = (obj.rawNode ? '':'?') + obj.attrs.text.text;
                 //query.field(_entityField);
-                _entityField += '_' + objEndpoint.name;
+                _entityField += '_' + (obj.rawNode ? 'rawNode':objEndpoint.name);
                 fields.push(_entityField);
                 _whereClause += obj.rawNode ? '':_whereClause + "\n" + _entityField + ' a <' + _type + '> .';
                 var entityObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _id});
@@ -623,6 +634,8 @@ this.DashboardView = Backbone.View.extend({
     jsonstring = '{"cells":[{"type":"html.Element","position":{"x":260,"y":50},"size":{"width":100,"height":40},"angle":0,"id":"a0c7456c-d8fc-4053-91b3-1efe91d2a256","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"http://purl.org/ontology/bibo/Thesis","predicate":"null","z":1,"attrs":{"rect":{"fill":"#6d419d"},"text":{"text":"Thesis","text-decoration":"underline","label":"Thesis","resultSet":1,"regex":0}}},{"type":"html.Element","position":{"x":280,"y":190},"size":{"width":100,"height":40},"angle":0,"id":"99eab531-ca7b-4d8c-befa-1a572617a1d0","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"null","predicate":"http://id.loc.gov/vocabulary/relators/ths","z":2,"attrs":{"rect":{"fill":"#6d419d"},"text":{"text":"?ths","text-decoration":"underline","label":"?ths","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"a0c7456c-d8fc-4053-91b3-1efe91d2a256"},"target":{"id":"99eab531-ca7b-4d8c-befa-1a572617a1d0"},"id":"8fcb7c4e-5dc0-4e78-9931-8d9b2db3bde8","labels":[{"position":0.5,"attrs":{"text":{"text":"marcrel:ths"}}}],"connector":{"name":"smooth"},"z":3,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":470,"y":50},"size":{"width":100,"height":40},"angle":0,"id":"1a624643-fc35-46fe-b018-366b5410929a","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"null","predicate":"http://purl.org/dc/terms/title","z":4,"attrs":{"rect":{"fill":"#6d419d"},"text":{"text":"?title","text-decoration":"underline","label":"?title","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"a0c7456c-d8fc-4053-91b3-1efe91d2a256"},"target":{"id":"1a624643-fc35-46fe-b018-366b5410929a"},"id":"8ee0a375-cb6e-4002-ab13-2badbeb6aaf8","labels":[{"position":0.5,"attrs":{"text":{"text":"dcterms:title"}}}],"connector":{"name":"smooth"},"z":5,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":650,"y":260},"size":{"width":100,"height":40},"angle":0,"id":"92950559-6d60-4b28-ba01-0fb7dd5e4cb6","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"null","predicate":"http://xmlns.com/foaf/0.1/name","z":6,"attrs":{"rect":{"fill":"#6d419d"},"text":{"text":"?name","text-decoration":"underline","label":"?name","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"99eab531-ca7b-4d8c-befa-1a572617a1d0"},"target":{"id":"92950559-6d60-4b28-ba01-0fb7dd5e4cb6"},"id":"b7c5356c-7319-46ab-8e29-6015dff278a9","labels":[{"position":0.5,"attrs":{"text":{"text":"foaf:name"}}}],"connector":{"name":"smooth"},"z":7,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":250,"y":380},"size":{"width":100,"height":40},"angle":0,"id":"d0a94036-0a1d-4a38-a3b8-6ca1190ac050","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resources/","subject":"http://purl.org/ontology/bibo/Article","predicate":"null","z":8,"attrs":{"rect":{"fill":"#e7d90f"},"text":{"text":"Article","text-decoration":"underline","label":"Article","resultSet":1,"regex":0}}},{"type":"html.Element","position":{"x":370,"y":300},"size":{"width":100,"height":40},"angle":0,"id":"a6b41f22-e612-426a-878d-d7e632ca9512","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resources/","subject":"null","predicate":"http://id.loc.gov/vocabulary/relators/aut","z":9,"attrs":{"rect":{"fill":"#e7d90f"},"text":{"text":"?aut","text-decoration":"underline","label":"?aut","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"d0a94036-0a1d-4a38-a3b8-6ca1190ac050"},"target":{"id":"a6b41f22-e612-426a-878d-d7e632ca9512"},"id":"dbb33cb3-e74b-410b-8220-b5579135152c","labels":[{"position":0.5,"attrs":{"text":{"text":"marcrel:aut"}}}],"connector":{"name":"smooth"},"z":10,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"link","source":{"id":"a6b41f22-e612-426a-878d-d7e632ca9512"},"target":{"id":"92950559-6d60-4b28-ba01-0fb7dd5e4cb6"},"id":"7e166e49-89d7-4145-b1f4-cd8a1ebb0e87","labels":[{"position":0.5,"attrs":{"text":{"text":"foaf:name"}}}],"connector":{"name":"smooth"},"z":11,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":470,"y":390},"size":{"width":100,"height":40},"angle":0,"id":"bb518607-ae0c-4e19-9fce-c529a19125ca","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resources/","subject":"null","predicate":"http://purl.org/dc/terms/title","z":12,"attrs":{"rect":{"fill":"#e7d90f"},"text":{"text":"?title","text-decoration":"underline","label":"?title","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"d0a94036-0a1d-4a38-a3b8-6ca1190ac050"},"target":{"id":"bb518607-ae0c-4e19-9fce-c529a19125ca"},"id":"c05c3a9b-c39f-4651-9884-15606a276f1c","labels":[{"position":0.5,"attrs":{"text":{"text":"dcterms:title"}}}],"connector":{"name":"smooth"},"z":13,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}}]}';
     //example with raw nodes
     jsonstring = '{"cells":[{"type":"html.Element","position":{"x":280,"y":10},"size":{"width":100,"height":40},"angle":0,"id":"664a8764-c2d3-4658-a527-f0232cbb1b84","endpoint":"","graphuri":"","subject":"","predicate":"null","rawNode":true,"z":1,"attrs":{"rect":{"fill":"#428bca"},"text":{"text":"?s","text-decoration":"underline","label":"?s","resultSet":1,"regex":0}}},{"type":"html.Element","position":{"x":80,"y":70},"size":{"width":100,"height":40},"angle":0,"id":"fe3a1e1f-9cb9-465c-912a-89b8e119ee62","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resource/","subject":"null","predicate":"http://purl.org/dc/terms/title","rawNode":false,"z":2,"attrs":{"rect":{"fill":"#a6d4e8"},"text":{"text":"?title","text-decoration":"underline","label":"?title","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"664a8764-c2d3-4658-a527-f0232cbb1b84"},"target":{"id":"fe3a1e1f-9cb9-465c-912a-89b8e119ee62"},"id":"081300fc-785e-4b71-8736-d3824fbc950e","labels":[{"position":0.5,"attrs":{"text":{"text":"dcterms:title"}}}],"connector":{"name":"smooth"},"z":3,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":570,"y":90},"size":{"width":100,"height":40},"angle":0,"id":"508ad7d2-d569-4e41-8a1e-7dd75fa40e93","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resource/","subject":"null","predicate":"http://purl.org/dc/terms/subject","rawNode":true,"z":4,"attrs":{"rect":{"fill":"#428bca"},"text":{"text":"GAD","text-decoration":"underline","label":"?o","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"664a8764-c2d3-4658-a527-f0232cbb1b84"},"target":{"id":"508ad7d2-d569-4e41-8a1e-7dd75fa40e93"},"id":"a3736832-7b05-4d8b-af67-1fbd4d22cd4b","labels":[{"position":0.5,"attrs":{"text":{"text":"<http://purl.org/dc/terms/subject>"}}}],"connector":{"name":"smooth"},"z":5,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":343.671875,"y":191},"size":{"width":100,"height":40},"angle":0,"id":"47c6646c-f559-45cc-a032-8eb348c5b61c","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"http://purl.org/ontology/bibo/Thesis","predicate":"null","rawNode":false,"z":6,"attrs":{"rect":{"fill":"#416849"},"text":{"text":"Thesis","text-decoration":"underline","label":"Thesis","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"47c6646c-f559-45cc-a032-8eb348c5b61c"},"target":{"id":"508ad7d2-d569-4e41-8a1e-7dd75fa40e93"},"id":"c02aae17-c9de-45a7-b62b-d22262e23881","labels":[{"position":0.5,"attrs":{"text":{"text":"http://purl.org/dc/terms/subject"}}}],"connector":{"name":"smooth"},"z":7,"vertices":[],"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":90,"y":140},"size":{"width":100,"height":40},"angle":0,"id":"6f5d249a-e975-4ff1-bd2c-93bd9d8224ab","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"null","predicate":"http://purl.org/dc/terms/title","rawNode":false,"z":8,"attrs":{"rect":{"fill":"#416849"},"text":{"text":"?title","text-decoration":"underline","label":"?title","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"47c6646c-f559-45cc-a032-8eb348c5b61c"},"target":{"id":"6f5d249a-e975-4ff1-bd2c-93bd9d8224ab"},"id":"95c4c2d0-e2d1-454e-a708-e36863ec5d97","labels":[{"position":0.5,"attrs":{"text":{"text":"dcterms:title"}}}],"connector":{"name":"smooth"},"z":9,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}}]}';
+    //example with raw nodes 2 owl:sameAs
+    //jsonstring = '{"cells":[{"type":"html.Element","position":{"x":412.671875,"y":84},"size":{"width":100,"height":40},"angle":0,"id":"1552116c-b27b-4d10-97f7-dca037c055e2","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resource/","subject":"http://xmlns.com/foaf/0.1/Person","predicate":"null","rawNode":false,"z":1,"attrs":{"rect":{"fill":"#5ca64e"},"text":{"text":"Person","text-decoration":"underline","label":"Person","resultSet":1,"regex":0}}},{"type":"html.Element","position":{"x":150,"y":30},"size":{"width":100,"height":40},"angle":0,"id":"0bf4a6cb-ca1d-4a65-91e0-04d05fe024dc","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resource/","subject":"null","predicate":"http://xmlns.com/foaf/0.1/name","rawNode":false,"z":2,"attrs":{"rect":{"fill":"#5ca64e"},"text":{"text":"?name","text-decoration":"underline","label":"?name","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"1552116c-b27b-4d10-97f7-dca037c055e2"},"target":{"id":"0bf4a6cb-ca1d-4a65-91e0-04d05fe024dc"},"id":"7f77e4d8-bc68-43d2-8054-f85d99c59776","labels":[{"position":0.5,"attrs":{"text":{"text":"foaf:name"}}}],"connector":{"name":"smooth"},"z":3,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":140,"y":140},"size":{"width":100,"height":40},"angle":0,"id":"bb543650-edb5-48f5-b450-86ac7e364817","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resource/","subject":"null","predicate":"http://xmlns.com/foaf/0.1/lastName","rawNode":false,"z":4,"attrs":{"rect":{"fill":"#5ca64e"},"text":{"text":"?lastName","text-decoration":"underline","label":"?lastName","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"1552116c-b27b-4d10-97f7-dca037c055e2"},"target":{"id":"bb543650-edb5-48f5-b450-86ac7e364817"},"id":"45ab4c3d-0afb-4678-9a1c-ae4457c8823f","labels":[{"position":0.5,"attrs":{"text":{"text":"foaf:lastName"}}}],"connector":{"name":"smooth"},"z":5,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":630,"y":80},"size":{"width":100,"height":40},"angle":0,"id":"d2b6207c-6e86-4b60-97f6-df7d77908cdf","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resource/","subject":"null","predicate":"http://rdaregistry.info/Elements/a/P50195","rawNode":false,"z":6,"attrs":{"rect":{"fill":"#5ca64e"},"text":{"text":"?P50195","text-decoration":"underline","label":"?P50195","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"1552116c-b27b-4d10-97f7-dca037c055e2"},"target":{"id":"d2b6207c-6e86-4b60-97f6-df7d77908cdf"},"id":"cb5b1401-5327-4a59-8b3a-6089c3de52f2","labels":[{"position":0.5,"attrs":{"text":{"text":"rdaa:P50195"}}}],"connector":{"name":"smooth"},"z":7,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":420,"y":190},"size":{"width":100,"height":40},"angle":0,"id":"95f53004-5b11-44c9-969c-1cc1539510d7","endpoint":"http://190.15.141.66:8890/sparql","graphuri":"http://repositorio.cedia.org.ec/resource/","subject":"null","predicate":"http://www.w3.org/2002/07/owl#sameAs","rawNode":false,"z":8,"attrs":{"rect":{"fill":"#5ca64e"},"text":{"text":"?sameAs","text-decoration":"underline","label":"?sameAs","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"1552116c-b27b-4d10-97f7-dca037c055e2"},"target":{"id":"95f53004-5b11-44c9-969c-1cc1539510d7"},"id":"676e0325-e29a-4da8-8870-09fa2540d742","labels":[{"position":0.5,"attrs":{"text":{"text":"owl:sameAs"}}}],"connector":{"name":"smooth"},"z":9,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}},{"type":"html.Element","position":{"x":640,"y":190},"size":{"width":100,"height":40},"angle":0,"id":"4639e9c3-6b39-4177-97ac-78498325c7aa","endpoint":"http://190.15.141.102:8890/sparql","graphuri":"http://dspace.ucuenca.edu.ec/resource/","subject":"null","predicate":"http://rdaregistry.info/Elements/a/P50195","rawNode":false,"z":10,"attrs":{"rect":{"fill":"#422ee9"},"text":{"text":"?P50195","text-decoration":"underline","label":"?P50195","resultSet":1,"regex":0}}},{"type":"link","source":{"id":"95f53004-5b11-44c9-969c-1cc1539510d7"},"target":{"id":"4639e9c3-6b39-4177-97ac-78498325c7aa"},"id":"1254d179-c1f1-4d43-a593-7b6ed3837b75","labels":[{"position":0.5,"attrs":{"text":{"text":"rdaa:P50195"}}}],"connector":{"name":"smooth"},"z":11,"attrs":{".connection":{"stroke":"black","stroke-width":"2"},".marker-target":{"fill":"black","d":"M 10 0 L 0 5 L 10 10 z"}}}]}';
     e.data.fromJSON(JSON.parse(jsonstring));
   },
 
@@ -681,6 +694,45 @@ this.DashboardView = Backbone.View.extend({
   /////////////////////////////
   setEvents: function(divNode) {
 
+    App.dashboard.takeSnapshot = function (targetElem) {
+        // First render all SVGs to canvases
+        var elements = targetElem.find('svg').map(function() {
+            var svg = $(this);
+            var canvas = $('<canvas></canvas>');
+            svg.replaceWith(canvas);
+
+            // Get the raw SVG string and curate it
+            var content = svg.wrap('<p></p>').parent().html();
+            content = content.replace(/xlink:title="hide\/show"/g, "");
+            content = encodeURIComponent(content);
+            svg.unwrap();
+
+            // Create an image from the svg
+            var image = new Image();
+            image.src = 'data:image/svg+xml,' + content;
+            image.onload = function() {
+                canvas[0].width = image.width;
+                canvas[0].height = image.height;
+
+                // Render the image to the canvas
+                var context = canvas[0].getContext('2d');
+                context.drawImage(image, 0, 0);
+            };
+            return {
+                svg: svg,
+                canvas: canvas
+            };
+        });
+        html2canvas(targetElem[0], {
+            onrendered: function(canvas) {
+                elements.each(function() {
+                    this.canvas.replaceWith(this.svg);
+                });
+            }
+        });
+        return elements;
+    };
+
     App.dashboard.sparqlEditor = CodeMirror.fromTextArea($('#sparqlEditor #code')[0], {
         mode: "application/x-sparql-query",
         matchBrackets: true,
@@ -737,7 +789,6 @@ this.DashboardView = Backbone.View.extend({
             $('#modalLog .console-log').html(result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>'));
             var message = result.msg + (result.stack ? (': ' + result.stack.substring(0, 30) + '...'):'');
             $('#sparqlEditor button#consoleError').show();
-            console.log(!$('#sparqlEditor').attr('data-run'));
             if(!$('#sparqlEditor').attr('data-run')) { //called by run button
               $('.top-right').notify({
                 message: { text: message },
@@ -853,6 +904,13 @@ this.DashboardView = Backbone.View.extend({
       var sparql;
       try {
         request.sparql = App.fedQueryUtils.graphToSPARQL();
+        request.imageData = '';
+        /*var snapshot = App.dashboard.takeSnapshot($('#paper'));
+        var data = snapshot.length > 0 && snapshot[0].canvas[0] ?snapshot[0].canvas[0].toDataURL('image/png').toString():undefined;
+        var compress = LZString.compress(snapshot[0].canvas[0].toDataURL('image/png'));
+        var dec = LZString.decompress(compress);
+        console.log(dec.length);
+        request.imageData = compress;*/
       }catch(e) {
         errorMessage = e.toString();
       }
