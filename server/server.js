@@ -167,7 +167,7 @@ if (Meteor.isServer) {
 
 					console.log('=>Obtaining subject properties of: ' + subject);
 					var rsMuestra = Meteor.call('runQuery', endpointURI, defaultGraph, 
-						'select distinct ?s where{ ?s a <' + subject + '>} limit 5');
+						'select distinct ?s where{ ?s a <' + subject + '>} limit 10');
 
 					var rsMuestra = EJSON.parse(rsMuestra.content);
 					var predicateArray = {};
@@ -179,53 +179,59 @@ if (Meteor.isServer) {
 						
 						rsPredicate = EJSON.parse(rsPredicate.content);
 						_.each(rsPredicate.results.bindings, function(el, idx, list) {
-							//console.log('Predicate:' + el.p.value);
+							if(el.s.value == entity) { //just process entity own properties
+								//console.log('Predicate:' + el.p.value);
 
-							////////////////////
-							var predicateObj = {};
-							predicateObj.fullName = el.p.value;
-							predicateObj.prefix = '';
-							predicateObj.name = '';
-							
-							/////////////////////
+								////////////////////
+								var predicateObj = {};
+								predicateObj.fullName = el.p.value;
+								predicateObj.prefix = '';
+								predicateObj.name = '';
+								
+								/////////////////////
 
-							if(_.isUndefined(predicateArray[el.p.value])) {
-								var objectObj = {};
-								objectObj.objectEntity = {};
-								objectObj.dataType = el.o.datatype;
-								objectObj.sampleValue = isNaN(el.o.value) ? el.o.value.substring(0,100):el.o.value;
-							
-								if(el.o.type === 'uri' && subject != el.o.value) {
-									
-									console.log('==>Looking entity type for object <' + el.o.value +'>');
-									var rsObjSubject = Meteor.call('runQuery', endpointURI, defaultGraph, 
-										'select ?o where { <' + el.o.value +'> a ?o }');
-									
-									rsObjSubject = EJSON.parse(rsObjSubject.content);
-
-									objectObj.objectEntity.fullName = null;
-									objectObj.objectEntity.prefix = null;
-									objectObj.objectEntity.name = null;
-									//if found results
-									if(rsObjSubject.results.bindings.length > 0) {
-										var objectURI = rsObjSubject.results.bindings[0].o.value;
-										var responsePrefix = Meteor.call('findPrefix', objectURI);
-										objectObj.objectEntity.fullName = objectURI;
-										objectObj.objectEntity.prefix = responsePrefix.prefix;
-										objectObj.objectEntity.name = responsePrefix.property;
-									}			
+								if(el.p.value == "http://rdaregistry.info/Elements/a/P50161") {
+									console.log('*******sujeto: ' + entity + '******');
 								}
-								predicateArray[el.p.value] = objectObj;
+
+								if(_.isUndefined(predicateArray[el.p.value])) {
+									var objectObj = {};
+									objectObj.objectEntity = {};
+									objectObj.dataType = el.o.datatype;
+									objectObj.sampleValue = isNaN(el.o.value) ? el.o.value.substring(0,100):el.o.value;
+								
+									if(el.o.type === 'uri' && subject != el.o.value) {
+										
+										console.log('==>Looking entity type for object <' + el.o.value +'>');
+										var rsObjSubject = Meteor.call('runQuery', endpointURI, defaultGraph, 
+											'select ?o where { <' + el.o.value +'> a ?o }');
+										
+										rsObjSubject = EJSON.parse(rsObjSubject.content);
+
+										objectObj.objectEntity.fullName = null;
+										objectObj.objectEntity.prefix = null;
+										objectObj.objectEntity.name = null;
+										//if found results
+										if(rsObjSubject.results.bindings.length > 0) {
+											var objectURI = rsObjSubject.results.bindings[0].o.value;
+											var responsePrefix = Meteor.call('findPrefix', objectURI);
+											objectObj.objectEntity.fullName = objectURI;
+											objectObj.objectEntity.prefix = responsePrefix.prefix;
+											objectObj.objectEntity.name = responsePrefix.property;
+										}			
+									}
+									predicateArray[el.p.value] = objectObj;
+								}
+								
+								
+								muestra = predicateArray;
+								//muestra = {subjectObj: subject, predicate: predicateObj, objectP: objectObj};
+								//console.log('===>Subject: ' + subject + '| Predicate:' + el.p.value + '| Object:' + object + '| Type:' + type + '| Datatype:' + datatype);
+								/*
+								console.log('===>Subject: ' + subject + '| Predicate:' + predicateObj.fullName 
+									+ '| Object:' + (objectObj.objectEntity||objectObj.dataType) + '| SampleValue:' + objectObj.sampleValue);
+								*/
 							}
-							
-							
-							muestra = predicateArray;
-							//muestra = {subjectObj: subject, predicate: predicateObj, objectP: objectObj};
-							//console.log('===>Subject: ' + subject + '| Predicate:' + el.p.value + '| Object:' + object + '| Type:' + type + '| Datatype:' + datatype);
-							/*
-							console.log('===>Subject: ' + subject + '| Predicate:' + predicateObj.fullName 
-								+ '| Object:' + (objectObj.objectEntity||objectObj.dataType) + '| SampleValue:' + objectObj.sampleValue);
-							*/
 
 						});
 
