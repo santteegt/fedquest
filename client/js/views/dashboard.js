@@ -400,7 +400,7 @@ this.DashboardView = Backbone.View.extend({
             var _cptype = childNode.predicate;
             var rawNode = childNode.rawNode;
             var endpointObj = _.find(endpointList, function(obj){return obj.endpoint+'|'+obj.graphURI == childNode.endpoint+'|'+childNode.graphuri});
-            var endpointIdprefix = rawNode ? 'rawNode':endpointObj.name;
+            var endpointIdprefix = rawNode ? ('raw_'+endpointObj.name):endpointObj.name;
             var _cfield = (childNode.attrs.text.text == childNode.attrs.text.label ? //no value specified
             childNode.attrs.text.text:childNode.attrs.text.label) + '_' + endpointIdprefix;
             var _cfieldValue = childNode.attrs.text.text;
@@ -536,7 +536,7 @@ this.DashboardView = Backbone.View.extend({
                 var _type = obj.subject;
                 var _entityField = (obj.rawNode ? '':'?') + obj.attrs.text.text;
                 //query.field(_entityField);
-                _entityField += '_' + (obj.rawNode ? 'rawNode':objEndpoint.name);
+                _entityField += '_' + (obj.rawNode ? ('raw_' + objEndpoint.name):objEndpoint.name);
                 fields.push(_entityField);
                 _whereClause += obj.rawNode ? '':_whereClause + "\n" + _entityField + ' a <' + _type + '> .';
                 var entityObjcs = _.filter(linkNodes, function(obj){return obj.source.id == _id});
