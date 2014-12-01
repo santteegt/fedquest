@@ -467,9 +467,9 @@ this.DashboardView = Backbone.View.extend({
                 if(childNode.rawNode) {
                   var predicate = _.find(linkNodes, function(obj){return obj.target.id == childId});
                   if(predicate.labels[0].attrs.text.text.match('^[?]')) {//predicate as variable
-                    fields.push(predicate.labels[0].attrs.text.text + '_rawNode');    
+                    fields.push(predicate.labels[0].attrs.text.text + '_raw_' + endpointObj.name);    
                   }
-                  fields.push(childNode.attrs.text.text + '_rawNode');  
+                  fields.push(childNode.attrs.text.text + '_raw_' + endpointObj.name);  
                 }
                 //includes fields belonging to the current endpoint
                 else if(endpoint == endpointObj.endpoint+'|'+endpointObj.graphURI) {
