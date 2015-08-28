@@ -113,6 +113,24 @@ if (Meteor.isServer) {
 
 			},
 
+
+			runQueryDescr: function(endpointURI, defaultGraph, query, format, timeout) {
+				format = _.isUndefined(format) ? 'application/rdf+json':format;
+				timeout = _.isUndefined(timeout) ? '0': timeout;
+				console.log ('Consulta'+ endpointURI +'+'+query+'+'+format);
+				return HTTP.get( endpointURI, 
+						{
+							'params':
+								{
+									'default-graph-uri': defaultGraph,
+									'query': query,
+									'format': format,
+									'timeout': timeout
+								}
+						});
+
+			},
+
 			pingServer: function(endpointURI, defaultGraph) {
 				var response = {};
 				try {
@@ -149,6 +167,7 @@ if (Meteor.isServer) {
 
 			fetchGraphSchema: function(endpointURI, defaultGraph) {
 				var muestra;
+				console.log('Entra1 ');
 				console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');
 						
 				var result = Meteor.call('runQuery', endpointURI, defaultGraph, 
@@ -175,36 +194,91 @@ if (Meteor.isServer) {
 						var entity = el.s.value;
 						
 						console.log('==>Graph Entity sample: ' + entity);
-						var rsPredicate = Meteor.call('runQuery', endpointURI, defaultGraph, 'describe <' + entity + '>');
-						
+						var rsPredicate = Meteor.call('runQueryDescr', endpointURI, defaultGraph, 'describe <' + entity + '>');
+						//Cambios
 						rsPredicate = EJSON.parse(rsPredicate.content);
-						_.each(rsPredicate.results.bindings, function(el, idx, list) {
-							if(el.s.value == entity) { //just process entity own properties
-								//console.log('Predicate:' + el.p.value);
+						_.each(rsPredicate, function(el, idx, list) {
+
+								var Suj = new Object();
+								Suj = el  ;
+						var s = idx ;
+						console.log('Este Sujeto:'+ idx);
+
+							//if(el.s.value == entity) { //just process entity own properties
+						//	console.log ('Ob '+list[idx]+el+el.value);
+						//		var result = '';
+						//		var result2 = '';
+						//	for (var i in list) {
+   						//	 if (list.hasOwnProperty(i)) {
+      					//		  result = 'lista' + "." + i + " = " + list[i] + "\n";
+      					//		  console.log ('Lista'+result);
+      					//		  var Obj = new Object();
+      					//		  	Obj = list[i];
+      					//		  for (var l in Obj) {
+      					//		  	result2 = l;
+      					//		  	console.log ('I'+result2+'val'+Obj[l]+'-'+Obj[l].value+'/'+Obj[l].type);
+      					//		  	var Obj2 = new Object();
+      					//		  	Obj2 = Obj[l];
+      					//		  	 for (var m in Obj2) {
+      					//		  	 	console.log ('Obj2'+'-'+m+'*'+Obj2[m].value+'/'+Obj2[m].type);
+
+
+      					//		  	 }
+
+      					//		  }
+      							 // console.log ('I'+result2+'val'+Obj[l]+'-'+Obj[l].value+'/'+Obj[l].type);
+
+    					//	}}
+    				
+
+							if(idx == entity) { 
+								var Obj2 = new Object
+								console.log ("Ini"+entity);
+
+								  _.each (Suj,function(el, idx, list) {
+                                 // 	console.log ('Valor'+idx + 'val'+list[idx]+el.value+el[0].value+'*'+el[0].type);
+
+
+								  	var p = idx ;
+								  	var o = el[0];
+                                  console.log ('Sujeto'+s+'Predicado'+p+'Objeto'+o.value +'!'+o.type);
+
+                                //  _.each (Suj,function(el, idx, list) {
+
+                                  //	console.log ('Valor'+idx + 'val'+list[idx]+el.value+el[0].value+'*'+el[0].type);
+                                //  });
+
+							//just process entity own properties
+								//console.log('Predicate:' + el);
+							//	var sujetos = list ;
+						//		_.each(sujetos, function(el, idx, list) { 
+						//			console.log ('valor'+idx+el+el.valor+list[0]);
+						//		});
 
 								////////////////////
 								var predicateObj = {};
-								predicateObj.fullName = el.p.value;
+							//	predicateObj.fullName = el.p.value;
+						     	predicateObj.fullName = p;
 								predicateObj.prefix = '';
 								predicateObj.name = '';
 								
 								/////////////////////
 
-								if(el.p.value == "http://rdaregistry.info/Elements/a/P50161") {
+								if(p == "http://rdaregistry.info/Elements/a/P50161") {
 									console.log('*******sujeto: ' + entity + '******');
 								}
 
-								if(_.isUndefined(predicateArray[el.p.value])) {
+								if(_.isUndefined(predicateArray[p])) {
 									var objectObj = {};
 									objectObj.objectEntity = {};
-									objectObj.dataType = el.o.datatype;
-									objectObj.sampleValue = isNaN(el.o.value) ? el.o.value.substring(0,100):el.o.value;
+									objectObj.dataType = o.datatype;
+									objectObj.sampleValue = isNaN(o.value) ? o.value.substring(0,100):o.value;
 								
-									if(el.o.type === 'uri' && subject != el.o.value) {
+									if(o.type === 'uri' && subject != o.value) {
 										
-										console.log('==>Looking entity type for object <' + el.o.value +'>');
+										console.log('==>Looking entity type for object <' + o.value +'>');
 										var rsObjSubject = Meteor.call('runQuery', endpointURI, defaultGraph, 
-											'select ?o where { <' + el.o.value +'> a ?o }');
+											'select ?o where { <' + o.value +'> a ?o }');
 										
 										rsObjSubject = EJSON.parse(rsObjSubject.content);
 
@@ -220,7 +294,7 @@ if (Meteor.isServer) {
 											objectObj.objectEntity.name = responsePrefix.property;
 										}			
 									}
-									predicateArray[el.p.value] = objectObj;
+									predicateArray[p] = objectObj;
 								}
 								
 								
@@ -231,6 +305,8 @@ if (Meteor.isServer) {
 								console.log('===>Subject: ' + subject + '| Predicate:' + predicateObj.fullName 
 									+ '| Object:' + (objectObj.objectEntity||objectObj.dataType) + '| SampleValue:' + objectObj.sampleValue);
 								*/
+							
+								});
 							}
 
 						});
@@ -334,6 +410,7 @@ if (Meteor.isServer) {
 			},
 
 			fetchGraphSchema2: function(endpointURI, defaultGraph) {
+                console.log ('ENtra 2')
 				console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');
 						
 				var result = Meteor.call('runQuery', endpointURI, defaultGraph, 'select distinct ?o where{ ?s a ?o}');
@@ -342,9 +419,9 @@ if (Meteor.isServer) {
 
 				var dataset = [];
 				var datasetRDF = {};
+				///Cambios JS
 				_.each(rsEntities.results.bindings, function(el, idx, list) {
 					var subject = el.o.value;
-
 					console.log('=>Obtaining subject properties of: ' + subject);
 					var rsMuestra = Meteor.call('runQuery', endpointURI, defaultGraph, 
 						'select distinct ?s where{ ?s a <' + subject + '>} limit 5');
@@ -359,7 +436,7 @@ if (Meteor.isServer) {
 						
 						rsPredicate = EJSON.parse(rsPredicate.content);
 						_.each(rsPredicate.results.bindings, function(el, idx, list) {
-							//console.log('Predicate:' + el.p.value);
+							console.log('-****Predicate: ' + el.p.value);
 
 							////////////////////
 							var predicateObj = {};
