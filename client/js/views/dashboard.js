@@ -415,7 +415,9 @@ this.DashboardView = Backbone.View.extend({
                 _whereClause += "\n" + _entityField
                               + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
                               + _cfield + ' .';
-                _whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'") .';
+                //_whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'") .';
+                /////////////////// Modificado JS
+                _whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'", "i") .';
               } else {
                 var endpointGraph =Session.get(endpoint);
                 var property = rawNode ? undefined:_.find(endpointGraph.properties,function(obj){return obj.fullName == _cptype});
@@ -563,12 +565,18 @@ this.DashboardView = Backbone.View.extend({
               queryList[queryCount++] = query;
             }
           });
+          /////////////// MODIFICADO JS
+          var ALLFROMQUERY = '';
+          for(var j=0; j<queryList.length; j++) {
+           ALLFROMQUERY = ALLFROMQUERY +'FROM '+ queryList[j].from+'\n';
+          }
+
           var globalVars = _.pluck(queryList, 'fields').toString().replace(/,/g, ' ');
-          var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
+          var stringSPARQL = 'SELECT ' + globalVars +'\n' + ALLFROMQUERY + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
           for(var i=1; i<queryList.length; i++) {
             var queryEndpoint = queryList[i];
             var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
-                                            + ' \nFROM ' + queryEndpoint.graphURI + '{'; //TESTING CASE
+                                             + '{'; //TESTING CASE
             /*var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ') + ' {';*/
 
             for(var o=0; o<queryEndpoint.where.length; o++) {
@@ -577,6 +585,20 @@ this.DashboardView = Backbone.View.extend({
             queryService += '}\n}'
             stringSPARQL += '\n' + queryService;
           }
+           //var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
+          
+          //for(var i=1; i<queryList.length; i++) {
+           // var queryEndpoint = queryList[i];
+           // var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
+           //                                 + ' \nFROM ' + queryEndpoint.graphURI + '{'; //TESTING CASE
+            /*var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ') + ' {';*/
+
+           // for(var o=0; o<queryEndpoint.where.length; o++) {
+            //  queryService += queryEndpoint.where[o];
+           // }
+           // queryService += '}\n}'
+           // stringSPARQL += '\n' + queryService;
+          //}
           stringSPARQL += '\n}';
           result = stringSPARQL;
         }
