@@ -16,7 +16,7 @@ if (Meteor.isClient) {
   this.Endpoints = new Meteor.Collection("endpoints");
   this.Queries = new Meteor.Collection("queries");
   this.App.resultCollection = new Meteor.Collection(null);
-
+  // Muestra consultas - JS
   Template.samples.helpers({
       queriesAvailable: function(){
         return Queries.find().fetch();
@@ -24,6 +24,7 @@ if (Meteor.isClient) {
 
       settings: function () {
         return {
+         //   rowsPerPage: 10,
             rowsPerPage: 10,
             showFilter: true,
             //showNavigation: 'auto',
@@ -91,8 +92,8 @@ if (Meteor.isClient) {
             });      
 
           return {
-              rowsPerPage: 10,
-             // showFilter: true,
+              rowsPerPage: 5,
+              showFilter: true,
               showNavigation: 'auto',
               showColumnToggles: true,
               fields: dataField,

@@ -103,6 +103,7 @@
                           <th>Color</th>
                           <th>Status</th>
                           <th>Base</th>
+                          <th>Optional</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -114,8 +115,9 @@
                           <td><input type="color" value="{{colorid}}" disabled ></td>
                           <td><span>{{status}}</span></td>
                           <td><input type="radio" name="baseRadios" checked="{{base}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" class="base-endpoint" ></td>
+                          <td><input type="checkbox"  checked="{{opt}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" > </td>
                           <td> <button type="button" class="btn btn-default" id="editEndpoint" onclick="editEndpoint(event)" data-endpoint-id="{{_id}}" ><span class="glyphicon glyphicon-edit"></span></button></td>
-                          <td> <button type="button" class="btn btn-default" id="deleteEndpoint" onclick="deleteEndpoint(event)" data-endpoint-id="{{_id}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}"><span class="glyphicon glyphicon-remove"></span></button></td>
+                          <td> <button type="button" class="btn btn-default" id="deleteEndpoint" onclick="deleteEndpoint(event)" data-endpoint-id="{{_id}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}"><span class="glyphicon glyphicon-remove"></span></button></td>      
                       </tr>
                     {{/each}}
                   </tbody>
@@ -170,9 +172,19 @@
                   </div>
                   <div class="radio">
                     <label>
-                      <input type="checkbox" name="new-endpoint-base" id="new-endpoint-base" />
+                     <input type="checkbox" name="new-endpoint-base" id="new-endpoint-base" />
                       Base Endpoint
-                    </label>
+                    </label> 
+                    <label>
+                    <input type="checkbox" name="new-endpoint-optional" id="new-endpoint-optional" />
+                      Optional 
+                    </label> 
+                    <!-- <label>
+                    <input type="radio"  name="new-endpoint-base"  id="new-endpoint-base" >
+                    Base Endpoint
+                    <input type="radio" name="new-endpoint-base"   id="optional" >
+                    Optional
+                    </label>-->
                     <label>
                       <input type="checkbox" id="loadschema">
                       Load Schema (It should take a while depending on Graph size)

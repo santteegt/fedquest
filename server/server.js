@@ -551,7 +551,7 @@ if (Meteor.isServer) {
 				});
 			},
 
-			getEndpointStructure: function(graphName, endpointURI, defaultGraph, graphDescription, colorId, baseEndpoint, updateGraph) {
+			getEndpointStructure: function(graphName, endpointURI, defaultGraph, graphDescription, colorId, baseEndpoint, updateGraph, optional) {
 				var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
 				var response = Meteor.call('pingServer', endpointURI, defaultGraph);
 				if(response.statusCode != 200 || response.msg.length > 0) return response;
@@ -562,11 +562,11 @@ if (Meteor.isServer) {
 				if(_.isUndefined(endpoint)) {
 					console.log('==Inserting new endpoint');
 					var color_id = colorId ? colorId:'#'+Math.floor(Math.random()*16777215).toString(16);
-					Endpoints.insert({name: graphName, colorid: color_id, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg});	
+					Endpoints.insert({name: graphName, colorid: color_id, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg , opt:optional});	
 					//updateGraph = true;
 				} else {
 					console.log('==Updating endpoint ' + endpointURI + '<' + defaultGraph + '>');
-					Endpoints.update({_id: endpoint._id}, {$set: {name: graphName, colorid: colorId, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg}});
+					Endpoints.update({_id: endpoint._id}, {$set: {name: graphName, colorid: colorId, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg, opt:optional }});
 				}
 				if(updateGraph) {
 					Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
@@ -590,7 +590,8 @@ if (Meteor.isServer) {
 			updateBaseEndpoint: function(endpointURI, defaultGraph) {
 				var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
 				Endpoints.update({base: true},{$set: {base: false}},{multi: true});
-				Endpoints.update({_id: endpoint._id}, {$set: {base: true}});
+				//Endpoints.update({_id: endpoint._id}, {$set: {base: true}});
+				Endpoints.update({_id: endpoint._id}, {$set: {base: true,opt:false}});
 				console.log("==NEW endpoint base: " + endpointURI + " - " + defaultGraph);
 			},
 
@@ -598,7 +599,21 @@ if (Meteor.isServer) {
 				Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
 				Endpoints.remove(id);
 				console.log("==Endpoint removed: " + endpointURI + " - " + defaultGraph);	
-			}
+			} ,
+			updateOptEndpoint: function(endpointURI, defaultGraph, optional) {
+				var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
+			//	Endpoints.update({base: true},{$set: {base: false}},{multi: true});
+				//Endpoints.update({_id: endpoint._id}, {$set: {base: true}});
+				Endpoints.update({_id: endpoint._id}, {$set: {opt:optional}});
+				console.log("==OPtional endpoint opt: " + endpointURI + " - " + defaultGraph+" Opt"+optional);
+			} ,
+			findoptional : function   (endpointURI, defaultGraph) {
+            console.log (endpointURI + defaultGraph);
+            var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
+				console.log ("Resp"+endpoint.opt );
+				return endpoint.opt;
+
+			} 
 		});
 
 		//Update Prefixes schema on every server startup
