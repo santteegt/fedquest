@@ -30,9 +30,11 @@ this.DashboardView = Backbone.View.extend({
     var colorId = $('#newEndpoint #new-endpoint-color').val();
     var base = $('#newEndpoint #new-endpoint-base')[0].checked;
     var loadschema = $('#newEndpoint #loadschema')[0].checked;
-    //console.log('click en register' + id+endpoint+graphURI+description);
+    var optional = $ ('#newEndpoint #new-endpoint-optional')[0].checked;
+    //COmentar
+    console.log('Registras' + id+endpoint+graphURI+description+optional);
     e.preventDefault();
-    Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, loadschema, function (error, result) {
+    Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, loadschema, optional, function (error, result) {
       if(error) {
         $('#newEndpoint #loadingEndpoint img').hide();
         $('.top-right').notify({
@@ -573,16 +575,27 @@ this.DashboardView = Backbone.View.extend({
 
           var globalVars = _.pluck(queryList, 'fields').toString().replace(/,/g, ' ');
           var stringSPARQL = 'SELECT ' + globalVars +'\n' + ALLFROMQUERY + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
+          var optional = "";
           for(var i=1; i<queryList.length; i++) {
-            var queryEndpoint = queryList[i];
-            var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
+          var queryEndpoint = queryList[i];
+          console.log ("COnsulta Endpoint "+ queryEndpoint.endpoint.substring(1,queryEndpoint.endpoint.length-1) +" - " + queryEndpoint.from.replace('<', ''  ));
+           // Meteor.call ('findoptional',queryEndpoint.endpoint.substring(1,queryEndpoint.endpoint.length-1) , queryEndpoint.from.substring(1,queryEndpoint.from.length-1), function (error, result) { 
+          
+           //  var query = Queries.findOne({_id: queryId});
+            var resultendpoint =   Endpoints.findOne({endpoint: queryEndpoint.endpoint.substring(1,queryEndpoint.endpoint.length-1), graphURI: queryEndpoint.from.substring(1,queryEndpoint.from.length-1)});
+            //console.log ("Entra al LOG "+result); if (result) optional = "OPTIONAL {"} );
+            var optional = "";
+            var optionalfinal = "";
+            if (resultendpoint.opt) { optional = "OPTIONAL {"; optionalfinal = "}"; }
+            console.log ("OPC "+result);
+            var queryService = optional+'\n SERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
                                              + '{'; //TESTING CASE
             /*var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ') + ' {';*/
 
             for(var o=0; o<queryEndpoint.where.length; o++) {
               queryService += queryEndpoint.where[o];
             }
-            queryService += '}\n}'
+            queryService += '}\n}' + optionalfinal;
             stringSPARQL += '\n' + queryService;
           }
            //var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
@@ -773,6 +786,9 @@ this.DashboardView = Backbone.View.extend({
         $('#newEndpoint #new-endpoint-identifier').val(endpointEdit[0].name);
         $('#newEndpoint #new-endpoint-desc').val(endpointEdit[0].description);
         $('#newEndpoint #new-endpoint-base')[0].checked=endpointEdit[0].base;
+       $('#newEndpoint #new-endpoint-optional')[0].checked=endpointEdit[0].opt;
+      //  $('#newEndpoint #new-endpoint-optional')[0].checked=true;
+      //  console.log ("Valor Optional"+endpointEdit[0].optional+"O"+endpointEdit[0].opt+"Valor Base"+endpointEdit[0].base);
         divNode.find('#new-endpoint-base')[0].disabled=true;
         Session.set('endpointEdit',[]);
       }else{
@@ -797,6 +813,7 @@ this.DashboardView = Backbone.View.extend({
         $('#newEndpoint #new-endpoint-desc').val('');
         $('#newEndpoint #new-endpoint-base').disable=false;
         $('#newEndpoint #new-endpoint-base')[0].checked=false;
+        $('#newEndpoint #new-endpoint-optional')[0].checked=false;
         $('#newEndpoint #loadschema')[0].checked=false;
         Session.set('endpointEdit',[]);
     });
@@ -841,12 +858,37 @@ this.DashboardView = Backbone.View.extend({
       $('#availableEndpoint input:radio').on('click', function(ev){
         var endpoint = $(ev.currentTarget).attr('data-endpoint');
         var graphURI = $(ev.currentTarget).attr('data-graphuri');
+        //var gg = $("input:"+endpoint).attr('data-graphuri');
         Meteor.call('updateBaseEndpoint', endpoint, graphURI, function(error, result){
+        //  console.log('base changed'+gg);
+          //non-implemented
+        });
+      });  
+
+      $('#availableEndpoint input:checkbox').on('click', function(ev){
+        var endpoint = $(ev.currentTarget).attr('data-endpoint');
+        var graphURI = $(ev.currentTarget).attr('data-graphuri');
+        var optional = $(ev.currentTarget).is(":checked");
+        Meteor.call('updateOptEndpoint', endpoint, graphURI, optional, function(error, result){
+          console.log('Cambioando opt'+optional);
+          //non-implemented
+        });
+      });
+    });
+    //////
+    /// Update Optional - JS
+/*
+    divNode.find('#availableEndpoint').on('show.bs.modal', function(e) {
+      $('#availableEndpoint input:checkbox').on('click', function(ev){
+        var endpoint = $(ev.currentTarget).attr('data-endpoint');
+        var graphURI = $(ev.currentTarget).attr('data-graphuri');
+        var optional = $(ev.currentTarget).value;
+        Meteor.call('updateOptEndpoint', endpoint, graphURI, function(error, result){
           console.log('base changed');
           //non-implemented
         });
       });  
-    });
+    });*/
 
     divNode.find('#availableEndpoint').on('hide.bs.modal', function(e) {
       $('#availableEndpoint input:radio').unbind('click');
@@ -943,7 +985,7 @@ this.DashboardView = Backbone.View.extend({
           }).show();
       } else {
         var result = Meteor.call('saveQuery', request, function(error, result) {
-          $('div #saveQuery').attr('disabled','true');
+         // $('div #saveQuery').attr('disabled','true'); Para deshabilitar el guardado
           $('.top-right').notify({
             message: { text: result.statusCode == 200 ?"Query saved Successful":result.msg },
             type: result.statusCode == 200 ?'success':'danger'
