@@ -573,7 +573,6 @@ this.DashboardView = Backbone.View.extend({
            ALLFROMQUERY = ALLFROMQUERY +'FROM '+ queryList[j].from+'\n';
           }
 
-var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
 //JO
 //Adding UNION support
 	  var applyUnion = true;
