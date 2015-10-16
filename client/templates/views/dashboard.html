@@ -115,7 +115,7 @@
                           <td><input type="color" value="{{colorid}}" disabled ></td>
                           <td><span>{{status}}</span></td>
                           <td><input type="radio" name="baseRadios" checked="{{base}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" class="base-endpoint" ></td>
-                          <td><input type="checkbox"  checked="{{opt}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" > </td>
+                          <td><input type="checkbox" disabled="{{base}}"  checked="{{opt}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" > </td>
                           <td> <button type="button" class="btn btn-default" id="editEndpoint" onclick="editEndpoint(event)" data-endpoint-id="{{_id}}" ><span class="glyphicon glyphicon-edit"></span></button></td>
                           <td> <button type="button" class="btn btn-default" id="deleteEndpoint" onclick="deleteEndpoint(event)" data-endpoint-id="{{_id}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}"><span class="glyphicon glyphicon-remove"></span></button></td>      
                       </tr>
