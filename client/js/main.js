@@ -175,7 +175,7 @@ function pad(n, width, z) {
 
             graph.endpointEntities = _.uniq(values, false, function(obj){return obj.fullName;});
             graph.endpointProperties = properties;
-               if (graph.endpointProperties [0]  === undefined) 
+         /*      if (graph.endpointProperties [0]  === undefined) 
             {
                console.log ('Vacio');
 
@@ -184,7 +184,7 @@ function pad(n, width, z) {
                console.log (graph.endpointProperties[0]);
                console.log (graph.endpointProperties[1]);
             }
-
+*/
             var hash = {};
 
             for(var  j=0; j<graph.endpointProperties.length; j++) {
