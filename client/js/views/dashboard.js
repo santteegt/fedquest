@@ -615,15 +615,14 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
             console.log ("OPC "+result);
             var queryService = optional+'\n SERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
                                              + '{'; //TESTING CASE
-
-//JO
-//Adding UNION support
+       //JO
+        //Adding UNION support
 
             if (applyUnion){
               queryService = '\nUNION{SERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')+ '{';
             }
 
-//JO*
+            //JO*
 
 
             /*var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ') + ' {';*/
@@ -631,14 +630,14 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
             for(var o=0; o<queryEndpoint.where.length; o++) {
               queryService += queryEndpoint.where[o];
             }
-//JO
-//Adding UNION support
+        //JO
+         //Adding UNION support
 		if (applyUnion){
                           queryService += '}}\n}';
                         }else{
 		            queryService += '}\n}' + optionalfinal;
                         }
-//JO*
+         //JO*
 
             stringSPARQL += '\n' + queryService;
           }
@@ -957,7 +956,8 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
     $("div.navbar #zoom-in").on('click', this.zoomIn);
     $("div.navbar #clear").on('click', this.clearDashboard);
     $("#changeResultSet").on('click', this.changeResultSet);
-
+    //divNode.find(".panel-group .property").on('click', function() {  $( this ).css( "background", "red" )});
+    //divNode.find("div.entity").on('click', function() {  $( this ).css( "background", "blue" )});
     /////////////
     //Run Query//
     /////////////
@@ -1318,6 +1318,75 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
     $('div #dialogConfirm').modal();
   };
 
+   // $("#accordion").on('click', "div.entity" , function(){   $( this ).css( "background", "red" )});
+   // $("div.entity").delegate('click', function(){   $( this ).css( "background", "red" )});
+  // $("div.entity").on("DOMNodeInserted", function(){   $( this ).css( "background", "blue" )};);
+  // $("#accordion").on("DOMNodeInserted","div.entity", function(){  alert ("creado") });
+ // dim = function (nombre) {alert(nombre);};
+  //dimension = function (e) { $( e ).css( "background", "blue" ) ;} ;
+   colornode = function (e) { 
+    //$( e ).css( "background", "red" ) ;
+    // alert($( e ).parent().attr("data-graphURI"));
+      var prop = $( e ).attr("propertyrel");
+      var colorid = $( e ).attr("data-colorid");
+      var entprop =  prop.split(" ");
+      $("div.entity").css("border-width","1px").find ("p").css ("font-weight" , "normal");
+      //$("div.property").css("border-width","1px").find ("p").css ("font-weight" , "normal");
+
+      $("div.property").css({
+         'transition': 'all 0.3s',
+     //    'border-width' :'2px',
+         '-webkit-box-shadow' : '2px 2px 5px rgba(0,0,0,0)' ,
+         '-moz-box-shadow' : '2px 2px 5px rgba(0,0,0,0)' ,
+          'box-shadow' : '2px 2px 5px rgba(0,0,0,0)' ,
+     }).find ("p").css ("font-weight" , "normal");
+     //  $( "div[data-label='license']").css( "background", "blue" ) ;
+      for (var l = 0 ; l < entprop.length ; l++) {
+        //  $("div[data-label='"+entprop[l]+"']" ).css( "opacity" , 0.1 ).css( "background", colorid ).fadeTo("slow",0.5) ;
+     // $("div[data-label='"+entprop[l]+"']" ).find ("p").css ("font-weight" , "bold").css("border-width","2px");
+     $("div[data-label='"+entprop[l]+"']" ).css({
+         'transition': 'all 0.3s',
+     //    'border-width' :'2px',
+         '-webkit-box-shadow' : '2px 2px 5px #999' ,
+         '-moz-box-shadow' : '2px 2px 5px #999' ,
+          'box-shadow' : '2px 2px 5px #999' ,
+     }).find ("p").css ("font-weight" , "bold");
+
+/*
+     $("div[data-label='"+entprop[l]+"']" ).css("border-width","2px").find ("p").css ( {
+         'transition': 'all 0.5s',
+         'font-weight' : "bold" ,
+     }) ;*/
+     // css( "opacity" , 0.1 ).css( "background", colorid ).fadeTo("slow",0.5) ;
+      //    console.log ("PROPIEDAD");
+       //   console.log (entprop[l]);
+      }
+      //alert (ent);
+     // $ ("[entidadesrel=Person ]").css( "background", "red" ) ;
+    //var endpoint = $( e ).parent().attr("id");
+    // alert (endpoint);
+   // alert($( e ).attr("data-label"));
+
+    //var endpoints = Session.get('endpoints');
+ };
+   focusbutton = function (e) {  
+       $ (e).css({
+        'transition': 'all 0.5s',
+        'transform': 'scale(1.5)',
+    });
+    //$ (e).animate({   transform : "2,2" , borderWidth: "2px" }, 500 ) ;
+        //  $ (e ).find("p").animate({ fontSize:"1em" }, 500 ) ;
+    };
+ // focusbutton = function (e) {  alert(e) };
+ // dimension = function (e) { $( e ).css( "background", "red" ) ;} ;
+  //dimension = function (e) { $( e ).parent().css( "background", "blue" ) ;} ;
+   //dimension = function () { console.log ('hola')} ;
+
+      Nofocusbutton = function (e) {  
+       $ (e).css({
+        'transition': 'all 0.25s',
+        'transform': 'scale(1)',
+    }); };
   confirmEndpointDelete = function(ev) {
     console.log('entra delete');
     var endpointId = $('#dialogConfirm #okDelete').attr('data-endpointId');
