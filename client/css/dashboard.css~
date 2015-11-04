@@ -131,10 +131,7 @@ body {
   /*height:100%;*/
   background-size:50px 50px;
 }
-  
-  #raw {
-  width: 45px;
-  }
+
 
 div.entity {
   display: table;

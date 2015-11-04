@@ -2,6 +2,7 @@ if (Meteor.isServer) {
 
 
 	Meteor.startup(function () {
+
 		Properties._ensureIndex({'endpoint': 1, 'graphURI': 1});
 		// code to run on server at startup
 		//Meteor.call('getEndpointStructure', 'http://190.15.141.102:8890/sparql', 'http://dspace.ucuenca.edu.ec/resource/');
