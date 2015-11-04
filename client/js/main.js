@@ -140,6 +140,7 @@ function pad(n, width, z) {
           response.status = 'OK';
           endpoints.forEach(function(obj) {
             console.log(obj.endpoint);
+            console.log(obj);
             var graph = {};
             graph.name = obj.name
             graph.colorid = obj.colorid;
@@ -150,7 +151,18 @@ function pad(n, width, z) {
                                            graphURI: obj.graphURI} 
                                           ).fetch();
 
-            var properties = entities;
+
+            entities = jQuery.grep(entities, function (n) { return n!== undefined; });
+            console.log('Properties');
+            console.log(entities);
+
+             
+            var properties = [];
+         
+
+
+            properties = entities;
+
             entities = _.pluck(entities, 'subjects');
           //   console.log ("Pluck");
           //   console.log (entities);
@@ -163,7 +175,15 @@ function pad(n, width, z) {
 
             graph.endpointEntities = _.uniq(values, false, function(obj){return obj.fullName;});
             graph.endpointProperties = properties;
+               if (graph.endpointProperties [0]  === undefined) 
+            {
+               console.log ('Vacio');
 
+            }else {
+               console.log ('No Vacio');
+               console.log (graph.endpointProperties[0]);
+               console.log (graph.endpointProperties[1]);
+            }
 
             var hash = {};
 
@@ -190,7 +210,7 @@ function pad(n, width, z) {
                }else { 
                 graph.endpointProperties[j].dim = "col-xs-6 col-sm-4 col-md-3";
                }
-               if (j % 3  == 0 && name.length > 10 ){
+               if (j % 3  == 0 && j>0 && name.length > 10 ){
                   var aux = graph.endpointProperties[j-1];
                   graph.endpointProperties[j-1] = graph.endpointProperties[j] ;
                   graph.endpointProperties[j] = aux;
