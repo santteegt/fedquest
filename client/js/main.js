@@ -284,7 +284,14 @@ function pad(n, width, z) {
       return Session.get("counter");
     }
   });
+//*
+Template.search.helpers({
+   endpointsAvailable: function(){
+        return Endpoints.find({status: 'A'}).fetch();
+      }
+  });
 
+//*
   Template.hello.events({
     'click button': function () {
       console.log('just a test');
