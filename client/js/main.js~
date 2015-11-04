@@ -66,7 +66,11 @@ function pad(n, width, z) {
 
       resultQuery: function(){
         var response = App.resultCollection.findOne();
-        return response ? JSON.parse(response.content).results.bindings: [];
+	var resp = response ? JSON.parse(response.content).results.bindings: [];
+        for (var x=0; x<resp.length ; x++){
+	    resp[x].num=x+1;
+	}
+        return resp;
       },
 
       settings: function () {
@@ -135,6 +139,8 @@ function pad(n, width, z) {
           console.log('==Si existen edpoints');
           response.status = 'OK';
           endpoints.forEach(function(obj) {
+            console.log(obj.endpoint);
+            console.log(obj);
             var graph = {};
             graph.name = obj.name
             graph.colorid = obj.colorid;
@@ -144,15 +150,100 @@ function pad(n, width, z) {
             var entities = Properties.find( {endpoint: obj.endpoint, 
                                            graphURI: obj.graphURI} 
                                           ).fetch();
-            var properties = entities;
+
+
+            entities = jQuery.grep(entities, function (n) { return n!== undefined; });
+            console.log('Properties');
+            console.log(entities);
+
+             
+            var properties = [];
+         
+
+
+            properties = entities;
+
             entities = _.pluck(entities, 'subjects');
+          //   console.log ("Pluck");
+          //   console.log (entities);
             //console.log('==encontrados: ' + entities.length);
             var values = [];
             for(var i=0; i<entities.length; i++) {
               values = _.union(values, entities[i]);
+               //console.log (entities[i][0]);
             }
+
             graph.endpointEntities = _.uniq(values, false, function(obj){return obj.fullName;});
             graph.endpointProperties = properties;
+         /*      if (graph.endpointProperties [0]  === undefined) 
+            {
+               console.log ('Vacio');
+
+            }else {
+               console.log ('No Vacio');
+               console.log (graph.endpointProperties[0]);
+               console.log (graph.endpointProperties[1]);
+            }
+*/
+            var hash = {};
+
+            for(var  j=0; j<graph.endpointProperties.length; j++) {
+                
+               var entidadesrel  =  _.pluck(graph.endpointProperties[j].subjects , "name"); 
+               var entidadestext = "";
+               
+               for (var h = 0 ; h < entidadesrel.length ; h++) {
+                  entidadestext = entidadesrel[h] ;
+                  if (hash.hasOwnProperty(entidadestext)){
+                    hash[entidadestext] = hash[entidadestext]+" "+graph.endpointProperties[j].name;
+                  } else{
+                    hash[entidadestext] = graph.endpointProperties[j].name;
+
+                  }
+              }
+             //   console.log ("Rel");
+             //   console.log (entidadesrel); 
+             //  graph.endpointProperties[j].enti = entidadestext ;
+              var name = graph.endpointProperties[j].name;
+               if (name.length > 10 ) {
+               graph.endpointProperties[j].dim = "col-xs-10 col-sm-8 col-md-6";
+               }else { 
+                graph.endpointProperties[j].dim = "col-xs-6 col-sm-4 col-md-3";
+               }
+               if (j % 3  == 0 && j>0 && name.length > 10 ){
+                  var aux = graph.endpointProperties[j-1];
+                  graph.endpointProperties[j-1] = graph.endpointProperties[j] ;
+                  graph.endpointProperties[j] = aux;
+               }
+               console.log ("Prop");
+              console.log (graph.endpointProperties[j]);
+              
+              }
+              console.log ("HASH ");
+              console.log (hash);
+
+
+              for( j=0; j<graph.endpointEntities.length; j++) {
+                     
+              // Ajusta el tamanio div segun el texto
+              var name = graph.endpointEntities[j].name;
+              graph.endpointEntities[j].ent =  hash[name] ; 
+               if (name.length > 10 ) {
+               graph.endpointEntities[j].dim = "col-xs-10 col-sm-8 col-md-6";
+               }else { 
+                graph.endpointEntities[j].dim = "col-xs-6 col-sm-4 col-md-3";
+               }
+               // Para evitar que se coloque en el ultimo lugar de la fila cuando ocupa dos cuadros
+                if (j % 3  == 0 && name.length > 10 ){
+                  var aux = graph.endpointEntities[j-1];
+                  graph.endpointEntities[j-1] = graph.endpointEntities[j] ;
+                  graph.endpointEntities[j] = aux;
+               }
+             //  console.log ("Ent");
+             // console.log (graph.endpointEntities[j]);
+              
+              } 
+
             Session.set(graph.endpoint + '|' + graph.graphURI, {entities: graph.endpointEntities, properties: graph.endpointProperties});
             response.push(graph);
             //console.log(graph);
