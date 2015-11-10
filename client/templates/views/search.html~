@@ -1,0 +1,79 @@
+			<template name="search">
+				<div class="container-fluid" sytle="overflow: scroll">
+					<div class="row">
+						<div class="col-sm-3 sidebar sidebar-style" >
+							<!-- <div class="col-md-2 sidebar sidebar-style"> -->
+							<div class="panel panel-info">
+								<div class="panel-heading" style="text-align: left">Search</div>
+								<div class="panel-body">
+									<div class="col-lg-6">
+										<div class="input-group">
+											<input type="text" id="textToSearch" class="form-control" placeholder="Search for...">
+											<span class="input-group-btn">
+												<button class="btn btn-default runSearch" type="button">Go!</button>
+											</span>
+										</div><!-- /input-group -->
+									</div><!-- /.col-lg-6 -->
+									
+									<label>By:</label>
+									<div class="input-group">
+										
+										<input type="radio" name="resourceType" value="t" checked="checked" >All
+										
+										<input type="radio" name="resourceType" value="d">Documents
+										
+										<br/>
+										<input type="radio" name="resourceType" value="a">Authors
+										
+										<input type="radio" name="resourceType" value="c">Collections
+
+									</div><!-- /input-group -->
+
+									<label>From:</label>
+									<div class="input-group">
+										{{#each endpointsAvailable}}
+										<input type="checkbox" disabled="{{base}}"  checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" name="repositoriesList" > {{name}}
+										{{/each}}
+									</div>
+
+								</div>
+							</div>
+
+						</div>
+
+
+					</div>
+				</div>
+
+				<div class="col-xs-9 col-sm-8 col-sm-offset-3 main">
+					<h4>Resultados</h4>
+					<ul class="list-group">
+
+
+					{{#each resultFullQuery}}
+						<li class="list-group-item" >
+							<div align="left">
+								<table cellpadding="5px">
+									<tr>
+										<td style="padding: 5px;">
+											<a href="#" class="btn btn-info btn-lg">
+												<span class="{{Icon}}"></span> {{Origin}}
+											</a>
+										</td>
+										<td style="padding: 15px;">
+											<a href="{{URI}}">{{Label}}</a>
+
+										</td>
+									</tr>
+									</table>
+								</div>
+							</li>
+					{{/each}}
+						</ul>
+
+
+
+
+					</div>
+
+				</template>
