@@ -23,7 +23,7 @@
   },
   setEvents: function(divNode) {
     $('button.runSearch').on('click', function(ev) {
-      App.resultCollection2.remove({});
+      App.resultFullCollection.remove({});
       var EntitySearch = get_radio_value("resourceType");
 
       var FromList = get_checkList_values("repositoriesList");
@@ -84,7 +84,7 @@
 
       var SubQN=0;
       for (var oneQuery=0; oneQuery<FromList.length; oneQuery++){
-        var EndpointLocal=FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
+        var EndpointLocal=(oneQuery==0);
         var Service=FromList[oneQuery].attributes['data-endpoint'].value;
         for (var oneRes=0; oneRes<ResqLis.length; oneRes++){
           for (var oneProp=0; oneProp<ResqLis[oneRes].indexProperties.length; oneProp++){
@@ -124,7 +124,7 @@
       Query+='} order by DESC(?Score)\n';
 
     alert(Query);
-      waitingDialog.show();
+
 
       var jsonRequest = {"sparql": Query, "validateQuery": false};
         Meteor.call('doQuery', jsonRequest, function(error, result) {
@@ -139,10 +139,9 @@
             }).show();
           } else {
             if(result.resultSet) {
-              App.resultCollection2.insert(result.resultSet);
+              App.resultFullCollection=result.resultSet.content;
             }
           }
-          waitingDialog.hide();
           
         });
 
@@ -170,8 +169,3 @@ function get_checkList_values(CheckName) {
               }
             }
           };
-
-
-
-
-

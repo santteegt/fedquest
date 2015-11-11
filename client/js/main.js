@@ -16,6 +16,10 @@ if (Meteor.isClient) {
   this.Endpoints = new Meteor.Collection("endpoints");
   this.Queries = new Meteor.Collection("queries");
   this.App.resultCollection = new Meteor.Collection(null);
+  this.App.resultCollection2 = new Meteor.Collection(null);
+
+
+
   // Muestra consultas - JS
   Template.samples.helpers({
       queriesAvailable: function(){
@@ -285,11 +289,94 @@ function pad(n, width, z) {
     }
   });
 //*
+
+
+
+
+
 Template.search.helpers({
+
+
    endpointsAvailable: function(){
         return Endpoints.find({status: 'A'}).fetch();
+      },
+   resultFullQuery: function(){
+        var response = App.resultCollection2.findOne();
+        var toShow = [];
+        if (response){
+	var EndpointsLs = Endpoints.find({status: 'A'}).fetch();
+	var resp = response ? JSON.parse(response.content).results.bindings: [];
+	var MaxLength=160;
+
+	//graphURI
+	for (var k=0; k<resp.length; k++){
+
+		var OneResult = toShow.filter(function (val) {return val.URI === resp[k].EntityURI.value;});
+		if(OneResult.length==0){
+			//New
+			var OneResult= {};
+			OneResult.Weight = 1;
+			OneResult.Type = resp[k].EntityClass.value;
+			var Org = EndpointsLs.filter(function (val) {return strStartsWith(resp[k].EntityURI.value,val.graphURI); });
+			if (Org.length >0){
+				Org=Org[0].name;
+			}else{
+				Org='###';			
+			}
+
+			OneResult.Origin = Org;
+			OneResult.Label = resp[k].EntityLabel.value;
+			OneResult.URI = resp[k].EntityURI.value;
+			OneResult.MatchsProperty =[{p:resp[k].PropertyLabel.value, v:resp[k].PropertyValue.value, l: resp[k].PropertyValue.value.length>MaxLength, s: resp[k].PropertyValue.value.substr(0, MaxLength), c: resp[k].PropertyValue.value.substr(MaxLength)}];
+
+			switch(resp[k].EntityClass.value){
+				case 'http://purl.org/ontology/bibo/Document':OneResult.Icon='glyphicon glyphicon-file'; break;
+				case 'http://xmlns.com/foaf/0.1/Person':OneResult.Icon='glyphicon glyphicon-user'; break;
+				case 'http://purl.org/ontology/bibo/Collection':OneResult.Icon='glyphicon glyphicon-folder-open'; break;
+			}
+
+				
+			toShow.push(OneResult);
+		}else{
+			//Add
+			OneResult=OneResult[0];
+			OneResult.Weight += 1;
+			OneResult.MatchsProperty.push({p:resp[k].PropertyLabel.value, v:resp[k].PropertyValue.value, l: resp[k].PropertyValue.value.length>MaxLength, s: resp[k].PropertyValue.value.substr(0, MaxLength), c: resp[k].PropertyValue.value.substr(MaxLength)});
+      OneResult.MatchsProperty.sort(compare2);
+		}
+		
+	}	
+}
+
+        //toShow.sort(compare);
+
+
+
+
+        return toShow;
       }
   });
+
+function compare(a,b) {
+  if (a.Weight < b.Weight)
+    return 1;
+  if (a.Weight > b.Weight)
+    return -1;
+  return 0;
+}
+function compare2(a,b) {
+  if (a.p < b.p)
+    return -1;
+  if (a.p > b.p)
+    return 1;
+  return 0;
+}
+
+
+function strStartsWith(str, prefix) {
+    return str.indexOf(prefix) === 0;
+}
+
 
 //*
   Template.hello.events({

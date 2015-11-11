@@ -16,6 +16,10 @@ if (Meteor.isClient) {
   this.Endpoints = new Meteor.Collection("endpoints");
   this.Queries = new Meteor.Collection("queries");
   this.App.resultCollection = new Meteor.Collection(null);
+
+
+  counter_=new Blaze.Var(8);
+
   // Muestra consultas - JS
   Template.samples.helpers({
       queriesAvailable: function(){
@@ -284,7 +288,76 @@ function pad(n, width, z) {
       return Session.get("counter");
     }
   });
+//*
 
+
+
+
+
+Template.search.helpers({
+	seconds: function(){
+        return counter_.get();
+      },
+
+   endpointsAvailable: function(){
+        return Endpoints.find({status: 'A'}).fetch();
+      },
+   resultFullQuery: function(){
+        var response = '';
+	var EndpointsLs = Endpoints.find({status: 'A'}).fetch();
+	var resp = response ? JSON.parse(response).results.bindings: [];
+	var toShow = [];
+
+	//graphURI
+	for (var k=0; k<resp.length; k++){
+
+		var OneResult = toShow.filter(function (val) {return val.URI === resp.EntityURI.value;});
+		if(OneResult.length==0){
+			//New
+			var OneResult= {};
+			OneResult.Weight = 1;
+			OneResult.Type = resp.EntityClass.value;
+			var Org = EndpointsLs.filter(function (val) {return strStartsWith(resp.EntityURI.value,val.graphURI); });
+			if (Org.length >0){
+				Org=Org[0].name;
+			}else{
+				Org='###';			
+			}
+
+			OneResult.Origin = Org;
+			OneResult.Label = resp.EntityLabel.value;
+			OneResult.URI = resp.EntityURI.value;
+			OneResult.MatchsProperty =[resp.PropertyLabel.value];
+			OneResult.MatchsValue =[resp.PropertyValue.value];
+
+			switch(resp.EntityClass.value){
+				case 'http://purl.org/ontology/bibo/Document':OneResult.Icon='glyphicon glyphicon-file'; break;
+				case 'http://xmlns.com/foaf/0.1/Person':OneResult.Icon='glyphicon glyphicon-user'; break;
+				case 'http://purl.org/ontology/bibo/Collection':OneResult.Icon='glyphicon glyphicon-folder-open'; break;
+			}
+
+				
+			toShow.push(OneResult);
+		}else{
+			//Add
+			OneResult=OneResult[0];
+			OneResult.Weight += 1;
+			OneResult.MatchsProperty.push(resp.PropertyLabel.value);
+			OneResult.MatchsValue.push(resp.PropertyValue.value);
+		}
+		
+	}	
+        return toShow;
+      }
+  });
+
+
+function strStartsWith(str, prefix) {
+    return str.indexOf(prefix) === 0;
+}
+
+
+//*
   Template.hello.events({
     'click button': function () {
       console.log('just a test');
