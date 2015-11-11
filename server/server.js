@@ -28,6 +28,8 @@ if (Meteor.isServer) {
 			},
 
 			doQuery: function(jsonRequest) {
+				console.log ('ConsultaQ');
+				console.log (jsonRequest);
 				var timeout = jsonRequest.timeout ? jsonRequest.timeout: 30000
 				var response = {}
 				response.statusCode = 200;
@@ -45,6 +47,35 @@ if (Meteor.isServer) {
 							console.log('==Avoiding SPARQL validation on client');
 						}
 						response.resultSet = Meteor.call('runQuery', endpointBase.endpoint, endpointBase.graphURI, jsonRequest.sparql, undefined, timeout);
+					}catch(e){
+						console.log(e);
+						response.statusCode = 400;
+						response.msg = "Error executing SPARQL Query: See console for details";
+						response.stack = e.toString();
+					}
+				}
+				return response;
+
+			}, doQueryDesc: function(jsonRequest) {
+				console.log ('ConsultaQ');
+				console.log (jsonRequest);
+				var timeout = jsonRequest.timeout ? jsonRequest.timeout: 30000
+				var response = {}
+				response.statusCode = 200;
+				response.msg = undefined;
+				response.stack = undefined;
+				var endpointBase = Endpoints.findOne({base: true});
+				if(!endpointBase) {
+					response.statusCode = 400;
+					response.msg = "Base Endpoint is not registered!";
+				} else {
+					try{
+						if(jsonRequest.validateQuery) {
+							parserInstance.parse(jsonRequest.sparql);
+						} else {
+							console.log('==Avoiding SPARQL validation on client');
+						}
+						response.resultSet = Meteor.call('runQueryDescr', endpointBase.endpoint, endpointBase.graphURI, jsonRequest.sparql, 'application/ld+json', timeout);
 					}catch(e){
 						console.log(e);
 						response.statusCode = 400;
@@ -126,7 +157,8 @@ if (Meteor.isServer) {
 									'default-graph-uri': defaultGraph,
 									'query': query,
 									'format': format,
-									'timeout': timeout
+									'timeout': timeout,
+									'profile': "http://www.w3.org/ns/json-ld#expanded"
 								}
 						});
 
