@@ -59,44 +59,106 @@
   return barheight + "px" ;
   } );
   */
-  var id = "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES";
-           
-  // var data = initiaload (id);
+  var result = Meteor.call('loadQueryFirstNode', 'http://purl.org/ontology/bibo/Document', function(error, result) {
+               console.log ("Querys");
+               console.log (result);
+          });
+
+  //var id = "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES";
+  var id = "http://190.15.141.66:8899/uce/contribuyente/ACURIO_DEL_PINO__SANTIAGO"
+  var endpointbase = { "endpoint" : "http://190.15.141.66:8891/myservice/query" , "graphURI" : "http://190.15.141.66:8899/uce/" };
+ // var endpointbase = { "endpoint" : "http://localhost:8891/myservice/query" , "graphURI" : "http://190.15.141.66:8899/uce/" };
+   //var data = initiaload (id);
+  initiaload (id , endpointbase , width , height , svg ) ;
   // var data = {"@id": "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES" , author : { "http://xmlns.com/foaf/0.1/firstName":"María de Lourdes" , "http://xmlns.com/foaf/0.1/lastName": "Velasco" , "http://xmlns.com/foaf/0.1/name": "Velasco, María de Lourdes"}  };
-   var data = {"@id": "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES" , author : { "foaf:firstName":"María de Lourdes" , "foaf:lastName": "Velasco" , "foaf:name": "Velasco, María de Lourdes"}  };
-   console.log ("Datos");
-   console.log (data);
+   //var data = {"@id": "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES" , author : { "foaf:firstName":"María de Lourdes" , "foaf:lastName": "Velasco" , "foaf:name": "Velasco, María de Lourdes"}  };
+  // console.log ("Datos");
+  // console.log (data);
   //var data =   {"@context":{"foaf":"http://xmlns.com/foaf/0.1/"},"@graph":[{"@id":"http://190.15.141.102:8080/dspace/contribuidor/autor/EspinozaMejia_Mauricio","@type":"foaf:Person","foaf:name":"Espinoza Mejia, Mauricio"}],"@id":"http://190.15.141.85:8080/marmotta/context/default"};
-  var scope =  "scope" ;
+
  
-  draw(svg, width, height, data, scope); 
+  
     
   }
 });
-   function initiaload (idbase) 
+   function initiaload (idbase , endpointbase ,  width , height ,  svg ) 
    {
-           
-            var sparql = 'select * where { <'+idbase+'> ?b ?c}';
+           // var sparql = 'select * where { <'+idbase+'> ?b ?c . filter isLiteral (?c) }';
+         /*  var prefix =  ' PREFIX dct: <http://purl.org/dc/terms/> '
+                       + ' PREFIX bibo: <http://purl.org/ontology/bibo/> '
+                       + ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>  ' ; */
+          //  var sparql = 'select * where { <'+idbase+'> ?b ?c}';
             var objroot = {}; 
+            var scope =  "scope" ;
+
+
+           var sparql = 'Construct {'
+                      + '<'+idbase+'> ?b ?c }'
+                      + 'where  { <'+idbase+'> ?b ?c} ' ;
+
+         var context = {
+                                "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+                                "foaf": "http://xmlns.com/foaf/0.1/",
+                                "dc": "http://purl.org/dc/elements/1.1/",
+                                "dcterms": "http://purl.org/dc/terms/",
+                                "bibo": "http://purl.org/ontology/bibo/",
+                                "uc": "http://ucuenca.edu.ec/wkhuska/resource/"
+                            };
+
+
+
             
-            jsonsparql = { "sparql": sparql , 'validateQuery': false} ;
-                    Meteor.call('doQuery', jsonsparql, function(error, result) {
-                   if(result.statusCode != 200) {
-                   console.log(result.stack);
-                   $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
-            //$('#sparqlEditor button#consoleError').show();
-                   var message = result.msg + (result.stack ? (': ' + result.stack.substring(0, 30) + '...'):'');
-                   $('.top-right').notify({
-                    message: { text: message },
-                    type: 'danger'
-                    }).show();
-                    
-                } else {
-                if(result.resultSet) {
+          //  jsonsparql = { "sparql": sparql , 'validateQuery': false} ;
+           // var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
+             var  jsonsparql = { "sparql": sparql , 'validateQuery': false} ;
+            //var endpointBase = Endpoints.findOne({base: true}); 
+             console.log ("call");
+         // Meteor.call('runQuery', endpointbase.endpoint ,  endpointbase.graphURI , sparql, "application/ld+json" , 30000 , function (error , result) {
+         //    Meteor.call('runQuery', endpointbase.endpoint ,  endpointbase.graphURI , sparql, "application/sparql-results+json" , 30000 , function (error , result) {
+              Meteor.call('doQueryDesc' , jsonsparql , endpointbase  , function (error , result) {
+           if(result.resultSet) {
                   $('#modalLog .console-log').html('');
-                    
+                    var resourcebase = {};
                     console.log (result.resultSet);
                     var data = jQuery.parseJSON( result.resultSet.content);
+
+                    
+
+                   //  var resultjson = jQuery.parseJSON( result.resultSet.content);
+
+                     console.log ("Compactcall");
+                     jsonld.compact(data , context, function(err, compacted) {
+                     console.log ("Compacted");
+                     console.log(JSON.stringify(compacted, null, 2)); 
+                     
+                   //  child [entityname] = {'@id' : objson["@id"] , 'data' : dataresult[i] , children : [] } ;
+                     resourcebase["@id"] =  compacted["@id"] ;
+ 
+                         var  entityname= '';
+                       if (compacted['@type'] ==  'bibo:Collection' ) {
+                            
+                              entityname = 'collection';
+                           } else if ( compacted['@type'] == "foaf:Person") {
+                              entityname ='author';
+
+                           }else {
+                              entityname = 'publication';
+                           }
+
+
+
+                     resourcebase [ entityname] = {'@id' : compacted["@id"] , 'data' : compacted , children : [] };
+                     draw(svg, width, height, resourcebase , scope , endpointbase); 
+                //     datachildren (idbase , compacted , node , "publication");
+                     // _.without(compacted, _.findWhere(compacted, {id: 3}));
+                      });
+
+
+                    } else {
+
+                        alert ("Endpoints No disponibles");
+                    }
+/*
                     console.log (data);
                     var arrayprop = [];
                     var dataresult =  data.results.bindings;    
@@ -109,34 +171,43 @@
                       if (dataresult[i].c.type == 'literal'){
                           properties[dataresult[i].b.value] = dataresult[i].c.value ;
                          //  arrayprop.push(properties);
-                       } else if ( dataresult[i].c.value == 'foaf:Person' )
+                       } else if ( dataresult[i].c.value == 'http://xmlns.com/foaf/0.1/Person' )
                        {
                             typeresource = 'author';
-                       }else if ( dataresult[i].c.value == 'bibo:Collection')
+                       }else if ( dataresult[i].c.value == 'http://purl.org/ontology/bibo/Collection')
                        {
                             typeresource =  'collection';
+                       }else if (dataresult[i].c.value  == 'http://purl.org/ontology/bibo/Document') {
+                             typeresource =  'publication';
                        }
-
 
                    // datachildren (idbase , result.resultSet.content , node , "publication");
                     }
-
-                   if (typeresource.length <1 ){ typeresource = 'publication';}
+                       if (typeresource == '' ) { typeresource =  'publication';};
                     objroot = {"@id": idbase } ;
                     objroot[typeresource] = { "@id": idbase ,"data": properties } ;
                     console.log ("Datos objroot");
                     console.log (objroot) ;
-                    console.log ();
-                 }
-                 }
-          
-                 });
-           return objroot;
+                    draw(svg, width, height, objroot, scope , endpointbase); 
 
-   };
- function draw(svg, width, height, data, scope) {
-            alert('Inicia4');
+                    
+                 } else {
+
+                    alert ("nada");
+                 }
+                
+               */
+
+
+            } );
+                  
+    };
+
+
+ function draw(svg, width, height, data, scope , endpoint ) {
+            alert('graph');
             // Misc. variables
+            var endpointactual = endpoint ;
             var i = 0;
             var duration = 750;
             var root;
@@ -158,7 +229,8 @@
 
            // console.log (data);
             exploredArtistIds = [];
-            root = initWithArtist(data);
+            initWithArtist(data);
+            root = data ;
             root.x0 = viewerHeight / 2;
             root.y0 = 0;
             console.log ("Root");
@@ -313,20 +385,20 @@
                 console.log (exploredArtistIds);
                 
               //  var dataini;
-
+              
                 if (isAuthor(dataini)){
                 return  { "@id": id ,
-                 'author': {"@id": id, data: dataini.author},
+                 'author': {"@id": id, data: dataini.author.data},
                   'children': null }
 
                 }else if (isPublication(dataini)) 
                 {
                  return  { "@id": id ,
-                 'publication': {"@id": id, data: dataini.publication },
+                 'publication': {"@id": id, data: dataini.publication.data },
                   'children': null }
                 } else if (isCollection(dataini)) {
                  return  { "@id": id ,
-                 'collection': {"@id": id, data: dataini.collection },
+                 'collection': {"@id": id, data: dataini.collection.data },
                   'children': null }
                 }
                return dataini;
@@ -656,31 +728,35 @@
                    
                     if (isAuthor(d)) {
                         drawpanel (d , "author");
-                        Datachild(d);
+                       // Datachild(d);
                     } else if (isPublication(d)) {
                         drawpanel (d , "publication");
-                        Datachild(d );
+                      //  Datachild(d );
                     } else if (isCollection(d)) {
                         drawpanel (d , "collection");
-                        Datachild(d );
+                      //  Datachild(d );
 
                     }
+                     Datachild(d , endpointactual );
                     //console.log ("Node");
                     //console.log (d);
                    // Datachild(d);
                 }  
              }
 
-               function Datachild (node )
+               function Datachild (node  , endpointselect)
                 {   // var idbase =  'http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES';
-                     var prefix =  ' PREFIX dct: <http://purl.org/dc/terms/> '
+                     
+                    console.log ("Consulta");
+                    console.log (node);
+                    var idbase = node["@id"];
+
+                    var prefix =  ' PREFIX dct: <http://purl.org/dc/terms/> '
                                 + ' PREFIX bibo: <http://purl.org/ontology/bibo/> '
                                 + ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>  ' ; 
 
-                       console.log ("Consulta");
-                       console.log (node);
-                       var idbase = node["@id"];
-                    //jsonsparql = { sparql: 'select * where {<http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES> ?b ?c . filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))}' , validateQuery: false} ;
+                      
+                   // jsonsparql = { sparql: 'select * where {<http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES> ?b ?c . filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))}' , validateQuery: false} ;
                     
                     var sparql = ' Construct { '  
                   + '<'+idbase+'> ?b ?c .'
@@ -719,8 +795,8 @@
                //   + 'filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))'
 
 
-            jsonsparql = { "sparql": sparql , 'validateQuery': false} ;
-                    Meteor.call('doQueryDesc', jsonsparql, function(error, result) {
+                   var  jsonsparql = { "sparql": sparql , 'validateQuery': false} ;
+                    Meteor.call('doQueryDesc', jsonsparql , endpointselect , function(error, result) {
                    if(result.statusCode != 200) {
                    console.log(result.stack);
                    $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
@@ -730,13 +806,13 @@
                     message: { text: message },
                     type: 'danger'
                     }).show();
-                  /* if(!$(ev.target).attr('id')) {
+                   if(!$(ev.target).attr('id')) {
               $('#sparqlEditor').attr('data-run','true');
               $('#sparqlEditor').modal();
                    } else {
                         alert ('Error')
                    $('#sparqlEditor button#consoleError').show();
-                    }*/
+                    }
                 } else {
                 if(result.resultSet) {
                   $('#modalLog .console-log').html('');
@@ -755,18 +831,47 @@
                                 "dc": "http://purl.org/dc/elements/1.1/",
                                 "dcterms": "http://purl.org/dc/terms/",
                                 "bibo": "http://purl.org/ontology/bibo/",
-                                "uc": "http://ucuenca.edu.ec/wkhuska/resource/"
+                                "uc": "http://ucuenca.edu.ec/wkhuska/resource/" ,
+                                "owl" : "http://www.w3.org/2002/07/owl#"
                             };
                     
                    var resultjson = jQuery.parseJSON( result.resultSet.content);
 
                      console.log ("Compactcall");
+                     if (resultjson.hasOwnProperty("@graph")) {
                      jsonld.compact(resultjson , context, function(err, compacted) {
                      console.log ("Compacted");
                      console.log(JSON.stringify(compacted, null, 2)); 
                      datachildren (idbase , compacted , node , "publication");
                       });
+                     } else {
+                            
+                           Meteor.call('findendpointactual', idbase  , function(error, result) { 
+                               console.log ("Entra findend");
+                               console.log (result);
+                             if (result.statusCode == 200 && result.content )
+                             {    console.log ("Ahora si");
+                                 
+                                   endpointactual['endpoint'] = result.endpoint["endpoint"];
+                                   endpointactual['graphURI'] = result.endpoint["graphURI"];
 
+                                   console.log ("No grap");
+                                  $('.top-right').notify({
+                                  message: { text: 'Accediendo a nuevo endpoint: '+ endpointactual['endpoint'] },
+                                  type: 'warning'
+                                  }).show();
+
+                                   console.log ("LLama de nuevo");
+                                   Datachild (node , endpointactual) ;
+                             }else {
+                                alert ("No es posible extraer mas datos, verifique que se encuentra registrado el endpoint");
+
+                             }
+
+                           });
+                           // findendpointactual ();
+
+                     }
                  //   datachildren (idbase , result.resultSet.content , node , "publication");
                     
                    //var resultados = resultjson["results"]["bindings"];
@@ -779,6 +884,7 @@
           
                  });
 
+                  
                }
 
                function datachildren (idbase ,jsondata , node , entityname){
@@ -809,8 +915,47 @@
                           var objson = dataresult[i];
                          if (objson["@id"] == idbase) 
                           {
+                              console.log ("Entra datos");
+                              console.log (node);
+                              if ( objson["@type"] == "foaf:Person" ){
+                                 node['author']['data'] =  objson;
+                                 node ['author']['data']['Relation'] = "SameAs";
+                             // node['author']['data'] = _.union( objson , node['author']['data'] );
+                              }else if ( objson["@type"] == "bibo:Collection" ) {
+                              // node['collection']['data'] = _.union( objson , node['collection']['data'] );
+                                  node['collection']['data'] = objson;
+                                  node['collection']['data']['Relation'] = "SameAs";
+                              }else {
+                               // node['publication']['data'] = _.union( objson , node['publication']['data'] );
+                                 node['publication']['data'] =  objson;
+                                 node['publication']['data']['Relation'] =  "SameAs";
+                              }
 
-                        
+                                
+                              console.log (node);
+                           if (objson.hasOwnProperty ("owl:sameAs"))
+                           {  
+                             console.log("Si sameAs");
+                              var   objsame = objson["owl:sameAs"] ;
+                             for (var j = 0 ; j < objsame.length ;j++)
+                              {  
+                           var child = {};
+                            console.log ("Same as");
+                            console.log (objsame[j]);
+                           // var typeRelation["Relation"] = "SameAs";
+                           child ['@id'] =  objsame[j]["@id"]; 
+                           child ["author"] = {'@id' : objsame[j]["@id"] , 'data' : { 'Relation': "SameAs" } , children : [] }
+                           node.children.push(child);
+                           exploredArtistIds.push(idbase);
+
+
+                              }
+
+                           }
+
+
+
+
                            
                          }else 
                          { var child = {};
@@ -910,10 +1055,12 @@
                         "http://xmlns.com/foaf/0.1/firstName": {label: "First Name", containerType: "div"},
                         "http://xmlns.com/foaf/0.1/lastName": {label: "Last Name", containerType: "div"},
                          };*/
-                          model = {"foaf:name": {label: "Name", containerType: "div"},
+                          model = { "Relation" : {label : "Relation" , containerType: "div"} ,
+                        "foaf:name": {label: "Name", containerType: "div"},
                         "foaf:firstName": {label: "First Name", containerType: "div"},
                         "foaf:lastName": {label: "Last Name", containerType: "div"},
                          };
+                        
                      }else if ( entityname == 'collection') {
                         id = node.collection["@id"];
                         entity = node.collection.data ;
@@ -981,6 +1128,8 @@
 
 
                }
+
+            
                
              //  }
 

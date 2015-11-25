@@ -1005,6 +1005,11 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
       request.title = $('div #graph-title').val();
       request.description = $('div #graph-description').val();
       request.jsonQuery = App.dashboard.graph.toJSON();
+       var cells = request.jsonQuery['cells'];            
+      console.log ("Datos a guardarse");
+      console.log (request.jsonQuery);
+      var firstelement = cells[0].subject;
+      console.log (firstelement);
       var errorMessage = "";
       //at least one triple
       errorMessage = request.jsonQuery.cells.length == 0 ? "The Query Graph must have at least 1 triple":"";

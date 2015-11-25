@@ -56,7 +56,7 @@ if (Meteor.isServer) {
 				}
 				return response;
 
-			}, doQueryDesc: function(jsonRequest) {
+			}, doQueryDesc: function(jsonRequest , endpoint ) {
 				console.log ('ConsultaQ');
 				console.log (jsonRequest);
 				var timeout = jsonRequest.timeout ? jsonRequest.timeout: 30000
@@ -64,7 +64,10 @@ if (Meteor.isServer) {
 				response.statusCode = 200;
 				response.msg = undefined;
 				response.stack = undefined;
-				var endpointBase = Endpoints.findOne({base: true});
+				
+				var endpointBase = endpoint;
+				 //Endpoints.findOne({base: true});
+
 				if(!endpointBase) {
 					response.statusCode = 400;
 					response.msg = "Base Endpoint is not registered!";
@@ -75,7 +78,7 @@ if (Meteor.isServer) {
 						} else {
 							console.log('==Avoiding SPARQL validation on client');
 						}
-						response.resultSet = Meteor.call('runQueryDescr', endpointBase.endpoint, endpointBase.graphURI, jsonRequest.sparql, 'application/ld+json', timeout);
+						response.resultSet = Meteor.call('runQueryDescr', endpointBase.endpoint, endpointBase.graphURI , jsonRequest.sparql, 'application/ld+json', timeout);
 					}catch(e){
 						console.log(e);
 						response.statusCode = 400;
@@ -102,7 +105,35 @@ if (Meteor.isServer) {
 				}
 				return result;
 			},
+               loadQueryFirstNode : function(element) {
+				result = {};
+				result.statusCode = 200;
+				result.msg = 'OK';
+				var querylist = [];
+				try{
 
+					var query = Queries.find().fetch();
+					console.log ('Querys server0');
+                     for (var i = 0; i < query.length ;i++)
+                     {   console.log ('Querys server');
+                           	 //  console.log (query[i].jsonGraph.cells.0.subject);
+                           	   var js = JSON.parse(query[i]['jsonGraph']);
+                              // var s  =  js.subject;
+                               console.log (js) ;
+                           if ( js.cells[0].subject == element )
+                           {   console.log ('Querys server');
+                           	  // console.log (query[i].jsonGraph.cells[0].subject);
+                               querylist.push (query[i]);
+                           } 
+                     }
+				  return querylist;
+				}catch(e){
+					console.log(e);
+					result.statusCode = 500;
+					result.msg = e
+				}
+				return querylist;
+			},
 			updatePrefixes: function() {
 				HTTP.get( 'http://prefix.cc/context', function(error, result){
 					if(result.statusCode == '200' && !error) {
@@ -157,8 +188,7 @@ if (Meteor.isServer) {
 									'default-graph-uri': defaultGraph,
 									'query': query,
 									'format': format,
-									'timeout': timeout,
-									'profile': "http://www.w3.org/ns/json-ld#expanded"
+									'timeout': timeout
 								}
 						});
 
@@ -186,7 +216,53 @@ if (Meteor.isServer) {
 				}
 				
 				return response;
-			},
+			},  
+			 findendpointactual: function ( resource ) {
+                
+                var response = {};
+                    response.endpoint = {};
+                    response.content = false;
+                    console.log ('!!!!!!!!!!!!!!EntraEndpoint');
+                var endpointsArray = Endpoints.find().fetch();
+                     console.log (endpointsArray);
+                for  (var i = 0; i< endpointsArray.length ; i++) {
+                 console.log ('EndpointServer');
+                 console.log ( endpointsArray[i]);
+                  var graph =  endpointsArray[i].graphURI;
+                  var endpoint = endpointsArray[i].endpoint;
+                 
+            
+                	try {
+					var result = Meteor.call('runQuery', endpoint , '', 'ASK { graph   <'+graph+'> { <'+resource+'> ?a ?b } }', undefined, 10000);
+					var content = EJSON.parse(result.content);
+
+					response.statusCode = result.statusCode;
+					if(result.statusCode != 200) {
+						response.msg = "Error trying to communicate with endpoint " + endpoint;
+					} else if(result.statusCode == 200  && content.boolean == true) {
+						response.msg = '';
+						response.endpoint =  endpointsArray[i] ;
+						response.content = true;
+						return response ;
+						  i = endpointsArray.length;
+                         
+
+					} else if(result.statusCode == 200  && content.boolean == false) {
+						response.statusCode = 404;
+						response.msg = "Graph <"+ defaultGraph + "> does not exists on endpoint " + endpoint;
+					}
+				}catch(e){
+					response.statusCode = 500;
+					response.msg = "Error trying to communicate with endpoint " + endpoint;
+					//response.stack = e.stack;
+				}
+                 
+
+
+                }
+                    return response ;
+				
+			 },
 
 			findPrefix: function(URIMap) {
 				var idx = URIMap.lastIndexOf('#') > 0 ? URIMap.lastIndexOf('#'): URIMap.lastIndexOf('/');
