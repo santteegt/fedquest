@@ -59,8 +59,15 @@
   return barheight + "px" ;
   } );
   */
-  var id = "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES";
+  var result = Meteor.call('loadQueryFirstNode', 'http://purl.org/ontology/bibo/Document', function(error, result) {
+               console.log ("Querys");
+               console.log (result);
+          });
+
+  //var id = "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES";
+  var id = "http://190.15.141.66:8899/uce/contribuyente/ACURIO_DEL_PINO__SANTIAGO"
   var endpointbase = { "endpoint" : "http://190.15.141.66:8891/myservice/query" , "graphURI" : "http://190.15.141.66:8899/uce/" };
+ // var endpointbase = { "endpoint" : "http://localhost:8891/myservice/query" , "graphURI" : "http://190.15.141.66:8899/uce/" };
    //var data = initiaload (id);
   initiaload (id , endpointbase , width , height , svg ) ;
   // var data = {"@id": "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES" , author : { "http://xmlns.com/foaf/0.1/firstName":"María de Lourdes" , "http://xmlns.com/foaf/0.1/lastName": "Velasco" , "http://xmlns.com/foaf/0.1/name": "Velasco, María de Lourdes"}  };
@@ -149,7 +156,7 @@
 
                     } else {
 
-                        alert ("nada");
+                        alert ("Endpoints No disponibles");
                     }
 /*
                     console.log (data);
@@ -198,7 +205,7 @@
 
 
  function draw(svg, width, height, data, scope , endpoint ) {
-            alert('Inicia4');
+            alert('graph');
             // Misc. variables
             var endpointactual = endpoint ;
             var i = 0;
@@ -721,22 +728,23 @@
                    
                     if (isAuthor(d)) {
                         drawpanel (d , "author");
-                        Datachild(d);
+                       // Datachild(d);
                     } else if (isPublication(d)) {
                         drawpanel (d , "publication");
-                        Datachild(d );
+                      //  Datachild(d );
                     } else if (isCollection(d)) {
                         drawpanel (d , "collection");
-                        Datachild(d );
+                      //  Datachild(d );
 
                     }
+                     Datachild(d , endpointactual );
                     //console.log ("Node");
                     //console.log (d);
                    // Datachild(d);
                 }  
              }
 
-               function Datachild (node )
+               function Datachild (node  , endpointselect)
                 {   // var idbase =  'http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES';
                      
                     console.log ("Consulta");
@@ -748,7 +756,7 @@
                                 + ' PREFIX foaf: <http://xmlns.com/foaf/0.1/>  ' ; 
 
                       
-                    jsonsparql = { sparql: 'select * where {<http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES> ?b ?c . filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))}' , validateQuery: false} ;
+                   // jsonsparql = { sparql: 'select * where {<http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES> ?b ?c . filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))}' , validateQuery: false} ;
                     
                     var sparql = ' Construct { '  
                   + '<'+idbase+'> ?b ?c .'
@@ -787,8 +795,8 @@
                //   + 'filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))'
 
 
-            jsonsparql = { "sparql": sparql , 'validateQuery': false} ;
-                    Meteor.call('doQueryDesc', jsonsparql , endpointactual , function(error, result) {
+                   var  jsonsparql = { "sparql": sparql , 'validateQuery': false} ;
+                    Meteor.call('doQueryDesc', jsonsparql , endpointselect , function(error, result) {
                    if(result.statusCode != 200) {
                    console.log(result.stack);
                    $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
@@ -823,18 +831,47 @@
                                 "dc": "http://purl.org/dc/elements/1.1/",
                                 "dcterms": "http://purl.org/dc/terms/",
                                 "bibo": "http://purl.org/ontology/bibo/",
-                                "uc": "http://ucuenca.edu.ec/wkhuska/resource/"
+                                "uc": "http://ucuenca.edu.ec/wkhuska/resource/" ,
+                                "owl" : "http://www.w3.org/2002/07/owl#"
                             };
                     
                    var resultjson = jQuery.parseJSON( result.resultSet.content);
 
                      console.log ("Compactcall");
+                     if (resultjson.hasOwnProperty("@graph")) {
                      jsonld.compact(resultjson , context, function(err, compacted) {
                      console.log ("Compacted");
                      console.log(JSON.stringify(compacted, null, 2)); 
                      datachildren (idbase , compacted , node , "publication");
                       });
+                     } else {
+                            
+                           Meteor.call('findendpointactual', idbase  , function(error, result) { 
+                               console.log ("Entra findend");
+                               console.log (result);
+                             if (result.statusCode == 200 && result.content )
+                             {    console.log ("Ahora si");
+                                 
+                                   endpointactual['endpoint'] = result.endpoint["endpoint"];
+                                   endpointactual['graphURI'] = result.endpoint["graphURI"];
 
+                                   console.log ("No grap");
+                                  $('.top-right').notify({
+                                  message: { text: 'Accediendo a nuevo endpoint: '+ endpointactual['endpoint'] },
+                                  type: 'warning'
+                                  }).show();
+
+                                   console.log ("LLama de nuevo");
+                                   Datachild (node , endpointactual) ;
+                             }else {
+                                alert ("No es posible extraer mas datos, verifique que se encuentra registrado el endpoint");
+
+                             }
+
+                           });
+                           // findendpointactual ();
+
+                     }
                  //   datachildren (idbase , result.resultSet.content , node , "publication");
                     
                    //var resultados = resultjson["results"]["bindings"];
@@ -878,8 +915,47 @@
                           var objson = dataresult[i];
                          if (objson["@id"] == idbase) 
                           {
+                              console.log ("Entra datos");
+                              console.log (node);
+                              if ( objson["@type"] == "foaf:Person" ){
+                                 node['author']['data'] =  objson;
+                                 node ['author']['data']['Relation'] = "SameAs";
+                             // node['author']['data'] = _.union( objson , node['author']['data'] );
+                              }else if ( objson["@type"] == "bibo:Collection" ) {
+                              // node['collection']['data'] = _.union( objson , node['collection']['data'] );
+                                  node['collection']['data'] = objson;
+                                  node['collection']['data']['Relation'] = "SameAs";
+                              }else {
+                               // node['publication']['data'] = _.union( objson , node['publication']['data'] );
+                                 node['publication']['data'] =  objson;
+                                 node['publication']['data']['Relation'] =  "SameAs";
+                              }
 
-                        
+                                
+                              console.log (node);
+                           if (objson.hasOwnProperty ("owl:sameAs"))
+                           {  
+                             console.log("Si sameAs");
+                              var   objsame = objson["owl:sameAs"] ;
+                             for (var j = 0 ; j < objsame.length ;j++)
+                              {  
+                           var child = {};
+                            console.log ("Same as");
+                            console.log (objsame[j]);
+                           // var typeRelation["Relation"] = "SameAs";
+                           child ['@id'] =  objsame[j]["@id"]; 
+                           child ["author"] = {'@id' : objsame[j]["@id"] , 'data' : { 'Relation': "SameAs" } , children : [] }
+                           node.children.push(child);
+                           exploredArtistIds.push(idbase);
+
+
+                              }
+
+                           }
+
+
+
+
                            
                          }else 
                          { var child = {};
@@ -979,10 +1055,12 @@
                         "http://xmlns.com/foaf/0.1/firstName": {label: "First Name", containerType: "div"},
                         "http://xmlns.com/foaf/0.1/lastName": {label: "Last Name", containerType: "div"},
                          };*/
-                          model = {"foaf:name": {label: "Name", containerType: "div"},
+                          model = { "Relation" : {label : "Relation" , containerType: "div"} ,
+                        "foaf:name": {label: "Name", containerType: "div"},
                         "foaf:firstName": {label: "First Name", containerType: "div"},
                         "foaf:lastName": {label: "Last Name", containerType: "div"},
                          };
+                        
                      }else if ( entityname == 'collection') {
                         id = node.collection["@id"];
                         entity = node.collection.data ;
