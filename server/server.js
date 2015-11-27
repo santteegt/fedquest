@@ -105,35 +105,7 @@ if (Meteor.isServer) {
 				}
 				return result;
 			},
-               loadQueryFirstNode : function(element) {
-				result = {};
-				result.statusCode = 200;
-				result.msg = 'OK';
-				var querylist = [];
-				try{
-
-					var query = Queries.find().fetch();
-					console.log ('Querys server0');
-                     for (var i = 0; i < query.length ;i++)
-                     {   console.log ('Querys server');
-                           	 //  console.log (query[i].jsonGraph.cells.0.subject);
-                           	   var js = JSON.parse(query[i]['jsonGraph']);
-                              // var s  =  js.subject;
-                               console.log (js) ;
-                           if ( js.cells[0].subject == element )
-                           {   console.log ('Querys server');
-                           	  // console.log (query[i].jsonGraph.cells[0].subject);
-                               querylist.push (query[i]);
-                           } 
-                     }
-				  return querylist;
-				}catch(e){
-					console.log(e);
-					result.statusCode = 500;
-					result.msg = e
-				}
-				return querylist;
-			},
+               
 			updatePrefixes: function() {
 				HTTP.get( 'http://prefix.cc/context', function(error, result){
 					if(result.statusCode == '200' && !error) {
