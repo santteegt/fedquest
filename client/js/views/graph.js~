@@ -5,17 +5,9 @@
   /////////////////////////
   // View Initialization //
   /////////////////////////
-  initialize: function(v1, v2 , v3) {
+  initialize: function() {
     var me;
     me = this;
-
-    //var vv1=v1;
-    Session.set('v1', v1);
-    Session.set('v2', v2);
-    Session.set('v3', v3);
-    //var vv2=v2;
-    //var vv3=v3;
-
 
   },
 
@@ -74,16 +66,13 @@
           });
 
   //var id = "http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES";
-//  var id = "http://190.15.141.66:8899/uce/contribuyente/ACURIO_DEL_PINO__SANTIAGO"
-  //var endpointbase = { "endpoint" : "http://190.15.141.66:8891/myservice/query" , "graphURI" : "http://190.15.141.66:8899/uce/" };
+  var id = "http://190.15.141.66:8899/uce/contribuyente/ACURIO_DEL_PINO__SANTIAGO"
+  var endpointbase = { "endpoint" : "http://190.15.141.66:8891/myservice/query" , "graphURI" : "http://190.15.141.66:8899/uce/" };
 
-
-
-
-
-  var id = Session.get('v1');
-  var endpointbase = { "endpoint" : Session.get('v2') , "graphURI" : Session.get('v3') };
-
+if (Session.get('guri')  && Session.get('guri') != "" ){
+    id= Session.get('guri');
+    endpointbase = Session.get('gendp');
+}
 
 
  // var endpointbase = { "endpoint" : "http://localhost:8891/myservice/query" , "graphURI" : "http://190.15.141.66:8899/uce/" };
@@ -224,7 +213,7 @@
 
 
  function draw(svg, width, height, data, scope , endpoint ) {
-            //alert('graph');
+            alert('graph');
             // Misc. variables
             var endpointactual = endpoint ;
             var i = 0;
@@ -449,7 +438,7 @@
                 console.log ('child count');
                 console.log (childCount);
               //  var newHeight = d3.max(levelWidth) * 100;
-               var newHeight = d3.max(levelWidth) * 200;//100
+               var newHeight = d3.max(levelWidth) * 100;
                 tree = tree.size([newHeight, viewerWidth]);
                 // Compute the new tree layout.
                 console.log ('Raiz');
@@ -458,7 +447,7 @@
                 var links = tree.links(nodes);
                 // Set widths between levels
                 nodes.forEach(function (d) {
-                    d.y = (d.depth * 350);//220
+                    d.y = (d.depth * 220);
                 });
                 // Update the nodes…
                 var node = svgGroup.selectAll("g.tree-node")
@@ -546,14 +535,14 @@
                 nodeEnter.append("image")
                         .attr("xlink:href", function (d) {
                        if (isAuthor(d)) {
-                                return '/images/author-default.png';
+                                return 'images/author-default.png';
                                 //return AE.getSuitableImage(d.author.images);
                            } else if (isCollection(d)) {
-                               return '/images/collection.png' ;
+                               return 'images/collection.png' ;
                               
                             }else {
 
-                                return '/images/documento.png' ;
+                                return 'images/documento.png' ;
                             }
                         })
                         .attr("x", "-32px")

@@ -1,4 +1,6 @@
+
 			<template name="search">
+
 				<div class="container-fluid" sytle="overflow: scroll">
 					<div class="row">
 						<div class="col-sm-3 sidebar sidebar-style" >
@@ -8,72 +10,129 @@
 								<div class="panel-body">
 									<div class="col-lg-6">
 										<div class="input-group">
-											<input type="text" id="textToSearch" class="form-control" placeholder="Search for...">
+											<input type="text" id="textToSearch" class="form-control" onkeyup="Session.set('auxAct',Session.get('auxAct')+1);" placeholder="Search for...">
 											<span class="input-group-btn">
-												<button class="btn btn-default runSearch" type="button">Go!</button>
+												<button class="btn btn-default runSearch" type="button">FT GO!</button>
 											</span>
 										</div><!-- /input-group -->
 									</div><!-- /.col-lg-6 -->
-									
+									<!--
 									<label>By:</label>
-									<div class="input-group">
-										
-										<input type="radio" name="resourceType" value="t" checked="checked" >All
-										
-										<input type="radio" name="resourceType" value="d">Documents
-										
-										<br/>
-										<input type="radio" name="resourceType" value="a">Authors
-										
-										<input type="radio" name="resourceType" value="c">Collections
+								-->
+								<div class="input-group">
 
-									</div><!-- /input-group -->
+									<input type="radio" name="resourceType" value="t" checked="checked" onclick="Session.set('auxAct',Session.get('auxAct')+1);" >All
 
-									<label>From:</label>
-									<div class="input-group">
-										{{#each endpointsAvailable}}
-										<input type="checkbox" disabled="{{base}}"  checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" name="repositoriesList" > {{name}}
-										{{/each}}
-									</div>
+									<input type="radio" name="resourceType" value="d" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Documents
 
+									<br/>
+									<input type="radio" name="resourceType" value="a" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Persons
+
+									<input type="radio" name="resourceType" value="c" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Collections
+
+								</div><!-- /input-group -->
+
+								<label>From:</label>
+								<div class="input-group">
+									{{#each endpointsAvailable}}
+									<!-- disabled="{{base}}"-->
+									<input type="checkbox" data-base="{{base}}" checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" > {{name}}
+									{{/each}}
 								</div>
-							</div>
 
+							</div>
+						</div>
+
+						<div class="panel panel-info">
+							<div class="panel-heading" style="text-align: left">Suggested Queries</div>
+							<div class="panel-body">
+							<ul class="list-group">
+							  {{#each suggestedQueries}}
+							  	<li class="list-group-item"><a data-title ="{{title}}" href='#' onclick="actAHyper(event);" >{{description}}</a></li>
+							  {{/each}}
+							</ul>
+							</div>
 						</div>
 
 
+
 					</div>
+
+
+
+
+
 				</div>
 
-				<div class="col-xs-9 col-sm-8 col-sm-offset-3 main">
-					<h4>Resultados</h4>
-					<ul class="list-group">
 
 
-					{{#each resultFullQuery}}
-						<li class="list-group-item" >
+			</div>
+
+
+
+			<div class="col-xs-9 col-sm-8 col-sm-offset-3 main">
+				<div class="main col-xs-9 col-sm-8 col-sm-offset-3 " style="overflow: scroll;">
+					<div>
+						<h4>Search results</h4>
+					</div>
+
+					<div class="list-group" >
+						{{#each resultFullQuery}}
+						<div class="list-group-item" data-spy="scroll">
 							<div align="left">
 								<table cellpadding="5px">
 									<tr>
-										<td style="padding: 5px;">
-											<a href="#" class="btn btn-info btn-lg">
-												<span class="{{Icon}}"></span> {{Origin}}
-											</a>
+										<td style="padding: 5px;" >
+											<div>
+												<a href="{{URI}}" class="btn btn-info btn-lg">
+													<span class="{{Icon}}"></span> {{Origin}}
+												</a>
+											</div>
 										</td>
 										<td style="padding: 15px;">
-											<a href="{{URI}}">{{Label}}</a>
+											<div>
+												<a href="{{URI}}"><b>{{Label}}</b></a>
+												<br/>
+												{{#each MatchsProperty}}
+												<b>{{p}}</b> : 
+												<div class ="contvarpro" >
+													{{#if l}}
+													<span class= 'hglttxt'>{{s}}</span><a href='#' class='view_more_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').show();$(this).parent().find('.view_less_button').show();  ">...more</a><span class='rest_of_text hglttxt' style='display: none;'>{{c}}</span>
+													<a href='#' class='view_less_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').hide();$(this).parent().find('.view_more_button').show();" style='display: none;' >...less</a>
+													{{else}}
+													{{v}}
+													{{/if}}
 
+												</div>
+												{{/each}}
+												
+											</div>
+										</td>
+										<td style="padding: 5px;" >
+											<div>
+												<a href="#" class="btn btn-success btn-lg linkg" data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg(event);">
+													<img width="25" height="25" src="/images/tree.png"/>
+												</a>
+											</div>
 										</td>
 									</tr>
-									</table>
-								</div>
-							</li>
-					{{/each}}
-						</ul>
-
-
-
-
+								</table>
+							</div>
+						</div>
+						{{/each}}
 					</div>
+				</div>
+			</div>
 
-				</template>
+			<div class="footer" >
+				<div class="row">
+					<div class="col-xs-12">
+					
+					{{#with paginationSettings}}
+					<div id="page-selection" ></div>
+					{{/with}}
+			</div>
+		</div>
+	</div>
+
+</template>

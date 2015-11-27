@@ -4,6 +4,38 @@
 		"selected_items":
 		[
 			[
+				"endp",
+				"Endpoint"
+			],
+			[
+				"res",
+				"resp"
+			],
+			[
+				"un",
+				"undefined"
+			],
+			[
+				"grap",
+				"graph"
+			],
+			[
+				"end",
+				"endpoint"
+			],
+			[
+				"c",
+				"compare2"
+			],
+			[
+				"to",
+				"toShow"
+			],
+			[
+				"con",
+				"content"
+			],
+			[
 				"s",
 				"style	Attr"
 			],
@@ -100,10 +132,6 @@
 				"rsPredicate"
 			],
 			[
-				"end",
-				"endpointURI"
-			],
-			[
 				"va",
 				"value-of"
 			]
@@ -115,7 +143,7 @@
 			"file": "client/templates/views/search.html",
 			"settings":
 			{
-				"buffer_size": 2255,
+				"buffer_size": 4459,
 				"line_ending": "Unix"
 			}
 		},
@@ -123,7 +151,15 @@
 			"file": "client/js/views/search.js",
 			"settings":
 			{
-				"buffer_size": 5623,
+				"buffer_size": 10954,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "client/js/main.js",
+			"settings":
+			{
+				"buffer_size": 19255,
 				"line_ending": "Unix"
 			}
 		}
@@ -168,17 +204,19 @@
 	],
 	"file_history":
 	[
-		"/ExtBiblioDigital/Prueba/ProcUCE/FUSEKITT/fuseki/config (copia).ttl",
-		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/search.html",
-		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/dashboard.js",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/graph.js",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/main.js",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/search.js",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/search.html",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/router.js",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/server/server.js",
+		"/home/cedia/Transf/ProcUCE/FUSEKITT/fuseki/Data/Actualizado.ttl",
+		"/ExtBiblioDigital/Prueba/ProcUCE/FUSEKITT/fuseki/config (copia).ttl",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/dashboard.js",
 		"/home/cedia/Transf/ProcUIDE/elda/webapps/ROOT/data/example-data.ttl",
 		"/home/cedia/Transf/ProcUIDE/elda/webapps/ROOT/specs/espe.ttl",
 		"/home/cedia/Transf/ProcUIDE/elda/webapps/ROOT/specs/uide.ttl",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/dashboard.html",
-		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/router.js",
-		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/main.js",
-		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/server/server.js",
 		"/home/cedia/Transf/ProcUCE/FUSEKITT/fuseki/scriptfuseki",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/drawingboard.html",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/sparqleditor.js",
@@ -237,9 +275,21 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
+			"update",
+			"Graph",
+			"GraphView()",
+			"initialize",
+			"Find(",
+			"name:",
+			"PINO",
+			"firt",
+			"JSON",
+			"alert",
+			"Qmode",
+			"alert",
 			">\n",
 			"divNode",
 			"findoptional",
@@ -294,7 +344,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -303,26 +353,27 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2255,
+						"buffer_size": 4459,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2117,
-								2117
+								3235,
+								3235
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/HTML/HTML.tmLanguage"
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 765.0,
+						"translation.y": 2839.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -331,15 +382,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5623,
+						"buffer_size": 10954,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4932,
-								4932
+								6076,
+								6076
 							]
 						],
 						"settings":
@@ -349,10 +400,40 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1947.0,
+						"translation.y": 4182.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "client/js/main.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 19255,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								11882,
+								11882
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 6324.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
 					"type": "text"
 				}
 			]

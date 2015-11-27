@@ -14,7 +14,7 @@ this.Router = Backbone.Router.extend({
     'samples': 'samples',
     'search': 'search',
     'dashboard/:id': 'dashboardParam',
-    'graph':'graph'
+    'graph/:uri/:endpoint/:graphuri':'graph'
   },
 
   index: function () {
@@ -51,11 +51,12 @@ this.Router = Backbone.Router.extend({
     console.log('entra a search');
     new SearchView().render();        
   },
-   graph: function() {
+   graph: function(v1, v2, v3) {
     $('div.navbar .collapse li a#options').css('pointer-events','none');
     console.log('entra a grafos');
-    new GraphView().render();        
+    new GraphView(decodeURIComponent(v1),decodeURIComponent(v2),decodeURIComponent(v3)).render();        
   },
+
   dashboardParam: function(id) {
     new DashboardView({idSample: id}).render();   
   }
