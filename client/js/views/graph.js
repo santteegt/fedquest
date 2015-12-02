@@ -590,7 +590,17 @@
                              var id = d.publication["@id"];
                             // var publication = _.findWhere( d.publication.data["@graph"], {"@id": id, "@type": "bibo:Document"} );
                              var pub = d.publication.data["dcterms:title"];
-                             return pub.substring(0,40)+'...' ;//publication["dcterms:title"];
+                              var title ;
+                              if (typeof (pub) === 'string') {
+                                    
+                                 title = pub.substring (0,40)+ '...';
+                                } else {
+                                    _.map(pub , function (value, idx) {
+                                        if (idx == 1 ) { title = value.substring (0,40)+ '...'};
+                                           });
+                                      }
+                            // return pub.substring(0,40)+'...' ;//publication["dcterms:title"];
+                               return title ;
                              } else if (isCollection(d)) 
                              {
                              var id = d.collection["@id"];
@@ -932,22 +942,22 @@
 
                     for (var i = 0 ; i<dataresult.length; i++){
                           var objson = dataresult[i];
-                         if (objson["@id"] == idbase) 
+                         if (objson["@id"] == idbase   ) 
                           {
                               console.log ("Entra datos");
                               console.log (node);
                               if ( objson["@type"] == "foaf:Person" ){
                                  node['author']['data'] =  objson;
-                                 node ['author']['data']['Relation'] = "SameAs";
+                             //    node ['author']['data']['Relation'] = "SameAs";
                              // node['author']['data'] = _.union( objson , node['author']['data'] );
                               }else if ( objson["@type"] == "bibo:Collection" ) {
                               // node['collection']['data'] = _.union( objson , node['collection']['data'] );
                                   node['collection']['data'] = objson;
-                                  node['collection']['data']['Relation'] = "SameAs";
+                               //   node['collection']['data']['Relation'] = "SameAs";
                               }else {
                                // node['publication']['data'] = _.union( objson , node['publication']['data'] );
                                  node['publication']['data'] =  objson;
-                                 node['publication']['data']['Relation'] =  "SameAs";
+                               //  node['publication']['data']['Relation'] =  "SameAs";
                               }
 
                                 
@@ -1058,7 +1068,7 @@
                         "bibo:abstract": {label: "Abstract", containerType: "div"},
                         "dcterms:language": {label: "Language", containerType: "div"},
                         "dcterms:subject": {label: "Subject", containerType: "div"},
-                        "dcterms:license": {label: "License", containerType: "div"},
+                        "@type": {label: "Type", containerType: "div"},
                         "bibo:handle": {label: "More Info", containerType: "a"},
                         "dcterms:publisher": {label: "Publisher", containerType: "div"},
                         "bibo:numPages": {label: "Pages", containerType: "div"},
