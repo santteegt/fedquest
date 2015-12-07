@@ -143,7 +143,15 @@
 			"file": "client/templates/views/search.html",
 			"settings":
 			{
-				"buffer_size": 4459,
+				"buffer_size": 4460,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/cedia/Transf/ProcUCE/GeneracionTT/R2RMLtoRDF2.ttl",
+			"settings":
+			{
+				"buffer_size": 31413574,
 				"line_ending": "Unix"
 			}
 		},
@@ -275,9 +283,10 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"Document",
 			"update",
 			"Graph",
 			"GraphView()",
@@ -344,7 +353,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -353,15 +362,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4459,
+						"buffer_size": 4460,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3235,
-								3235
+								0,
+								0
 							]
 						],
 						"settings":
@@ -370,14 +379,42 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2839.0,
+						"translation.y": 2907.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/home/cedia/Transf/ProcUCE/GeneracionTT/R2RMLtoRDF2.ttl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 31413574,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7399403,
+								7399403
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 3387986.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
+					"buffer": 2,
 					"file": "client/js/views/search.js",
 					"semi_transient": false,
 					"settings":
@@ -403,11 +440,11 @@
 						"translation.y": 4182.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 3,
 					"file": "client/js/main.js",
 					"semi_transient": false,
 					"settings":
@@ -433,7 +470,7 @@
 						"translation.y": 6324.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]

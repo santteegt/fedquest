@@ -23,7 +23,9 @@
   },
   setEvents: function(divNode) {
     $('button.runSearch').on('click', function(ev) {
-      App.resultFullCollection.remove({});
+      Session.set("auxAct",Session.get("auxAct")+1);
+      App.resultCollection2.remove({});
+      Session.set('Qmode', 1);
       var EntitySearch = get_radio_value("resourceType");
 
       var FromList = get_checkList_values("repositoriesList");
@@ -34,6 +36,9 @@
       //alert(EntitySearch);
       //alert(TextSearch);
       //alert(FromList);
+
+	var ResultLimit = ''; //limit 100
+	var ResultLimitSubQ = '';
 
       var DocSearchRequest = {};
 
@@ -59,33 +64,34 @@
 
 
       var ResqLis =[];
-        switch(EntitySearch){
-          case 't':{
-            ResqLis.push(DocSearchRequest);
-            ResqLis.push(AuthSearchRequest);
-            ResqLis.push(ColSearchRequest);
-          }break;
-          case 'd':{
-            ResqLis.push(DocSearchRequest);
-          }break;
-          case 'a':{
-            ResqLis.push(AuthSearchRequest);
-          }break;
-          case 'c':{
-            ResqLis.push(ColSearchRequest);
-          }break;
-        }
+      switch(EntitySearch){
+        case 't':{
+          ResqLis.push(DocSearchRequest);
+          ResqLis.push(AuthSearchRequest);
+          ResqLis.push(ColSearchRequest);
+        }break;
+        case 'd':{
+          ResqLis.push(DocSearchRequest);
+        }break;
+        case 'a':{
+          ResqLis.push(AuthSearchRequest);
+        }break;
+        case 'c':{
+          ResqLis.push(ColSearchRequest);
+        }break;
+      }
 
 
       var Query="prefix text:<http://jena.apache.org/text#>\n";
 
-      Query+='select ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue {\n';
+      Query+='select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue {\n';
 
 
       var SubQN=0;
       for (var oneQuery=0; oneQuery<FromList.length; oneQuery++){
-        var EndpointLocal=(oneQuery==0);
+        var EndpointLocal=FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
         var Service=FromList[oneQuery].attributes['data-endpoint'].value;
+        var ServiceName=FromList[oneQuery].attributes['data-name'].value;
         for (var oneRes=0; oneRes<ResqLis.length; oneRes++){
           for (var oneProp=0; oneProp<ResqLis[oneRes].indexProperties.length; oneProp++){
             SubQN++;
@@ -103,9 +109,9 @@
             var PropertyName_=ResqLis[oneRes].indexPropertiesName[oneProp];
             var Label_=ResqLis[oneRes].labelProperty;
 
-            Query+='select distinct ?Score ?EntityURI (IRI(<'+Class_+'>) AS ?EntityClass) ?EntityLabel (IRI(<'+Property_+'>) AS ?Property) (\''+PropertyName_+'\' AS ?PropertyLabel) ?PropertyValue\n';
+            Query+='select distinct ?Score (\''+ServiceName+'\' AS ?Endpoint) ?EntityURI (IRI(<'+Class_+'>) AS ?EntityClass) ?EntityLabel (IRI(<'+Property_+'>) AS ?Property) (\''+PropertyName_+'\' AS ?PropertyLabel) ?PropertyValue\n';
             Query+='{\n';
-            Query+='(?EntityURI ?Score ?PropertyValue) text:query (<'+Property_+'> \''+TextSearch+'\' ) .\n?EntityURI <'+Label_+'> ?EntityLabel .\n';
+            Query+='(?EntityURI ?Score ?PropertyValue) text:query (<'+Property_+'> \''+TextSearch+'\' '+ResultLimitSubQ+') .\n?EntityURI <'+Label_+'> ?EntityLabel .\n';
             Query+='filter(str(?PropertyValue)!=\'\') .\n';
 
 
@@ -121,16 +127,16 @@
       }
 
 
-      Query+='} order by DESC(?Score)\n';
+      Query+='} order by DESC(?Score)\n  '+ResultLimit;
 
     alert(Query);
+    waitingDialog.show();
 
-
-      var jsonRequest = {"sparql": Query, "validateQuery": false};
-        Meteor.call('doQuery', jsonRequest, function(error, result) {
-          if(result.statusCode != 200) {
-            console.log(result.stack);
-            $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
+    var jsonRequest = {"sparql": Query, "validateQuery": false};
+    Meteor.call('doQuery', jsonRequest, function(error, result) {
+      if(result.statusCode != 200) {
+        console.log(result.stack);
+        $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
             //$('#sparqlEditor button#consoleError').show();
             var message = result.msg + (result.stack ? (': ' + result.stack.substring(0, 30) + '...'):'');
             $('.top-right').notify({
@@ -139,33 +145,178 @@
             }).show();
           } else {
             if(result.resultSet) {
-              App.resultFullCollection=result.resultSet.content;
+              
+              App.resultCollection2.insert(result.resultSet);
             }
           }
+          waitingDialog.hide();
           
         });
 
 
-    });
-  }
+  });
+}
 });
 
 function get_checkList_values(CheckName) {
-            var inputs = document.getElementsByName(CheckName);
-            var values=[];
-            for (var i = 0; i < inputs.length; i++) {
-              if (inputs[i].checked) {
-                values.push(inputs[i]);
-              }
+  var inputs = document.getElementsByName(CheckName);
+  var values=[];
+  for (var i = 0; i < inputs.length; i++) {
+    if (inputs[i].checked) {
+      values.push(inputs[i]);
+    }
+  }
+  return values;
+};
+
+function get_radio_value(RadioName) {
+  var inputs = document.getElementsByName(RadioName);
+  for (var i = 0; i < inputs.length; i++) {
+    if (inputs[i].checked) {
+      return inputs[i].value;
+    }
+  }
+};
+
+
+
+highfn = function () {
+                //$('.contvarpro').empty();
+                var TextSearch = $("#textToSearch").val(); 
+                var res = TextSearch.split(" ");
+                for (var i=0; i<res.length; i++){
+                  if(!(res[i].trim().length===0)) {
+                    $('.hglttxt').highlight(res[i].trim(), { caseSensitive: false });
+                  }
+                }
+              };
+
+              unhighfn = function () {
+                $('.hglttxt').unhighlight();
+              };
+
+
+
+
+
+              function contieneType(elemento) {
+                return elemento.indexOf("type") > -1;
+              };
+
+
+              linkg = function (e) {
+
+
+                var obj =e.target;
+
+                if (obj.tagName =="IMG"){
+                  obj=obj.parentElement;
+
+                }
+
+
+                var en =   Endpoints.find({name: obj.attributes['data-endpoint'].value}).fetch()[0]
+                var v1 = encodeURIComponent(obj.attributes['data-uri'].value);
+                var v2 = encodeURIComponent(en.endpoint); 
+                var v3 = encodeURIComponent(en.graphURI); 
+
+
+                window.open('/graph/'+v1+'/'+v2+'/'+v3);
+
+
+
+              };
+
+
+              actAHyper = function (e) {
+                Session.set("auxAct",Session.get("auxAct")+1);
+                App.resultCollection2.remove({});
+                Session.set('Qmode', 2);
+                var r = e.currentTarget.attributes['data-title'];
+                var w = Queries.find({title: r.value}).fetch();
+                var sq = w[0].sparql;
+                var resp = sq.match(new RegExp("REGEX\\((.*),","g"))[0];
+                  var SearchVar = resp.split('(')[1].split(',')[0];
+                    resp = sq.match(new RegExp("(.*) a","g"))[0];
+                    var MainVar = resp.split(' ')[0];
+                    resp = sq.match(new RegExp(" (.*) \.","g")).filter(contieneType)[0];
+                    resp = resp.split(' ');
+                    var TypeVar = resp[resp.length-2];
+                    var NewSQ = sq.replace(new RegExp("SELECT","g"), 'SELECT '+SearchVar+'');
+                    NewSQ = NewSQ.replace(new RegExp("FROM(.*)","g"),'');
+                    var TextSearch = $("#textToSearch").val();
+                    NewSQ = NewSQ.replace(new RegExp("'wildcard'","g"),TextSearch);
+                    var FromList = get_checkList_values("repositoriesList");
+                    var Query ='select * {\n';
+                    var SubQN=0;
+
+
+                    var TitleVar = sq.match(new RegExp("SELECT (.*)","g"))[0].replace(new RegExp("SELECT ","g"),'').split(' ');
+
+                    var i = TitleVar.indexOf(MainVar);
+                    TitleVar.splice(i, 1);
+                    i = TitleVar.indexOf(TypeVar);
+                    TitleVar.splice(i, 1);
+
+                    TitleVar.filter(function (v) { return v.trim() != ''; });
+
+
+                    Session.set('SearchVar', SearchVar);
+                    Session.set('MainVar', MainVar);
+                    Session.set('TypeVar', TypeVar);
+                    Session.set('TitleVar', TitleVar[0]);
+                    
+
+                    for (var oneQuery=0; oneQuery<FromList.length; oneQuery++){
+                      var EndpointLocal=FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
+                      var Service=FromList[oneQuery].attributes['data-endpoint'].value;
+                      var ServiceName=FromList[oneQuery].attributes['data-name'].value;
+                      SubQN++;
+                      if(SubQN==1){
+                        Query+='{\n';
+                      }else{
+                        Query+='union {\n';
+                      }
+                      if (!EndpointLocal){
+                        Query+='service <'+Service+'> {\n';
+                      }
+                      var NewSQ2 = NewSQ.replace(new RegExp("SELECT","g"), "SELECT ('"+ServiceName+"' AS ?Endpoint)");
+                      Query+=NewSQ2+"\n";
+                      if (!EndpointLocal){
+                        Query+='}\n';
+                      }
+                      Query+='}\n';
+                    }
+                    Query+='}\n';
+
+
+
+            //alert(Query);
+
+
+            waitingDialog.show();
+
+            var jsonRequest = {"sparql": Query, "validateQuery": false};
+            Meteor.call('doQuery', jsonRequest, function(error, result) {
+              if(result.statusCode != 200) {
+                console.log(result.stack);
+                $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
+            //$('#sparqlEditor button#consoleError').show();
+            var message = result.msg + (result.stack ? (': ' + result.stack.substring(0, 30) + '...'):'');
+            $('.top-right').notify({
+              message: { text: message },
+              type: 'danger'
+            }).show();
+          } else {
+            if(result.resultSet) {
+              
+              App.resultCollection2.insert(result.resultSet);
             }
-            return values;
+          }
+          waitingDialog.hide();
+          
+        });
+
+
           };
 
-    function get_radio_value(RadioName) {
-            var inputs = document.getElementsByName(RadioName);
-            for (var i = 0; i < inputs.length; i++) {
-              if (inputs[i].checked) {
-                return inputs[i].value;
-              }
-            }
-          };

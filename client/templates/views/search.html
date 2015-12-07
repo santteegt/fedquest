@@ -21,14 +21,14 @@
 								-->
 								<div class="input-group">
 
-									<input type="radio" name="resourceType" value="t" checked="checked" onclick="Session.set('auxAct',Session.get('auxAct')+1);" >All
+									<div style="float: left;"><input type="radio" name="resourceType" value="t" checked="checked" onclick="Session.set('auxAct',Session.get('auxAct')+1);" >All&nbsp;&nbsp;</div>
 
-									<input type="radio" name="resourceType" value="d" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Documents
+									<div style="float: left;"><input type="radio" name="resourceType" value="d" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Documents&nbsp;&nbsp;</div>
 
 									<br/>
-									<input type="radio" name="resourceType" value="a" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Persons
+									<div style="float: left;"><input type="radio" name="resourceType" value="a" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Persons&nbsp;&nbsp;</div>
 
-									<input type="radio" name="resourceType" value="c" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Collections
+									<div style="float: left;"><input type="radio" name="resourceType" value="c" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Collections&nbsp;&nbsp;</div>
 
 								</div><!-- /input-group -->
 
@@ -36,7 +36,8 @@
 								<div class="input-group">
 									{{#each endpointsAvailable}}
 									<!-- disabled="{{base}}"-->
-									<input type="checkbox" data-base="{{base}}" checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" > {{name}}
+									<div style="float: left;"><input type="checkbox" data-base="{{base}}" checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" >{{name}}&nbsp;&nbsp;</div>
+
 									{{/each}}
 								</div>
 

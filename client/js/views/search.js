@@ -37,6 +37,9 @@
       //alert(TextSearch);
       //alert(FromList);
 
+	var ResultLimit = ''; //limit 100
+	var ResultLimitSubQ = '';
+
       var DocSearchRequest = {};
 
 
@@ -108,7 +111,7 @@
 
             Query+='select distinct ?Score (\''+ServiceName+'\' AS ?Endpoint) ?EntityURI (IRI(<'+Class_+'>) AS ?EntityClass) ?EntityLabel (IRI(<'+Property_+'>) AS ?Property) (\''+PropertyName_+'\' AS ?PropertyLabel) ?PropertyValue\n';
             Query+='{\n';
-            Query+='(?EntityURI ?Score ?PropertyValue) text:query (<'+Property_+'> \''+TextSearch+'\' ) .\n?EntityURI <'+Label_+'> ?EntityLabel .\n';
+            Query+='(?EntityURI ?Score ?PropertyValue) text:query (<'+Property_+'> \'('+TextSearch+')\' '+ResultLimitSubQ+') .\n?EntityURI <'+Label_+'> ?EntityLabel .\n';
             Query+='filter(str(?PropertyValue)!=\'\') .\n';
 
 
@@ -124,9 +127,9 @@
       }
 
 
-      Query+='} order by DESC(?Score)\n';
+      Query+='} order by DESC(?Score)\n  '+ResultLimit;
 
-    //alert(Query);
+    alert(Query);
     waitingDialog.show();
 
     var jsonRequest = {"sparql": Query, "validateQuery": false};

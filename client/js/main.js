@@ -558,7 +558,7 @@ function loadQueryFirstNode (element) {
     
   } 
 }
-toShow.sort(compare);
+//toShow.sort(compare);
 
 return toShow;
 }
