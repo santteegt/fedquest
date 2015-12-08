@@ -2,12 +2,14 @@
 			<template name="search">
 
 				<div class="container-fluid" sytle="overflow: scroll">
-					<div class="row">
+					
 						<div class="col-sm-3 sidebar sidebar-style" >
 							<!-- <div class="col-md-2 sidebar sidebar-style"> -->
 							<div class="panel panel-info">
 								<div class="panel-heading" style="text-align: left">Search</div>
 								<div class="panel-body">
+
+								 <div class="row">
 									<div class="col-lg-6">
 										<div class="input-group">
 											<input type="text" id="textToSearch" class="form-control" onkeyup="Session.set('auxAct',Session.get('auxAct')+1);" placeholder="Search for...">
@@ -15,11 +17,15 @@
 												<button class="btn btn-default runSearch" type="button">FT GO!</button>
 											</span>
 										</div><!-- /input-group -->
-									</div><!-- /.col-lg-6 -->
-									<!--
-									<label>By:</label>
-								-->
+										
+									</div>
+									</div>
+<div class="row">
+<div class="col-lg-6">
+
 								<div class="input-group">
+
+									<br/>
 
 									<div style="float: left;"><input type="radio" name="resourceType" value="t" checked="checked" onclick="Session.set('auxAct',Session.get('auxAct')+1);" >All&nbsp;&nbsp;</div>
 
@@ -30,7 +36,7 @@
 
 									<div style="float: left;"><input type="radio" name="resourceType" value="c" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Collections&nbsp;&nbsp;</div>
 
-								</div><!-- /input-group -->
+									</div><!-- /input-group -->
 
 								<label>From:</label>
 								<div class="input-group">
@@ -42,6 +48,9 @@
 								</div>
 
 							</div>
+
+							</div>
+</div>
 						</div>
 
 						<div class="panel panel-info">
@@ -63,7 +72,7 @@
 
 
 
-				</div>
+				
 
 
 
