@@ -111,7 +111,7 @@
 
             Query+='select distinct ?Score (\''+ServiceName+'\' AS ?Endpoint) ?EntityURI (IRI(<'+Class_+'>) AS ?EntityClass) ?EntityLabel (IRI(<'+Property_+'>) AS ?Property) (\''+PropertyName_+'\' AS ?PropertyLabel) ?PropertyValue\n';
             Query+='{\n';
-            Query+='(?EntityURI ?Score ?PropertyValue) text:query (<'+Property_+'> \''+TextSearch+'\' '+ResultLimitSubQ+') .\n?EntityURI <'+Label_+'> ?EntityLabel .\n';
+            Query+='(?EntityURI ?Score ?PropertyValue) text:query (<'+Property_+'> \'('+TextSearch+')\' '+ResultLimitSubQ+') .\n?EntityURI <'+Label_+'> ?EntityLabel .\n';
             Query+='filter(str(?PropertyValue)!=\'\') .\n';
 
 
