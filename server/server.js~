@@ -95,27 +95,9 @@ if (Meteor.isServer) {
 				result.statusCode = 200;
 				result.msg = 'OK';
 				try{
-
-
-					var queryMod = Queries.findOne({_id: request._id_});
-					if (queryMod){
-
-						if (request.del){
-							Queries.remove({_id: request._id_});
-						}else{
-							Queries.update({_id: request._id_},{$set:{user: '', title: request.title, description: request.description, 
-							jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData}});
-							result.queryId=request._id_;
-						}
-
-						
-
-
-					}else{
-						var id = Queries.insert({user: '', title: request.title, description: request.description, 
+					var id = Queries.insert({user: '', title: request.title, description: request.description, 
 						jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData});
-						result.queryId = id;
-					}
+					result.queryId = id;
 				}catch(e){
 					console.log(e);
 					result.statusCode = 500;

@@ -761,7 +761,13 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
         $('#graph-description').val(query.description);
         App.dashboard.graph.fromJSON(JSON.parse(query.jsonGraph));
         App.dashboard.sparqlEditor.setValue(query.sparql);
-        $('#saveQuery').prop('disabled', true);
+	//Test edit template query
+        //--$('#saveQuery').prop('disabled', true);
+        $('#deleteQuery').prop('disabled', false);
+	//EndTest
+      }else{
+        $('#deleteQuery').prop('disabled', true);
+
       }
     });
     return this;
@@ -997,11 +1003,38 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
 
     });
 
+
+    //////////////////
+    //Delete the query//
+    //////////////////
+
+$('div #deleteQuery').on('click', function(ev){
+  var request = {};
+  request._id_=Session.get('graphQuery');
+  if (request._id_) {
+    request.del=true;
+    var result = Meteor.call('saveQuery', request, function(error, result) {
+      App.dashboard.graph.clear();
+      $('div #saveQuery').removeAttr('disabled');
+      $('div #graph-title').val('');
+      $('div #graph-description').val('');
+      $('.top-right').notify({
+        message: { text: "Query deleted" },
+        type: 'success'
+      }).show();
+    });
+  }
+  
+});
+
+
+
     //////////////////
     //Save the query//
     //////////////////
     $('div #saveQuery').on('click', function(ev){
       var request = {};
+      request._id_=Session.get('graphQuery');
       request.title = $('div #graph-title').val();
       request.description = $('div #graph-description').val();
       request.jsonQuery = App.dashboard.graph.toJSON();
@@ -1034,7 +1067,7 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
           }).show();
       } else {
         var result = Meteor.call('saveQuery', request, function(error, result) {
-         // $('div #saveQuery').attr('disabled','true'); Para deshabilitar el guardado
+          $('div #deleteQuery').attr('disabled','false');
           $('.top-right').notify({
             message: { text: result.statusCode == 200 ?"Query saved Successful":result.msg },
             type: result.statusCode == 200 ?'success':'danger'
