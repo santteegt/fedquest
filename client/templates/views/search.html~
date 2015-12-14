@@ -2,12 +2,14 @@
 			<template name="search">
 
 				<div class="container-fluid" sytle="overflow: scroll">
-					<div class="row">
+					
 						<div class="col-sm-3 sidebar sidebar-style" >
 							<!-- <div class="col-md-2 sidebar sidebar-style"> -->
 							<div class="panel panel-info">
 								<div class="panel-heading" style="text-align: left">Search</div>
 								<div class="panel-body">
+
+								 <div class="row">
 									<div class="col-lg-6">
 										<div class="input-group">
 											<input type="text" id="textToSearch" class="form-control" onkeyup="Session.set('auxAct',Session.get('auxAct')+1);" placeholder="Search for...">
@@ -17,7 +19,8 @@
 										</div><!-- /input-group -->
 										
 									</div>
-
+									</div>
+<div class="row">
 <div class="col-lg-6">
 
 								<div class="input-group">
@@ -45,6 +48,8 @@
 								</div>
 
 							</div>
+
+							</div>
 </div>
 						</div>
 
@@ -67,7 +72,7 @@
 
 
 
-				</div>
+				
 
 
 

@@ -517,19 +517,9 @@ function loadQueryFirstNode (element) {
 
 
       switch(OneResult.Type){
-        case 'http://purl.org/ontology/bibo/AudioDocument':
-        case 'http://purl.org/ontology/bibo/Image':
-        case 'http://purl.org/ontology/bibo/Map':
-        case 'http://purl.org/ontology/bibo/Journal':
-        case 'http://purl.org/ontology/bibo/Film':
-        case 'http://purl.org/ontology/bibo/Article':
-        case 'http://purl.org/ontology/bibo/Book':
-        case 'http://purl.org/ontology/bibo/Chapter':
-        case 'http://purl.org/net/nknouf/ns/bibtex#Mastersthesis':
-        case 'http://purl.org/ontology/bibo/Thesis':
-        case 'http://purl.org/ontology/bibo/Document':OneResult.Icon='glyphicon glyphicon-file'; break;
         case 'http://xmlns.com/foaf/0.1/Person':OneResult.Icon='glyphicon glyphicon-user'; break;
         case 'http://purl.org/ontology/bibo/Collection':OneResult.Icon='glyphicon glyphicon-folder-open'; break;
+        default : OneResult.Icon='glyphicon glyphicon-file'; break;
       }
 
 
