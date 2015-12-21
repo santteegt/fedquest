@@ -1051,6 +1051,16 @@ $('div #deleteQuery').on('click', function(ev){
       try {
         request.sparql = App.fedQueryUtils.graphToSPARQL();
         request.imageData = '';
+        
+        var txtval = ValidateSuggestionQuery (request.sparql);
+
+        if (txtval != ''){
+          if(!confirm ('Errors: \n'+txtval+'\nInvalid suggestion query... Continue saving/updating ?')){
+            return;
+          }
+        }
+
+
         /*var snapshot = App.dashboard.takeSnapshot($('#paper'));
         var data = snapshot.length > 0 && snapshot[0].canvas[0] ?snapshot[0].canvas[0].toDataURL('image/png').toString():undefined;
         var compress = LZString.compress(snapshot[0].canvas[0].toDataURL('image/png'));

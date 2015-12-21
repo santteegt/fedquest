@@ -129,7 +129,7 @@
 
       Query+='} order by DESC(?Score)\n  '+ResultLimit;
 
-    alert(Query);
+    //alert(Query);
     waitingDialog.show();
 
     var jsonRequest = {"sparql": Query, "validateQuery": false};

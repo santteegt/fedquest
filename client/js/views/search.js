@@ -228,6 +228,57 @@ highfn = function () {
               };
 
 
+		ValidateSuggestionQuery = function (query) {
+
+		    var errMsj='';
+
+			try {  
+				var sq = query;
+                errMsj="'filter regex' missing, suggestion queries need a filter statement";                	
+                var resp = sq.match(new RegExp("REGEX\\((.*),","g"))[0];
+                errMsj="filtering variable missing into regex";                	
+                var SearchVar = resp.split('(')[1].split(',')[0];
+                errMsj="Main variable not found";                	
+                resp = sq.match(new RegExp("(.*) a","g"))[0];
+                var MainVar = resp.split(' ')[0];
+                errMsj="Type variable not found";                	
+                resp = sq.match(new RegExp(" (.*) \.","g")).filter(contieneType)[0];
+                resp = resp.split(' ');
+                var TypeVar = resp[resp.length-2];
+                var NewSQ = sq.replace(new RegExp("SELECT","g"), 'SELECT '+SearchVar+'');
+                NewSQ = NewSQ.replace(new RegExp("FROM(.*)","g"),'');
+                var TextSearch = 'x';
+                
+                var v2 = NewSQ;
+                NewSQ = NewSQ.replace(new RegExp("'wildcard'","g"),TextSearch);
+                errMsj="'wildcard' missing";                	
+                if (v2 == NewSQ){
+               		throw "Too big";
+                }
+
+				var Query ='select * {\n';
+                var SubQN=0;
+                var TitleVar = sq.match(new RegExp("SELECT (.*)","g"))[0].replace(new RegExp("SELECT ","g"),'').split(' ');
+                var i = TitleVar.indexOf(MainVar);
+                TitleVar.splice(i, 1);
+                i = TitleVar.indexOf(TypeVar);
+                TitleVar.splice(i, 1);
+                TitleVar.filter(function (v) { return v.trim() != ''; });
+                errMsj="Title variable not found";
+                var tem = TitleVar[0].length;
+
+				errMsj='';
+			}
+			catch(e) {
+				//return false;
+			}
+			return errMsj;
+		};
+
+
+
+
+
               actAHyper = function (e) {
                 Session.set("auxAct",Session.get("auxAct")+1);
                 App.resultCollection2.remove({});
