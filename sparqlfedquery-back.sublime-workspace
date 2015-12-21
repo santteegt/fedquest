@@ -140,14 +140,6 @@
 	"buffers":
 	[
 		{
-			"file": "client/templates/views/dashboard.html",
-			"settings":
-			{
-				"buffer_size": 20090,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "server/server.js",
 			"settings":
 			{
@@ -159,7 +151,15 @@
 			"file": "client/js/views/dashboard.js",
 			"settings":
 			{
-				"buffer_size": 82465,
+				"buffer_size": 82714,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "client/js/views/search.js",
+			"settings":
+			{
+				"buffer_size": 13000,
 				"line_ending": "Unix"
 			}
 		}
@@ -204,6 +204,8 @@
 	],
 	"file_history":
 	[
+		"/tmp/PagForm.cs",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/dashboard.html",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/main.js",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/search.js",
 		"/home/cedia/Transf/ProcUCE/GeneracionTT/R2RMLtoRDF2.ttl",
@@ -217,7 +219,6 @@
 		"/home/cedia/Transf/ProcUIDE/elda/webapps/ROOT/data/example-data.ttl",
 		"/home/cedia/Transf/ProcUIDE/elda/webapps/ROOT/specs/espe.ttl",
 		"/home/cedia/Transf/ProcUIDE/elda/webapps/ROOT/specs/uide.ttl",
-		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/dashboard.html",
 		"/home/cedia/Transf/ProcUCE/FUSEKITT/fuseki/scriptfuseki",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/drawingboard.html",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/sparqleditor.js",
@@ -279,6 +280,8 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"TipoContabilizacionAnticipos",
+			"CambiarEstadoRol",
 			"clearDashboard",
 			"deleteQ",
 			"clear",
@@ -354,34 +357,6 @@
 			[
 				{
 					"buffer": 0,
-					"file": "client/templates/views/dashboard.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 20090,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1522,
-								1522
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
 					"file": "server/server.js",
 					"semi_transient": false,
 					"settings":
@@ -410,20 +385,20 @@
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 1,
 					"file": "client/js/views/dashboard.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 82465,
+						"buffer_size": 82714,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								63247,
-								63247
+								64422,
+								64422
 							]
 						],
 						"settings":
@@ -433,7 +408,35 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 17081.0,
+						"translation.y": 16979.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "client/js/views/search.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 13000,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8921,
+								8921
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 4029.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
