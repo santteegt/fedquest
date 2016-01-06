@@ -429,8 +429,13 @@ try{
 			     var spq =query[i].sparql;
 			     var resp = spq.match(new RegExp("REGEX\\((.*),","g"))[0];
                   	     var SearchVar = resp.split('(')[1].split(',')[0];			
-			     var MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0];
-			     ClassV = spq.match(new RegExp("\?"+MainVar+" a(.*)","g"))[0].split(' ')[2].replace('<','').replace('>','');
+			     var MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
+			     //ClassV = js;
+			     ClassV= this.Properties.findOne({name:MainVar}).objectTypes[0].objectEntity.fullName;
+
+
+
+
 }catch (q){
 
 }
