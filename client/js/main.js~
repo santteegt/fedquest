@@ -431,7 +431,7 @@ try{
                   	     var SearchVar = resp.split('(')[1].split(',')[0];			
 			     var MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
 			     //ClassV = js;
-			     ClassV= this.Properties.findOne({name:MainVar}).fullName;
+			     ClassV= this.Properties.findOne({name:MainVar}).objectTypes[0].objectEntity.fullName;
 
 
 

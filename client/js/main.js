@@ -441,7 +441,12 @@ try{
 }
                               // var s  =  js.subject;
                               console.log (js) ;
-                              if ( ClassV == element )
+
+				
+
+
+                              if ( ClassV == element && element == 'http://xmlns.com/foaf/0.1/Person' || ClassV == element && element == 'http://purl.org/ontology/bibo/Collection' || element == 'http://purl.org/ontology/bibo/Document' && ClassV != 'http://xmlns.com/foaf/0.1/Person' && ClassV != 'http://purl.org/ontology/bibo/Collection')
+
                                {   console.log ('Querys server');
                               // console.log (query[i].jsonGraph.cells[0].subject);
                               querylist.push (query[i]);
