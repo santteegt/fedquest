@@ -423,9 +423,25 @@ function loadQueryFirstNode (element) {
      {   console.log ('Querys server');
                              //  console.log (query[i].jsonGraph.cells.0.subject);
                              var js = JSON.parse(query[i]['jsonGraph']);
+ 			    var ClassV = js.cells[0].subject;
+
+try{
+			     var spq =query[i].sparql;
+			     var resp = spq.match(new RegExp("REGEX\\((.*),","g"))[0];
+                  	     var SearchVar = resp.split('(')[1].split(',')[0];			
+			     var MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
+			     //ClassV = js;
+			     ClassV= this.Properties.findOne({name:MainVar}).objectTypes[0].objectEntity.fullName;
+
+
+
+
+}catch (q){
+
+}
                               // var s  =  js.subject;
                               console.log (js) ;
-                              if ( js.cells[0].subject == element )
+                              if ( ClassV == element )
                                {   console.log ('Querys server');
                               // console.log (query[i].jsonGraph.cells[0].subject);
                               querylist.push (query[i]);

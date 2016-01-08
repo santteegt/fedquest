@@ -423,9 +423,25 @@ function loadQueryFirstNode (element) {
      {   console.log ('Querys server');
                              //  console.log (query[i].jsonGraph.cells.0.subject);
                              var js = JSON.parse(query[i]['jsonGraph']);
+ 			    var ClassV = js.cells[0].subject;
+
+try{
+			     var spq =query[i].sparql;
+			     var resp = spq.match(new RegExp("REGEX\\((.*),","g"))[0];
+                  	     var SearchVar = resp.split('(')[1].split(',')[0];			
+			     var MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
+			     //ClassV = js;
+			     ClassV= this.Properties.findOne({name:MainVar}).fullName;
+
+
+
+
+}catch (q){
+
+}
                               // var s  =  js.subject;
                               console.log (js) ;
-                              if ( js.cells[0].subject == element )
+                              if ( ClassV == element )
                                {   console.log ('Querys server');
                               // console.log (query[i].jsonGraph.cells[0].subject);
                               querylist.push (query[i]);
@@ -517,19 +533,9 @@ function loadQueryFirstNode (element) {
 
 
       switch(OneResult.Type){
-        case 'http://purl.org/ontology/bibo/AudioDocument':
-        case 'http://purl.org/ontology/bibo/Image':
-        case 'http://purl.org/ontology/bibo/Map':
-        case 'http://purl.org/ontology/bibo/Journal':
-        case 'http://purl.org/ontology/bibo/Film':
-        case 'http://purl.org/ontology/bibo/Article':
-        case 'http://purl.org/ontology/bibo/Book':
-        case 'http://purl.org/ontology/bibo/Chapter':
-        case 'http://purl.org/net/nknouf/ns/bibtex#Mastersthesis':
-        case 'http://purl.org/ontology/bibo/Thesis':
-        case 'http://purl.org/ontology/bibo/Document':OneResult.Icon='glyphicon glyphicon-file'; break;
         case 'http://xmlns.com/foaf/0.1/Person':OneResult.Icon='glyphicon glyphicon-user'; break;
         case 'http://purl.org/ontology/bibo/Collection':OneResult.Icon='glyphicon glyphicon-folder-open'; break;
+        default : OneResult.Icon='glyphicon glyphicon-file'; break;
       }
 
 
@@ -558,7 +564,7 @@ function loadQueryFirstNode (element) {
     
   } 
 }
-toShow.sort(compare);
+//toShow.sort(compare);
 
 return toShow;
 }
