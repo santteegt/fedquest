@@ -10,7 +10,7 @@
 								<div class="panel-body">
 
 								 <div class="row">
-									<div class="col-lg-6">
+									<div style="padding: 0px 10px 0px 10px;" >
 										<div class="input-group">
 											<input type="text" id="textToSearch" class="form-control" onkeyup="Session.set('auxAct',Session.get('auxAct')+1);" placeholder="Search for...">
 											<span class="input-group-btn">
@@ -21,7 +21,8 @@
 									</div>
 									</div>
 <div class="row">
-<div class="col-lg-6">
+<!-- class="col-lg-6" -->
+<div  style="padding: 0px 10px 0px 10px;" >
 
 								<div class="input-group">
 
