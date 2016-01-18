@@ -481,6 +481,19 @@ try{
   
 
   var resp = response ? JSON.parse(response.content).results.bindings: [];
+
+    var NumMode2 = Session.get('Qmode2');
+	if(NumMode == 1 && resp.length > 0 && NumMode2 == 1){
+
+     var MaxV = Math.max.apply(Math,resp.map(function(o){return o.Score.value;}));
+     var MinV = Math.min.apply(Math,resp.map(function(o){return o.Score.value;}));
+     var Tol = (MaxV-MinV) * 0.30;
+
+	  resp = resp.filter(function (val) {return val.Score.value >= MaxV-Tol ;});
+
+	}
+
+
   var MaxLength=160;
 
   //graphURI

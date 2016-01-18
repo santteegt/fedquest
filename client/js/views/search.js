@@ -62,6 +62,7 @@
       ColSearchRequest.indexPropertiesName =['Description'];
       ColSearchRequest.labelProperty ='http://purl.org/dc/terms/description';
 
+Session.set('Qmode2',0);
 
       var ResqLis =[];
       switch(EntitySearch){
@@ -75,16 +76,18 @@
         }break;
         case 'a':{
           ResqLis.push(AuthSearchRequest);
+          Session.set('Qmode2',1);
         }break;
         case 'c':{
           ResqLis.push(ColSearchRequest);
+          Session.set('Qmode2',1);
         }break;
       }
 
 
       var Query="prefix text:<http://jena.apache.org/text#>\n";
 
-      Query+='select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue {\n';
+      Query+='select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score{\n';
 
 
       var SubQN=0;
