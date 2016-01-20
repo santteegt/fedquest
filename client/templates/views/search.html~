@@ -46,7 +46,9 @@
 									<div style="float: left;"><input type="checkbox" data-base="{{base}}" checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" >{{name}}&nbsp;&nbsp;</div>
 
 									{{/each}}
+<div style="float: left;"><input type="checkbox" class="optional" name="repositoriesListAll"   onclick="  if (document.getElementsByName('repositoriesListAll')[0].checked) {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].checked=true; inputs[i].disabled=true;} } else {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].disabled=false;} }" >All&nbsp;&nbsp;</div>
 								</div>
+
 
 							</div>
 
@@ -95,14 +97,14 @@
 									<tr>
 										<td style="padding: 5px;" >
 											<div>
-												<a href="{{URI}}" class="btn btn-info btn-lg">
+												<a href="{{URI}}" class="btn btn-info btn-lg" target="_blank" >
 													<span class="{{Icon}}"></span> {{Origin}}
 												</a>
 											</div> 
 										</td>
 										<td style="padding: 15px;">
 											<div>
-												<a href="{{URI}}"><b>{{Label}}</b></a>
+												<a href="{{URI}}" target="_blank" ><b>{{Label}}</b></a>
 												<br/>
 												{{#each MatchsProperty}}
 												<b>{{p}}</b> : 
