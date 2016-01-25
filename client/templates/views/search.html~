@@ -46,7 +46,7 @@
 									<div style="float: left;"><input type="checkbox" data-base="{{base}}" checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" >{{name}}&nbsp;&nbsp;</div>
 
 									{{/each}}
-<div style="float: left;"><input type="checkbox" class="optional" name="repositoriesListAll"   onclick="  if (document.getElementsByName('repositoriesListAll')[0].checked) {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].checked=true; inputs[i].disabled=true;} } else {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].disabled=false;} }" >All&nbsp;&nbsp;</div>
+<div style="float: left;"><input type="checkbox" class="optional" name="repositoriesListAll"   onclick="  if (document.getElementsByName('repositoriesListAll')[0].checked) {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].checked=true; inputs[i].disabled=true;} } else {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].disabled=false;} }" ><i>All</i>&nbsp;&nbsp;</div>
 								</div>
 
 
