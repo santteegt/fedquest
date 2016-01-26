@@ -148,7 +148,11 @@ Session.set('Qmode2',0);
             }).show();
           } else {
             if(result.resultSet) {
-              
+
+	try{if (JSON.parse(result.resultSet.content).results.bindings.length == 0){
+			alert ('No results found!!!');
+		}}catch(qqw){}
+		              
               App.resultCollection2.insert(result.resultSet);
             }
           }
@@ -407,7 +411,9 @@ function sleep() {
             }).show();
           } else {
             if(result.resultSet) {
-              
+              	try{if (JSON.parse(result.resultSet.content).results.bindings.length == 0){
+			alert ('No results found!!!');
+		}}catch(qqw){}
               App.resultCollection2.insert(result.resultSet);
             }
           }

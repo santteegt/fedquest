@@ -332,7 +332,7 @@ resultFullQuery: function(){
   var pag=Session.get("actPage")-1;
   var MaxItemPag=10;
   var response = App.resultCollection2.findOne();
-  var rlist = dataSourceSearch(response);       
+  var rlist = dataSourceSearch(response);    
   var page = rlist.slice(pag*MaxItemPag, (pag+1)*MaxItemPag); 
   return page;
 },
