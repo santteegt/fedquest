@@ -332,7 +332,12 @@ resultFullQuery: function(){
   var pag=Session.get("actPage")-1;
   var MaxItemPag=10;
   var response = App.resultCollection2.findOne();
-  var rlist = dataSourceSearch(response);       
+  var rlist = dataSourceSearch(response);    
+
+	if (rlist.length == 0){
+		alert ('No results!!!');
+	}
+   
   var page = rlist.slice(pag*MaxItemPag, (pag+1)*MaxItemPag); 
   return page;
 },
@@ -367,7 +372,7 @@ suggestedQueries: function(){
         w[q].description = w[q].description.replace("?", TextSearch);
       }
     }
-
+    w = w.filter(function (el) {  return ValidateSuggestionQuery(el.sparql)=='';  });
 
 
     return w;
@@ -481,6 +486,19 @@ try{
   
 
   var resp = response ? JSON.parse(response.content).results.bindings: [];
+
+    var NumMode2 = Session.get('Qmode2');
+	if(NumMode == 1 && resp.length > 0 && NumMode2 == 1){
+
+     var MaxV = Math.max.apply(Math,resp.map(function(o){return o.Score.value;}));
+     var MinV = Math.min.apply(Math,resp.map(function(o){return o.Score.value;}));
+     var Tol = (MaxV-MinV) * 0.30;
+
+	  resp = resp.filter(function (val) {return val.Score.value >= MaxV-Tol ;});
+
+	}
+
+
   var MaxLength=160;
 
   //graphURI

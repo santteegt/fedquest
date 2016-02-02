@@ -148,7 +148,11 @@ Session.set('Qmode2',0);
             }).show();
           } else {
             if(result.resultSet) {
-              
+
+	try{if (JSON.parse(result.resultSet.content).results.bindings.length == 0){
+			alert ('No results found!!!');
+		}}catch(qqw){}
+		              
               App.resultCollection2.insert(result.resultSet);
             }
           }
@@ -208,28 +212,72 @@ highfn = function () {
 
 
               linkg = function (e) {
-
-
                 var obj =e.target;
-
                 if (obj.tagName =="IMG"){
                   obj=obj.parentElement;
 
                 }
-
-
                 var en =   Endpoints.find({name: obj.attributes['data-endpoint'].value}).fetch()[0]
                 var v1 = encodeURIComponent(obj.attributes['data-uri'].value);
                 var v2 = encodeURIComponent(en.endpoint); 
                 var v3 = encodeURIComponent(en.graphURI); 
-
-
                 window.open('/graph/'+v1+'/'+v2+'/'+v3);
+              };
 
+
+function Query (endpoint, graph, query){
+  var aux=undefined;
+  Meteor.call('runQuery', endpoint, graph, query, function(error, result) {
+    if(result) {
+      aux = result;
+    }else{
+      aux ='';  
+    }
+
+  });
+  while(aux===undefined){ 
+    sleep(); 
+  };
+  return aux;
+}
+
+
+function sleep() {
+  try{
+    var xmlHttp = new XMLHttpRequest();
+      xmlHttp.open( "GET", 'www.facebook.com', false ); // false for synchronous request
+      xmlHttp.send( null );
+    }catch(e){
+
+
+    }
+  }
+
+
+
+
+              linkg2 = function (e) {
+                var obj =e.target;
+                if (obj.tagName =="SPAN"){
+                  obj=obj.parentElement;
+
+                }
+                var en =   Endpoints.find({name: obj.attributes['data-endpoint'].value}).fetch()[0];
+                var v1 = obj.attributes['data-uri'].value;
+                var v2 = en.endpoint; 
+                var v3 = en.graphURI; 
+
+		var r= Query(v2,v3,'select ?a {<'+v1+'> <http://purl.org/ontology/bibo/handle> ?a} limit 1');
+		r = JSON.parse(r.content).results.bindings;
+
+		if (r.length == 0) {
+			window.open(v1);
+		} else {
+			window.open(r[0].a.value);
+		}
 
 
               };
-
 
 		ValidateSuggestionQuery = function (query) {
 
@@ -363,7 +411,9 @@ highfn = function () {
             }).show();
           } else {
             if(result.resultSet) {
-              
+              	try{if (JSON.parse(result.resultSet.content).results.bindings.length == 0){
+			alert ('No results found!!!');
+		}}catch(qqw){}
               App.resultCollection2.insert(result.resultSet);
             }
           }

@@ -154,6 +154,14 @@
 				"buffer_size": 13101,
 				"line_ending": "Unix"
 			}
+		},
+		{
+			"file": "/ExtBiblioDigital/IW/fiwb/iwb.sh",
+			"settings":
+			{
+				"buffer_size": 15487,
+				"line_ending": "Unix"
+			}
 		}
 	],
 	"build_system": "",
@@ -272,6 +280,7 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"User",
 			"TipoContabilizacionAnticipos",
 			"CambiarEstadoRol",
 			"clearDashboard",
@@ -344,7 +353,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -372,7 +381,7 @@
 						"translation.y": 7956.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -400,6 +409,34 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 1020.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/ExtBiblioDigital/IW/fiwb/iwb.sh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 15487,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1411,
+								1411
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 357.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
