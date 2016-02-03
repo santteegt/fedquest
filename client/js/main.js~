@@ -333,13 +333,19 @@ resultFullQuery: function(){
   var MaxItemPag=10;
   var response = App.resultCollection2.findOne();
   var rlist = dataSourceSearch(response);    
-
-	if (rlist.length == 0){
-		alert ('No results!!!');
-	}
-   
   var page = rlist.slice(pag*MaxItemPag, (pag+1)*MaxItemPag); 
   return page;
+},
+
+NresultFullQuery: function(){
+	var response = App.resultCollection2.findOne();
+  var rlist = dataSourceSearch(response);    
+  if (rlist && rlist.length>0){
+  return rlist.length +' results';
+}
+else{
+  return 'No results';
+}
 },
 
 suggestedQueries: function(){
@@ -494,7 +500,7 @@ try{
      var MinV = Math.min.apply(Math,resp.map(function(o){return o.Score.value;}));
      var Tol = (MaxV-MinV) * 0.30;
 
-	  resp = resp.filter(function (val) {return val.Score.value >= MaxV-Tol ;});
+	  //resp = resp.filter(function (val) {return val.Score.value >= MaxV-Tol ;});
 
 	}
 

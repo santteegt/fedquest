@@ -139,30 +139,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "client/js/main.js",
-			"settings":
-			{
-				"buffer_size": 19824,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "client/js/views/search.js",
-			"settings":
-			{
-				"buffer_size": 13101,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/ExtBiblioDigital/IW/fiwb/iwb.sh",
-			"settings":
-			{
-				"buffer_size": 15487,
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -204,12 +180,14 @@
 	],
 	"file_history":
 	[
-		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/dashboard.js",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/main.js",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/search.js",
+		"/ExtBiblioDigital/IW/fiwb/iwb.sh",
+		"/home/cedia/Transf/ESPOL/GeneracionTT/Ontology Mapping-R2RML.ttl",
+		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/dashboard.js",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/server/server.js",
 		"/tmp/PagForm.cs",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/dashboard.html",
-		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/main.js",
 		"/home/cedia/Transf/ProcUCE/GeneracionTT/R2RMLtoRDF2.ttl",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/templates/views/search.html",
 		"/ExtBiblioDigital/Proyecto Meteor/sparqlfedquery-back/client/js/views/graph.js",
@@ -353,95 +331,8 @@
 	"groups":
 	[
 		{
-			"selected": 2,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "client/js/main.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 19824,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								14943,
-								14943
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 7956.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "client/js/views/search.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 13101,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2434,
-								2434
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1020.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "/ExtBiblioDigital/IW/fiwb/iwb.sh",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 15487,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1411,
-								1411
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 357.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				}
 			]
 		}
 	],
