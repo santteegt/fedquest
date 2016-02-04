@@ -1,4 +1,3 @@
-
 if (Meteor.isClient) {
 
   //Suscribe to Collections
@@ -337,6 +336,17 @@ resultFullQuery: function(){
   return page;
 },
 
+NresultFullQuery: function(){
+	var response = App.resultCollection2.findOne();
+  var rlist = dataSourceSearch(response);    
+  if (rlist && rlist.length>0){
+  return rlist.length +' results';
+}
+else{
+  return 'No results';
+}
+},
+
 suggestedQueries: function(){
 
   var EntitySearch = get_radio_value("resourceType");
@@ -663,9 +673,4 @@ function sleep() {
 
 
 }
-
-
-
-
-
 

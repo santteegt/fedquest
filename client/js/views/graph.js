@@ -514,6 +514,7 @@
                                 //AE.getInfoCancel();
                             } else if ('collection' in d){
                                 tip.hide (d);
+                            }else {tip.hide (d); 
                             }
                         })
                         .on('contextmenu', function (d) {
@@ -965,12 +966,34 @@
                            if (objson.hasOwnProperty ("owl:sameAs"))
                            {  
                              console.log("Si sameAs");
-                              var   objsame = objson["owl:sameAs"] ;
+                              var objsame = [] ;
+                           if (  Array.isArray(objson["owl:sameAs"]) ) {
+                               //   console.log ("Si Objeto");
+                                 //  objsame[0] = objson["owl:sameAs"]["@id"];
+                                  objsame = objson["owl:sameAs"] ;
+                                  console.log ("Varios");
+
+
+                           } else 
+                               {
+                                  objsame[0] = objson["owl:sameAs"];
+                                  console.log ("Solo uno");
+                             //  objsame = objson ;
+                               }
+                          
+                            // console.log ("Valor");
+                            //  console.log (objson);
                              for (var j = 0 ; j < objsame.length ;j++)
                               {  
                            var child = {};
                             console.log ("Same as");
+                            console.log ("ObjCompleto");
+                            console.log (objsame);
+
+                            console.log ("Obj1");
                             console.log (objsame[j]);
+
+
                            // var typeRelation["Relation"] = "SameAs";
                            child ['@id'] =  objsame[j]["@id"]; 
                            child ["author"] = {'@id' : objsame[j]["@id"] , 'data' : { 'Relation': "SameAs" } , children : [] }
