@@ -41,12 +41,13 @@
 
 								<label>From:</label>
 								<div class="input-group">
+<div style="float: left;"><input type="checkbox" class="optional" name="repositoriesListAll"   onclick="  if (document.getElementsByName('repositoriesListAll')[0].checked) {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].checked=true; inputs[i].disabled=true;} } else {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].disabled=false;} }" ><i>All</i>&nbsp;&nbsp;</div>
 									{{#each endpointsAvailable}}
 									<!-- disabled="{{base}}"-->
 									<div style="float: left;"><input type="checkbox" data-base="{{base}}" checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" >{{name}}&nbsp;&nbsp;</div>
 
 									{{/each}}
-<div style="float: left;"><input type="checkbox" class="optional" name="repositoriesListAll"   onclick="  if (document.getElementsByName('repositoriesListAll')[0].checked) {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].checked=true; inputs[i].disabled=true;} } else {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].disabled=false;} }" ><i>All</i>&nbsp;&nbsp;</div>
+
 								</div>
 
 
@@ -86,7 +87,7 @@
 			<div class="col-xs-9 col-sm-8 col-sm-offset-3 main">
 				<div class="main col-xs-9 col-sm-8 col-sm-offset-3 " style="overflow: scroll;">
 					<div>
-						<h4>Search results</h4>
+						<h4>{{NresultFullQuery}}</h4>
 					</div>
 
 					<div class="list-group" >
@@ -97,7 +98,9 @@
 									<tr>
 										<td style="padding: 5px;" >
 											<div>
-												<a href="{{URI}}" class="btn btn-info btn-lg" target="_blank" >
+											
+<a href="#" class="btn btn-info btn-lg" data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg2(event);">
+
 													<span class="{{Icon}}"></span> {{Origin}}
 												</a>
 											</div> 
