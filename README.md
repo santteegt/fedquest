@@ -2,6 +2,8 @@
 
 Web Application (based on Meteor Framework) for generating SPARQL Federated Queries using a visual graph-based interface.
 
+Online version available: http://fedquest.cedia.org.ec
+
 ### What is this repository for? ###
 
 * Quick summary
