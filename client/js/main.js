@@ -1,4 +1,3 @@
-
 if (Meteor.isClient) {
 
   //Suscribe to Collections
@@ -674,9 +673,4 @@ function sleep() {
 
 
 }
-
-
-
-
-
 

@@ -1057,6 +1057,7 @@ $('div #deleteQuery').on('click', function(ev){
       var firstelement = cells[0].subject;
       console.log (firstelement);
       var errorMessage = "";
+      var commendq = false ;
       //at least one triple
       errorMessage = request.jsonQuery.cells.length == 0 ? "The Query Graph must have at least 1 triple":"";
       errorMessage = request.title == null || request.title == "" ? "Title is required":errorMessage;
@@ -1071,9 +1072,13 @@ $('div #deleteQuery').on('click', function(ev){
           if(!confirm ('Errors: \n'+txtval+'\nInvalid suggestion query... Continue saving/updating ?')){
             return;
           }
+        }else {
+
+           commendq = true ;
+
         }
 
-
+        request.commend =  commendq ;
         /*var snapshot = App.dashboard.takeSnapshot($('#paper'));
         var data = snapshot.length > 0 && snapshot[0].canvas[0] ?snapshot[0].canvas[0].toDataURL('image/png').toString():undefined;
         var compress = LZString.compress(snapshot[0].canvas[0].toDataURL('image/png'));

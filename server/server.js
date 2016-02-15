@@ -104,7 +104,7 @@ if (Meteor.isServer) {
 							Queries.remove({_id: request._id_});
 						}else{
 							Queries.update({_id: request._id_},{$set:{user: '', title: request.title, description: request.description, 
-							jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData}});
+							jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData , commend : request.commend }});
 							result.queryId=request._id_;
 						}
 
@@ -112,8 +112,9 @@ if (Meteor.isServer) {
 
 
 					}else{
+
 						var id = Queries.insert({user: '', title: request.title, description: request.description, 
-						jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData});
+						jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData , commend : request.commend });
 						result.queryId = id;
 					}
 				}catch(e){
