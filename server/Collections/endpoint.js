@@ -32,7 +32,7 @@ Endpoints.allow({
 // What to do when the server first starts up
 Meteor.startup(function (){
     //Fill the collection with some initial data if it's empty
-    Endpoints.remove({});
+    // Endpoints.remove({});
     /*if(Endpoints.find().count() == 0) {
         console.log('insertanto Endpoint de ejemplo');
         Endpoints.insert(

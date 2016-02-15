@@ -21,6 +21,11 @@
                 <button type="button" class="btn btn-default btn-xs" title="Save Query" id="saveQuery">
                   <span class="glyphicon glyphicon-floppy-disk"></span>
                 </button>
+				<button type="button" class="btn btn-default btn-xs" title="Delete Query" id="deleteQuery">
+                  <span class="glyphicon glyphicon glyphicon-trash"></span>
+                </button>
+
+
               </form>
             </div>
           </div>
@@ -53,10 +58,10 @@
           <div class="col-xs-12">
             <div style="position:absolute; right:0; padding: 0 35px;">
               <small class="footer-legend"><strong>Developed by:</strong></small>
-              <img src="images/ucuenca-logo.png" alt="ucuenca" style="height:40px" draggable="false">
+              <img src="/images/ucuenca-logo.png" alt="ucuenca" style="height:40px" draggable="false">
               <small class="footer-legend"><strong>Powered by:</strong></small>
               <!-- <img src="images/cepra-logo.png" alt="ucuenca" style="height:30px" draggable="false"> -->
-              <img src="images/gtr-logo.png" alt="ucuenca" style="height:30px" draggable="false">
+              <img src="/images/gtr-logo.png" alt="ucuenca" style="height:30px" draggable="false">
               <small class="footer-legend">GT-Repositorios</small>
             </div>
           </div>
@@ -103,6 +108,7 @@
                           <th>Color</th>
                           <th>Status</th>
                           <th>Base</th>
+                          <th>Optional</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -114,8 +120,9 @@
                           <td><input type="color" value="{{colorid}}" disabled ></td>
                           <td><span>{{status}}</span></td>
                           <td><input type="radio" name="baseRadios" checked="{{base}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" class="base-endpoint" ></td>
+                          <td><input type="checkbox" disabled="{{base}}"  checked="{{opt}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" > </td>
                           <td> <button type="button" class="btn btn-default" id="editEndpoint" onclick="editEndpoint(event)" data-endpoint-id="{{_id}}" ><span class="glyphicon glyphicon-edit"></span></button></td>
-                          <td> <button type="button" class="btn btn-default" id="deleteEndpoint" onclick="deleteEndpoint(event)" data-endpoint-id="{{_id}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}"><span class="glyphicon glyphicon-remove"></span></button></td>
+                          <td> <button type="button" class="btn btn-default" id="deleteEndpoint" onclick="deleteEndpoint(event)" data-endpoint-id="{{_id}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}"><span class="glyphicon glyphicon-remove"></span></button></td>      
                       </tr>
                     {{/each}}
                   </tbody>
@@ -170,9 +177,19 @@
                   </div>
                   <div class="radio">
                     <label>
-                      <input type="checkbox" name="new-endpoint-base" id="new-endpoint-base" />
+                     <input type="checkbox" name="new-endpoint-base" id="new-endpoint-base" />
                       Base Endpoint
-                    </label>
+                    </label> 
+                    <label>
+                    <input type="checkbox" name="new-endpoint-optional" id="new-endpoint-optional" />
+                      Optional 
+                    </label> 
+                    <!-- <label>
+                    <input type="radio"  name="new-endpoint-base"  id="new-endpoint-base" >
+                    Base Endpoint
+                    <input type="radio" name="new-endpoint-base"   id="optional" >
+                    Optional
+                    </label>-->
                     <label>
                       <input type="checkbox" id="loadschema">
                       Load Schema (It should take a while depending on Graph size)
@@ -208,7 +225,11 @@
                      <input type="text" class="form-control" placeholder="Value" id="node-value">
                     </div>
                     <div class="checkbox">
-                      <label><input id="checkRegex" type="checkbox" value="">Regex</label>
+			<!-- JO -->
+                      <label><input id="checkRegex" type="radio" name="matchTy" value="" checked >Simple match</label>
+                      <label><input id="checkRegex2" type="radio" name="matchTy" value="">Regex</label>
+                      <label><input id="checkRegex3" type="radio" name="matchTy" value="">Full-text</label>
+			<!-- JO -->
                     </div>
                   </div>
                   <!-- <button class="btn btn-primary" data-dismiss="modal">Register</button> -->
@@ -256,7 +277,11 @@
                   </div>
                 </div>
                 <div class="checkbox">
-                  <label><input id="rawnode-checkRegex" type="checkbox" value="">Regex</label>
+		<!--JO-->
+                  <label><input id="rawnode-checkRegex" type="radio" name="MatchT" value="" checked >Simple match</label>
+		  <label><input id="rawnode-checkRegex2" type="radio" name="MatchT" value="">Regex</label>
+		  <label><input id="rawnode-checkRegex3" type="radio" name="MatchT" value="">Full-fext</label>
+		<!--JO-->
                 </div>
                 <button type="submit" class="btn btn-sm btn-primary">Save</button>
               </form>

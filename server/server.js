@@ -2,6 +2,7 @@ if (Meteor.isServer) {
 
 
 	Meteor.startup(function () {
+
 		Properties._ensureIndex({'endpoint': 1, 'graphURI': 1});
 		// code to run on server at startup
 		//Meteor.call('getEndpointStructure', 'http://190.15.141.102:8890/sparql', 'http://dspace.ucuenca.edu.ec/resource/');
@@ -27,6 +28,8 @@ if (Meteor.isServer) {
 			},
 
 			doQuery: function(jsonRequest) {
+				console.log ('ConsultaQ');
+				console.log (jsonRequest);
 				var timeout = jsonRequest.timeout ? jsonRequest.timeout: 30000
 				var response = {}
 				response.statusCode = 200;
@@ -53,6 +56,38 @@ if (Meteor.isServer) {
 				}
 				return response;
 
+			}, doQueryDesc: function(jsonRequest , endpoint ) {
+				console.log ('ConsultaQ');
+				console.log (jsonRequest);
+				var timeout = jsonRequest.timeout ? jsonRequest.timeout: 30000
+				var response = {}
+				response.statusCode = 200;
+				response.msg = undefined;
+				response.stack = undefined;
+				
+				var endpointBase = endpoint;
+				 //Endpoints.findOne({base: true});
+
+				if(!endpointBase) {
+					response.statusCode = 400;
+					response.msg = "Base Endpoint is not registered!";
+				} else {
+					try{
+						if(jsonRequest.validateQuery) {
+							parserInstance.parse(jsonRequest.sparql);
+						} else {
+							console.log('==Avoiding SPARQL validation on client');
+						}
+						response.resultSet = Meteor.call('runQueryDescr', endpointBase.endpoint, endpointBase.graphURI , jsonRequest.sparql, 'application/ld+json', timeout);
+					}catch(e){
+						console.log(e);
+						response.statusCode = 400;
+						response.msg = "Error executing SPARQL Query: See console for details";
+						response.stack = e.toString();
+					}
+				}
+				return response;
+
 			},
 
 			saveQuery: function(request) {
@@ -60,9 +95,28 @@ if (Meteor.isServer) {
 				result.statusCode = 200;
 				result.msg = 'OK';
 				try{
-					var id = Queries.insert({user: '', title: request.title, description: request.description, 
-						jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData});
-					result.queryId = id;
+
+
+					var queryMod = Queries.findOne({_id: request._id_});
+					if (queryMod){
+
+						if (request.del){
+							Queries.remove({_id: request._id_});
+						}else{
+							Queries.update({_id: request._id_},{$set:{user: '', title: request.title, description: request.description, 
+							jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData , commend : request.commend }});
+							result.queryId=request._id_;
+						}
+
+						
+
+
+					}else{
+
+						var id = Queries.insert({user: '', title: request.title, description: request.description, 
+						jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData , commend : request.commend });
+						result.queryId = id;
+					}
 				}catch(e){
 					console.log(e);
 					result.statusCode = 500;
@@ -70,7 +124,7 @@ if (Meteor.isServer) {
 				}
 				return result;
 			},
-
+               
 			updatePrefixes: function() {
 				HTTP.get( 'http://prefix.cc/context', function(error, result){
 					if(result.statusCode == '200' && !error) {
@@ -153,7 +207,53 @@ if (Meteor.isServer) {
 				}
 				
 				return response;
-			},
+			},  
+			 findendpointactual: function ( resource ) {
+                
+                var response = {};
+                    response.endpoint = {};
+                    response.content = false;
+                    console.log ('!!!!!!!!!!!!!!EntraEndpoint');
+                var endpointsArray = Endpoints.find().fetch();
+                     console.log (endpointsArray);
+                for  (var i = 0; i< endpointsArray.length ; i++) {
+                 console.log ('EndpointServer');
+                 console.log ( endpointsArray[i]);
+                  var graph =  endpointsArray[i].graphURI;
+                  var endpoint = endpointsArray[i].endpoint;
+                 
+            
+                	try {
+					var result = Meteor.call('runQuery', endpoint , '', 'ASK { graph   <'+graph+'> { <'+resource+'> ?a ?b } }', undefined, 10000);
+					var content = EJSON.parse(result.content);
+
+					response.statusCode = result.statusCode;
+					if(result.statusCode != 200) {
+						response.msg = "Error trying to communicate with endpoint " + endpoint;
+					} else if(result.statusCode == 200  && content.boolean == true) {
+						response.msg = '';
+						response.endpoint =  endpointsArray[i] ;
+						response.content = true;
+						return response ;
+						  i = endpointsArray.length;
+                         
+
+					} else if(result.statusCode == 200  && content.boolean == false) {
+						response.statusCode = 404;
+						response.msg = "Graph <"+ defaultGraph + "> does not exists on endpoint " + endpoint;
+					}
+				}catch(e){
+					response.statusCode = 500;
+					response.msg = "Error trying to communicate with endpoint " + endpoint;
+					//response.stack = e.stack;
+				}
+                 
+
+
+                }
+                    return response ;
+				
+			 },
 
 			findPrefix: function(URIMap) {
 				var idx = URIMap.lastIndexOf('#') > 0 ? URIMap.lastIndexOf('#'): URIMap.lastIndexOf('/');
@@ -551,7 +651,7 @@ if (Meteor.isServer) {
 				});
 			},
 
-			getEndpointStructure: function(graphName, endpointURI, defaultGraph, graphDescription, colorId, baseEndpoint, updateGraph) {
+			getEndpointStructure: function(graphName, endpointURI, defaultGraph, graphDescription, colorId, baseEndpoint, updateGraph, optional) {
 				var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
 				var response = Meteor.call('pingServer', endpointURI, defaultGraph);
 				if(response.statusCode != 200 || response.msg.length > 0) return response;
@@ -562,11 +662,11 @@ if (Meteor.isServer) {
 				if(_.isUndefined(endpoint)) {
 					console.log('==Inserting new endpoint');
 					var color_id = colorId ? colorId:'#'+Math.floor(Math.random()*16777215).toString(16);
-					Endpoints.insert({name: graphName, colorid: color_id, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg});	
+					Endpoints.insert({name: graphName, colorid: color_id, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg , opt:optional});	
 					//updateGraph = true;
 				} else {
 					console.log('==Updating endpoint ' + endpointURI + '<' + defaultGraph + '>');
-					Endpoints.update({_id: endpoint._id}, {$set: {name: graphName, colorid: colorId, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg}});
+					Endpoints.update({_id: endpoint._id}, {$set: {name: graphName, colorid: colorId, endpoint: endpointURI, graphURI: defaultGraph, description: graphDescription, base: baseEndpoint, status: statusCode, lastMsg: response.msg, opt:optional }});
 				}
 				if(updateGraph) {
 					Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
@@ -590,7 +690,8 @@ if (Meteor.isServer) {
 			updateBaseEndpoint: function(endpointURI, defaultGraph) {
 				var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
 				Endpoints.update({base: true},{$set: {base: false}},{multi: true});
-				Endpoints.update({_id: endpoint._id}, {$set: {base: true}});
+				//Endpoints.update({_id: endpoint._id}, {$set: {base: true}});
+				Endpoints.update({_id: endpoint._id}, {$set: {base: true,opt:false}});
 				console.log("==NEW endpoint base: " + endpointURI + " - " + defaultGraph);
 			},
 
@@ -598,7 +699,21 @@ if (Meteor.isServer) {
 				Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
 				Endpoints.remove(id);
 				console.log("==Endpoint removed: " + endpointURI + " - " + defaultGraph);	
-			}
+			} ,
+			updateOptEndpoint: function(endpointURI, defaultGraph, optional) {
+				var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
+			//	Endpoints.update({base: true},{$set: {base: false}},{multi: true});
+				//Endpoints.update({_id: endpoint._id}, {$set: {base: true}});
+				Endpoints.update({_id: endpoint._id}, {$set: {opt:optional}});
+				console.log("==OPtional endpoint opt: " + endpointURI + " - " + defaultGraph+" Opt"+optional);
+			} ,
+			findoptional : function   (endpointURI, defaultGraph) {
+            console.log (endpointURI + defaultGraph);
+            var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
+				console.log ("Resp"+endpoint.opt );
+				return endpoint.opt;
+
+			} 
 		});
 
 		//Update Prefixes schema on every server startup

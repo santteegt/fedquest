@@ -1,0 +1,54 @@
+<head>
+  <title>SPARQL FEDQuery</title>
+  <meta name="title" content="SPARQL FEDQuery" />
+	<meta name="description" content="Interfaz gráfica para la creación de consultas SPARQL Federadas" />
+	<!-- <link rel="image_src" href="/images/notify_better_image.png" /> -->
+
+	<meta content="http://www.thepetedesign.com/demos/onepage_scroll_demo.html" property="og:url" />
+	<meta content="http://www.thepetedesign.com/images/onepage_scroll_image.png" property="og:image" />
+	<link rel="shortcut icon" id="favicon" href="favicon.png"> 
+	<meta name="author" content="Departamento de Ciencias de la Computación de la Facultad de Ingería de la Universidad de Cuenca">
+	<link rel="canonical" href="http://www.thepetedesign.com/demos/onepage_scroll_demo.html" />
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Pacifico:400' rel='stylesheet' type='text/css'>
+	<meta name="viewport" content="initial-scale=1, width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no">
+
+	<!--Para dashboard -->
+	<style id="holderjs-style" type="text/css"></style>
+</head>
+
+<body>
+
+	{{> page}}
+<!--
+  <div id="main">
+  	 {{> entityList}}
+  	{{> propertyList}}
+
+  </div>
+-->
+  	<script>
+	  /*$(document).ready(function(){
+	  $(".main").onepage_scroll({
+	    sectionContainer: "section",
+	    responsiveFallback: 600,
+	    loop: true
+	  });
+		});*/
+		
+	</script>
+
+<template name="hellodos">
+<!-- Start: Copyright 2016 TraceMyIP.org Service Code (203601-01272016)- DO NOT MODIFY //-->
+<div style="line-height:16px;text-align:center;"><script type="text/javascript" src="http://s2.tracemyip.org/tracker/lgUrl.php?stlVar2=1306&amp;rgtype=4684NR-IPIB&amp;pidnVar2=76689&amp;prtVar2=17&amp;scvVar2=12"></script><noscript><a href="http://www.tracemyip.org/tools/website-visitors-counter-traffic-tracker-statistics/"><img src="http://s2.tracemyip.org/tracker/1306/4684NR-IPIB/76689/17/12/ans/" alt="site ipv6 tracker" style="border:0px;"></a></noscript></div>
+<!-- End: TraceMyIP.org Service Code //-->
+</template>
+
+
+</body>
+
+<template name="hello">
+	{{greeting}}
+  <button>Click Me</button>
+  <p>You've pressed the button {{counter}} times.</p>
+</template>

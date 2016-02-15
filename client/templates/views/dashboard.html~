@@ -1,0 +1,396 @@
+<template name="dashboard">
+	<div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-2 sidebar sidebar-style" >
+        <!-- <div class="col-md-2 sidebar sidebar-style"> -->
+          <div class="panel panel-primary">
+            <div class="panel-heading" style="text-align: left">Graph Query</div>
+            <div class="panel-body">
+              <form role="form">
+                <div class="form-group" style="text-align: left">
+                  <label for="graph-title">Title</label>
+                  <input required type="text" class="form-control" id="graph-title" placeholder="(*)Query Title" >
+                </div>
+                <div class="form-group" style="text-align: left">
+                  <label for="graph-description">Description</label>
+                  <textarea required class="form-control" rows="3" id="graph-description" placeholder="Query Description"></textarea>
+                </div>
+                <button type="button" class="btn btn-default btn-xs runQuery" data-placement="down" title="Run Query">
+                  <span class="glyphicon glyphicon-play"></span>
+                </button>
+                <button type="button" class="btn btn-default btn-xs" title="Save Query" id="saveQuery">
+                  <span class="glyphicon glyphicon-floppy-disk"></span>
+                </button>
+				<button type="button" class="btn btn-default btn-xs" title="Delete Query" id="deleteQuery">
+                  <span class="glyphicon glyphicon glyphicon-trash"></span>
+                </button>
+
+
+              </form>
+            </div>
+          </div>
+          
+        </div>
+
+        {{> drawingboard}}
+
+
+      <!-- Right sidebar -->
+      <div class="col-xs-4 col-xs-offset-8 col-sm-3 col-sm-offset-9 sidebar-style">
+      <!-- <div class="col-md-3 sidebar-style"> -->
+        <!--
+        <ul class="nav nav-sidebar">
+          <li class="active"><a href="./dashboard_files/dashboard.html">Overview</a></li>
+          <li><a href="./dashboard_files/dashboard.html">Reports</a></li>
+          <li><a href="./dashboard_files/dashboard.html">Analytics</a></li>
+          <li><a href="./dashboard_files/dashboard.html">Export</a></li>
+        </ul>
+        -->
+        {{> endpoint}}
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="row">
+          <!--
+          <div class="col-xs-2">
+          </div> -->
+          <div class="col-xs-12">
+            <div style="position:absolute; right:0; padding: 0 35px;">
+              <small class="footer-legend"><strong>Developed by:</strong></small>
+              <img src="/images/ucuenca-logo.png" alt="ucuenca" style="height:40px" draggable="false">
+              <small class="footer-legend"><strong>Powered by:</strong></small>
+              <!-- <img src="images/cepra-logo.png" alt="ucuenca" style="height:30px" draggable="false"> -->
+              <img src="/images/gtr-logo.png" alt="ucuenca" style="height:30px" draggable="false">
+              <small class="footer-legend">GT-Repositorios</small>
+            </div>
+          </div>
+          <!--
+          <div class="col-xs-3">
+              
+          </div>-->
+          
+        </div>
+      </div>
+      <div class='notifications top-right' style="width: 250px;"></div>
+      <div class='notifications top-left' style="width: 250px;"></div>
+
+      <div style="display:none; "  id="contextMenu">
+        <ul border="0" cellpadding="0" cellspacing="0" 
+          style="border: 1px solid rgba(0, 0, 0, 0.2); border-radius: 6px; background-clip: padding-box; 
+          box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2);  min-width: 160px; position: absolute; background-color: #ffffff;" 
+          width="100px" >
+          <li style="  clear: both; color: #333333; display: block; font-weight: normal; line-height: 20px;
+                padding: 3px; white-space: nowrap;">
+            <div  id="changeResultSet" class="ContextItem" ><span class="glyphicon glyphicon-transfer"></span> ResultSet</div>
+          </li>
+        </ul>     
+      </div>
+
+  </div>
+
+       <!--Modal for Available Endpoints -->
+      <div class="modal fade" id="availableEndpoint" tabindex="-1" role="dialog" aria-labelledby="Available Endpoints" aria-hidden="true">
+        <div class="modal-dialog  modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title" id="myModalLabel">Available Endpoints</h4>
+            </div>
+            
+              <div class="modal-body">
+                <table class="table table-striped ">
+                  <thead>
+                      <tr>
+                          <th>Name</th>
+                          <th>Description</th>
+                          <th>Graph</th>
+                          <th>Color</th>
+                          <th>Status</th>
+                          <th>Base</th>
+                          <th>Optional</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    {{#each endpointsAvailable}}
+                      <tr>
+                          <td><a href="{{endpoint}}" target="_blank">{{name}}</a></td>
+                          <td>{{description}}</td>
+                          <td><input type="input" value="{{graphURI}}" disabled ></td>
+                          <td><input type="color" value="{{colorid}}" disabled ></td>
+                          <td><span>{{status}}</span></td>
+                          <td><input type="radio" name="baseRadios" checked="{{base}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" class="base-endpoint" ></td>
+                          <td><input type="checkbox" disabled="{{base}}"  checked="{{opt}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" > </td>
+                          <td> <button type="button" class="btn btn-default" id="editEndpoint" onclick="editEndpoint(event)" data-endpoint-id="{{_id}}" ><span class="glyphicon glyphicon-edit"></span></button></td>
+                          <td> <button type="button" class="btn btn-default" id="deleteEndpoint" onclick="deleteEndpoint(event)" data-endpoint-id="{{_id}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}"><span class="glyphicon glyphicon-remove"></span></button></td>      
+                      </tr>
+                    {{/each}}
+                  </tbody>
+                </table>
+              </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for New endpoint -->
+      <div class="modal fade" id="newEndpoint" tabindex="1" role="dialog" aria-labelledby="New Endpoint" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title" id="myModalLabel">New Endpoint</h4>
+            </div>
+            
+              <div class="modal-body">
+                <form role="form" id="new-endpoint-form">
+                  <div class="form-group">
+                  	<div class="input-group input-group-sm">
+      					     <span class="input-group-addon">@</span>
+      					     <input type="text" required pattern="[a-zA-Z0-9]+" class="form-control" placeholder="Identifier (Required)" id="new-endpoint-identifier" oninvalid="setCustomValidity('Alphanumeric and no spaces required')" onchange="try{setCustomValidity('')}catch(e){}" />
+      				      </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="input-group input-group-sm">
+                     <span class="input-group-addon">http://</span>
+                     <input type="url" required class="form-control" placeholder="Endpoint URL (Required)" id="new-endpoint" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-addon">http://</span>
+                      <input type="url" required class="form-control" placeholder="Graph URL (Required)" id="new-endpoint-graph" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-addon">Color:</span>
+                      <input type="color" id="new-endpoint-color" value="#ff0000" class="form-control" placeholder="Graph Color" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="new-endpoint-desc">Description</label>
+                    <textarea class="form-control" rows="3" id="new-endpoint-desc" placeholder="Description"></textarea>
+                  </div>
+                  <div class="radio">
+                    <label>
+                     <input type="checkbox" name="new-endpoint-base" id="new-endpoint-base" />
+                      Base Endpoint
+                    </label> 
+                    <label>
+                    <input type="checkbox" name="new-endpoint-optional" id="new-endpoint-optional" />
+                      Optional 
+                    </label> 
+                    <!-- <label>
+                    <input type="radio"  name="new-endpoint-base"  id="new-endpoint-base" >
+                    Base Endpoint
+                    <input type="radio" name="new-endpoint-base"   id="optional" >
+                    Optional
+                    </label>-->
+                    <label>
+                      <input type="checkbox" id="loadschema">
+                      Load Schema (It should take a while depending on Graph size)
+                    </label>
+                  </div>
+                  <button type="submit" class="btn btn-sm btn-primary">Register</button>
+                </form>
+              </div>
+              <div id="loadingEndpoint" style="float: right; height: 19px; padding-right: 15px;">
+                <img src="images/ajax-loader.gif" style="display: none">
+              </div>
+            <div class="modal-footer">
+             <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+              <!-- <button type="button" class="btn btn-primary new-endpoint-btn" id="new-endpoint-btn">Register</button> -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for Node Value -->
+      <div class="modal fade" id="nodeValue" tabindex="-1" role="dialog" aria-labelledby="Node Value" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title" id="myModalLabel">Node Value</h4>
+            </div>
+            
+              <div class="modal-body">
+                  <div class="form-group">
+                    <div class="input-group input-group-sm">
+                     <span class="input-group-addon">@</span>
+                     <input type="text" class="form-control" placeholder="Value" id="node-value">
+                    </div>
+                    <div class="checkbox">
+			<!-- JO -->
+                      <label><input id="checkRegex" type="radio" name="matchTy" value="" checked >Simple match</label>
+                      <label><input id="checkRegex1" type="radio" name="matchTy" value="">Regex</label>
+                      <label><input id="checkRegex2" type="radio" name="matchTy" value="">Full-text</label>
+			<!-- JO -->
+                    </div>
+                  </div>
+                  <!-- <button class="btn btn-primary" data-dismiss="modal">Register</button> -->
+              </div>
+            
+            <div class="modal-footer">
+              <!-- <div role="alert" class="alert alert-warning">Something happend</div> -->
+             <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for Raw Node Value -->
+      <div class="modal fade" id="rawnodeValue" tabindex="-1" role="dialog" aria-labelledby="Raw Node Value" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title" id="myModalLabel">Raw Node Value</h4>
+            </div>
+            
+            <div class="modal-body">
+              <form role="form" id="rawnodeform">
+
+                <div class="form-group">
+                  <label for="endpoint">Endpoint</label>
+                  <select class="form-control" id="endpoint">
+                    {{#each listEndpointsAvailable}}
+                      <option value="{{name}}" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-colorid="{{colorid}}">{{name}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                <div class="form-group">
+                  <div class="input-group input-group-sm">
+                   <span class="input-group-addon">http://</span>
+                   <input type="url" required class="form-control" placeholder="Entity|Object URI" id="rawnode-uri">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="input-group input-group-sm rawnode-group">
+                   <span class="input-group-addon">@</span>
+                   <input type="text" class="form-control" placeholder="Object URI|Value" id="rawnode-value">
+                  </div>
+                </div>
+                <div class="checkbox">
+		<!--JO-->
+                  <label><input id="rawnode-checkRegex" type="radio" name="MatchT" value="" checked >Simple match</label>
+		  <label><input id="rawnode-checkRegex2" type="radio" name="MatchT" value="">Regex</label>
+		  <label><input id="rawnode-checkRegex3" type="radio" name="MatchT" value="">Full-fext</label>
+		<!--JO-->
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+              </form>
+                <!-- <button class="btn btn-primary" data-dismiss="modal">Register</button> -->
+            </div>
+          
+          <div class="modal-footer">
+            <!-- <div role="alert" class="alert alert-warning">Something happend</div> -->
+           <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
+          <!-- <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Save</button> -->
+          </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for sparql Editor -->
+      <div class="modal fade" id="sparqlEditor" tabindex="-1" role="dialog" aria-labelledby="Node Value" aria-hidden="true">
+      
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              <h3>SPARQL Editor</h3>
+              <div style="position:absolute; top:33px">
+                <button type="button" class="btn btn-danger btn-sm" id="consoleError" data-toggle="modal" data-target="#modalLog" style="display:none">
+                  <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>Console Error
+                </button>
+              </div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                <label for="graph-title">See generated Query | Enter New SPARQL Query</label>
+                <form id="sparqlEditor-form">
+                  <textarea id="code" style="background= #646464"># Comment! Enter SPARQL here</textarea>
+                </form>
+              </div>
+            </div>
+              <div class="modal-footer">
+                  <!-- <button type="button" class="btn btn-primary btn-sm runQuery" data-dismiss="modal" id="sparqlbtnEditor">Ejecutar</button> -->
+                  <!-- <button type="button" class="btn btn-primary btn-sm runQuery" data-toggle="modal" data-target="#resultQuery" data-placement="down" id="sparqlbtnEditor">Ejecutar</button> -->
+                  <div class="checkbox" style="float:left">
+                    <label>
+                      <input type="checkbox" id="avoidErrors"> Avoid SPARQL Validation on Client
+                    </label>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm runQuery" id="sparqlbtnEditor">Ejecutar</button>
+                  <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Close</button>
+              </div>
+          </div>  
+        </div>
+      </div>
+
+      <!-- Modal for query execution error log -->
+      <div class="modal fade" id="modalLog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title" id="myModalLabel">Console Log</h4>
+            </div>
+            <div class="modal-body">
+              <div class="console-log alert alert-danger" role="alert" style ="text-align:left; font-family: monospace; font-size: 12px;"></div>
+            </div>
+            <!--
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+            -->
+          </div>
+        </div>
+      </div>
+
+      <!--Modal for Result Query -->
+      <div class="modal fade" id="resultQuery" tabindex="-1" role="dialog" aria-labelledby="Result Query" aria-hidden="true">
+        <div class="modal-dialog  modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title" id="myModalLabel">Result Query</h4>
+            </div>
+            
+              <div class="modal-body" style="overflow-x:scroll">
+                {{> reactiveTable collection=resultQuery settings=settings }}
+              </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Delete-->
+      <div class="modal fade" id="dialogConfirm" tabindex="1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <!--<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button> -->
+              <h4 class="modal-title" id="myModalLabel">Delete</h4>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-warning">Are you sure you want to delete the Endpoint?</div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+              <button id= "okDelete" type="button" class="btn btn-primary" onclick="confirmEndpointDelete(event)" data-dismiss="modal">Yes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+</template>

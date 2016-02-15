@@ -30,9 +30,11 @@ this.DashboardView = Backbone.View.extend({
     var colorId = $('#newEndpoint #new-endpoint-color').val();
     var base = $('#newEndpoint #new-endpoint-base')[0].checked;
     var loadschema = $('#newEndpoint #loadschema')[0].checked;
-    //console.log('click en register' + id+endpoint+graphURI+description);
+    var optional = $ ('#newEndpoint #new-endpoint-optional')[0].checked;
+    //COmentar
+    console.log('Registras' + id+endpoint+graphURI+description+optional);
     e.preventDefault();
-    Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, loadschema, function (error, result) {
+    Meteor.call('getEndpointStructure', id, endpoint, graphURI, description, colorId, base, loadschema, optional, function (error, result) {
       if(error) {
         $('#newEndpoint #loadingEndpoint img').hide();
         $('.top-right').notify({
@@ -404,21 +406,34 @@ this.DashboardView = Backbone.View.extend({
             var _cfield = (childNode.attrs.text.text == childNode.attrs.text.label ? //no value specified
             childNode.attrs.text.text:childNode.attrs.text.label) + '_' + endpointIdprefix;
             var _cfieldValue = childNode.attrs.text.text;
-            var applyRegexFilter = childNode.attrs.text.regex == '1';
+//JO
+            var applyRegexFilter1 = childNode.attrs.text.regex == '2';
+            var applyRegexFilter2 = childNode.attrs.text.regex == '3';
+//JO
             //value starts with question mark (?) and its predicate
             if(_cfieldValue.match('^[?]') && _cptype != 'null') {
               _whereClause += "\n" + _entityField 
                             + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
                             + _cfield + ' .';
             } else { //node value specified
-              if(applyRegexFilter) {
+              if(applyRegexFilter1) {
                 _whereClause += "\n" + _entityField
                               + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
                               + _cfield + ' .';
                 //_whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'") .';
                 /////////////////// Modificado JS
                 _whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'", "i") .';
-              } else {
+              }
+//JO
+		if(applyRegexFilter2) {
+                _whereClause += "\n" + _entityField
+                              + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
+                              + _cfield + ' .';
+//                _whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'", "i") .';
+                _whereClause += "\n" + _cfield +  ' <http://jena.apache.org/text#query> "' + _cfieldValue +'".';
+              }
+	      if(!applyRegexFilter1 && !applyRegexFilter2){
+//JO
                 var endpointGraph =Session.get(endpoint);
                 var property = rawNode ? undefined:_.find(endpointGraph.properties,function(obj){return obj.fullName == _cptype});
                 var propertySubject = rawNode ? undefined:_.find(property.subjects, function(obj){return obj.fullName == _entityType});
@@ -571,18 +586,72 @@ this.DashboardView = Backbone.View.extend({
            ALLFROMQUERY = ALLFROMQUERY +'FROM '+ queryList[j].from+'\n';
           }
 
+var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
+//JO
+//Adding UNION support
+	  var applyUnion = true;
+	  for (var h=1; h<queryList.length; h++){
+		var endp = queryList[h];
+		for (var d=0; d<endp.fields.length; d++){
+			var oneField = endp.fields[d];
+			if(baseQuery.indexOf(oneField) > -1){
+				applyUnion=false;
+			}
+		}
+	  }
+//JO*
+
+
           var globalVars = _.pluck(queryList, 'fields').toString().replace(/,/g, ' ');
           var stringSPARQL = 'SELECT ' + globalVars +'\n' + ALLFROMQUERY + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
+
+//JO
+//Adding UNION support
+
+	if(applyUnion){
+		stringSPARQL = 'SELECT ' + globalVars +'\n' + ALLFROMQUERY + ' WHERE { {' + queryList[0].where.toString().replace(/[.],/g, '\n')+'}';
+	}
+//JO*
+
+          var optional = "";
           for(var i=1; i<queryList.length; i++) {
-            var queryEndpoint = queryList[i];
-            var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
+          var queryEndpoint = queryList[i];
+          console.log ("COnsulta Endpoint "+ queryEndpoint.endpoint.substring(1,queryEndpoint.endpoint.length-1) +" - " + queryEndpoint.from.replace('<', ''  ));
+           // Meteor.call ('findoptional',queryEndpoint.endpoint.substring(1,queryEndpoint.endpoint.length-1) , queryEndpoint.from.substring(1,queryEndpoint.from.length-1), function (error, result) { 
+          
+           //  var query = Queries.findOne({_id: queryId});
+            var resultendpoint =   Endpoints.findOne({endpoint: queryEndpoint.endpoint.substring(1,queryEndpoint.endpoint.length-1), graphURI: queryEndpoint.from.substring(1,queryEndpoint.from.length-1)});
+            //console.log ("Entra al LOG "+result); if (result) optional = "OPTIONAL {"} );
+            var optional = "";
+            var optionalfinal = "";
+            if (!applyUnion && resultendpoint.opt) { optional = "OPTIONAL {"; optionalfinal = "}"; }
+            console.log ("OPC "+result);
+            var queryService = optional+'\n SERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')
                                              + '{'; //TESTING CASE
+       //JO
+        //Adding UNION support
+
+            if (applyUnion){
+              queryService = '\nUNION{SERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ')+ '{';
+            }
+
+            //JO*
+
+
             /*var queryService = '\nSERVICE ' + queryEndpoint.endpoint + '{\nSELECT ' + queryEndpoint.fields.toString().replace(/,/g, ' ') + ' {';*/
 
             for(var o=0; o<queryEndpoint.where.length; o++) {
               queryService += queryEndpoint.where[o];
             }
-            queryService += '}\n}'
+        //JO
+         //Adding UNION support
+		if (applyUnion){
+                          queryService += '}}\n}';
+                        }else{
+		            queryService += '}\n}' + optionalfinal;
+                        }
+         //JO*
+
             stringSPARQL += '\n' + queryService;
           }
            //var stringSPARQL = 'SELECT ' + globalVars + ' \nFROM ' + queryList[0].from + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
@@ -705,7 +774,13 @@ this.DashboardView = Backbone.View.extend({
         $('#graph-description').val(query.description);
         App.dashboard.graph.fromJSON(JSON.parse(query.jsonGraph));
         App.dashboard.sparqlEditor.setValue(query.sparql);
-        $('#saveQuery').prop('disabled', true);
+	//Test edit template query
+        //--$('#saveQuery').prop('disabled', true);
+        $('#deleteQuery').prop('disabled', false);
+	//EndTest
+      }else{
+        $('#deleteQuery').prop('disabled', true);
+
       }
     });
     return this;
@@ -773,6 +848,9 @@ this.DashboardView = Backbone.View.extend({
         $('#newEndpoint #new-endpoint-identifier').val(endpointEdit[0].name);
         $('#newEndpoint #new-endpoint-desc').val(endpointEdit[0].description);
         $('#newEndpoint #new-endpoint-base')[0].checked=endpointEdit[0].base;
+       $('#newEndpoint #new-endpoint-optional')[0].checked=endpointEdit[0].opt;
+      //  $('#newEndpoint #new-endpoint-optional')[0].checked=true;
+      //  console.log ("Valor Optional"+endpointEdit[0].optional+"O"+endpointEdit[0].opt+"Valor Base"+endpointEdit[0].base);
         divNode.find('#new-endpoint-base')[0].disabled=true;
         Session.set('endpointEdit',[]);
       }else{
@@ -797,6 +875,7 @@ this.DashboardView = Backbone.View.extend({
         $('#newEndpoint #new-endpoint-desc').val('');
         $('#newEndpoint #new-endpoint-base').disable=false;
         $('#newEndpoint #new-endpoint-base')[0].checked=false;
+        $('#newEndpoint #new-endpoint-optional')[0].checked=false;
         $('#newEndpoint #loadschema')[0].checked=false;
         Session.set('endpointEdit',[]);
     });
@@ -841,12 +920,37 @@ this.DashboardView = Backbone.View.extend({
       $('#availableEndpoint input:radio').on('click', function(ev){
         var endpoint = $(ev.currentTarget).attr('data-endpoint');
         var graphURI = $(ev.currentTarget).attr('data-graphuri');
+        //var gg = $("input:"+endpoint).attr('data-graphuri');
         Meteor.call('updateBaseEndpoint', endpoint, graphURI, function(error, result){
+        //  console.log('base changed'+gg);
+          //non-implemented
+        });
+      });  
+
+      $('#availableEndpoint input:checkbox').on('click', function(ev){
+        var endpoint = $(ev.currentTarget).attr('data-endpoint');
+        var graphURI = $(ev.currentTarget).attr('data-graphuri');
+        var optional = $(ev.currentTarget).is(":checked");
+        Meteor.call('updateOptEndpoint', endpoint, graphURI, optional, function(error, result){
+          console.log('Cambioando opt'+optional);
+          //non-implemented
+        });
+      });
+    });
+    //////
+    /// Update Optional - JS
+/*
+    divNode.find('#availableEndpoint').on('show.bs.modal', function(e) {
+      $('#availableEndpoint input:checkbox').on('click', function(ev){
+        var endpoint = $(ev.currentTarget).attr('data-endpoint');
+        var graphURI = $(ev.currentTarget).attr('data-graphuri');
+        var optional = $(ev.currentTarget).value;
+        Meteor.call('updateOptEndpoint', endpoint, graphURI, function(error, result){
           console.log('base changed');
           //non-implemented
         });
       });  
-    });
+    });*/
 
     divNode.find('#availableEndpoint').on('hide.bs.modal', function(e) {
       $('#availableEndpoint input:radio').unbind('click');
@@ -871,7 +975,8 @@ this.DashboardView = Backbone.View.extend({
     $("div.navbar #zoom-in").on('click', this.zoomIn);
     $("div.navbar #clear").on('click', this.clearDashboard);
     $("#changeResultSet").on('click', this.changeResultSet);
-
+    //divNode.find(".panel-group .property").on('click', function() {  $( this ).css( "background", "red" )});
+    //divNode.find("div.entity").on('click', function() {  $( this ).css( "background", "blue" )});
     /////////////
     //Run Query//
     /////////////
@@ -911,15 +1016,48 @@ this.DashboardView = Backbone.View.extend({
 
     });
 
+
+    //////////////////
+    //Delete the query//
+    //////////////////
+
+$('div #deleteQuery').on('click', function(ev){
+  var request = {};
+  request._id_=Session.get('graphQuery');
+  if (request._id_) {
+    request.del=true;
+    var result = Meteor.call('saveQuery', request, function(error, result) {
+      App.dashboard.graph.clear();
+      $('div #saveQuery').removeAttr('disabled');
+      $('div #graph-title').val('');
+      $('div #graph-description').val('');
+      $('.top-right').notify({
+        message: { text: "Query deleted" },
+        type: 'success'
+      }).show();
+    });
+  }
+  
+});
+
+
+
     //////////////////
     //Save the query//
     //////////////////
     $('div #saveQuery').on('click', function(ev){
       var request = {};
+      request._id_=Session.get('graphQuery');
       request.title = $('div #graph-title').val();
       request.description = $('div #graph-description').val();
       request.jsonQuery = App.dashboard.graph.toJSON();
+       var cells = request.jsonQuery['cells'];            
+      console.log ("Datos a guardarse");
+      console.log (request.jsonQuery);
+      var firstelement = cells[0].subject;
+      console.log (firstelement);
       var errorMessage = "";
+      var commendq = false ;
       //at least one triple
       errorMessage = request.jsonQuery.cells.length == 0 ? "The Query Graph must have at least 1 triple":"";
       errorMessage = request.title == null || request.title == "" ? "Title is required":errorMessage;
@@ -927,6 +1065,20 @@ this.DashboardView = Backbone.View.extend({
       try {
         request.sparql = App.fedQueryUtils.graphToSPARQL();
         request.imageData = '';
+        
+        var txtval = ValidateSuggestionQuery (request.sparql);
+
+        if (txtval != ''){
+          if(!confirm ('Errors: \n'+txtval+'\nInvalid suggestion query... Continue saving/updating ?')){
+            return;
+          }
+        }else {
+
+           commendq = true ;
+
+        }
+
+        request.commend =  commendq ;
         /*var snapshot = App.dashboard.takeSnapshot($('#paper'));
         var data = snapshot.length > 0 && snapshot[0].canvas[0] ?snapshot[0].canvas[0].toDataURL('image/png').toString():undefined;
         var compress = LZString.compress(snapshot[0].canvas[0].toDataURL('image/png'));
@@ -943,7 +1095,7 @@ this.DashboardView = Backbone.View.extend({
           }).show();
       } else {
         var result = Meteor.call('saveQuery', request, function(error, result) {
-          $('div #saveQuery').attr('disabled','true');
+          $('div #deleteQuery').attr('disabled','false');
           $('.top-right').notify({
             message: { text: result.statusCode == 200 ?"Query saved Successful":result.msg },
             type: result.statusCode == 200 ?'success':'danger'
@@ -1034,7 +1186,11 @@ this.DashboardView = Backbone.View.extend({
             $('#rawnodeValue select').val(endpointValue); 
             $('div #rawnodeValue #rawnode-uri').val('');
             $('div #rawnodeValue #rawnode-value').val('');
-            document.getElementById("rawnode-checkRegex").checked = false;
+		//JO
+            document.getElementById("rawnode-checkRegex").checked = true;
+	    document.getElementById("rawnode-checkRegex2").checked = false;
+            document.getElementById("rawnode-checkRegex3").checked = false;
+		//JO
 
 
             if(cellViewModel.attributes.subject != "null") { //entity raw node
@@ -1061,8 +1217,14 @@ this.DashboardView = Backbone.View.extend({
                 $('div #rawnodeValue .checkbox').show();
                 $('div #rawnodeValue #rawnode-value').val(cellViewModel.attr('text/text'));
                 var regex = cellViewModel.attr('text/regex');
+		//JO
                 var checkbox = document.getElementById("rawnode-checkRegex");
+                var checkbox2 = document.getElementById("rawnode-checkRegex2");
+                var checkbox3 = document.getElementById("rawnode-checkRegex3");
                 checkbox.checked = regex == 1;
+                checkbox2.checked = regex == 2;
+                checkbox3.checked = regex == 3;
+		//JO
               }
             }
             $('div #rawnodeValue').unbind('show.bs.modal');
@@ -1084,8 +1246,14 @@ this.DashboardView = Backbone.View.extend({
               if(link) {
                 App.dashboard.graph.getCell(link.id).label(0,{attrs:{text: {text: '<' + $('div #rawnodeValue #rawnode-uri').val() + '>'}}});
               }
+//JO
               var checkbox = document.getElementById("rawnode-checkRegex");
-              cellViewModel.attr('text/regex', checkbox.checked?1:0);
+              var checkbox2 = document.getElementById("rawnode-checkRegex2");
+              var checkbox3 = document.getElementById("rawnode-checkRegex3");
+	      var chkratio= checkbox.checked?1:checkbox2.checked?2:3;
+
+              cellViewModel.attr('text/regex', chkratio);
+//JO
               var objectValue = $('div #rawnodeValue #rawnode-value').val();
               if( objectValue.length > 0 ) {
                 cellViewModel.attr('text/text', objectValue );
@@ -1102,22 +1270,32 @@ this.DashboardView = Backbone.View.extend({
           $('div #nodeValue').on('show.bs.modal', function(e){
               var regex = cellView.model.attr('text/regex');
               var checkbox = document.getElementById("checkRegex");
-              if(regex == 1) {
-                checkbox.checked = true;
-              }else {
-                checkbox.checked = false;
-              }
+              var checkbox2 = document.getElementById("checkRegex2");
+              var checkbox3 = document.getElementById("checkRegex3");
+//JO
+                
+                checkbox.checked = regex == 1;
+                checkbox2.checked = regex == 2;
+                checkbox3.checked = regex == 3;
+              //JO
               //document.getElementById("checkRegex").checked = 'checked';            
           });
           $('div #nodeValue').on('hide.bs.modal', function(ev) {
             //en el SAVE 
             var checkbox = document.getElementById("checkRegex");
+            var checkbox2 = document.getElementById("checkRegex2");
+            var checkbox3 = document.getElementById("checkRegex3");
+
             if(checkbox.checked) {
                cellView.model.attr('text/regex', 1);
+              } 
+	    if(checkbox2.checked) {
+               cellView.model.attr('text/regex', 2);
               }
-              else {
-               cellView.model.attr('text/regex', 0);
-              }  
+ 	    if(checkbox3.checked) {
+               cellView.model.attr('text/regex', 3);
+              }
+
              //SAVE   
             if( $('div #nodeValue #node-value').val().length > 0 ) {
               cellView.model.attr('text/text', $('div #nodeValue #node-value').val() );
@@ -1232,6 +1410,75 @@ this.DashboardView = Backbone.View.extend({
     $('div #dialogConfirm').modal();
   };
 
+   // $("#accordion").on('click', "div.entity" , function(){   $( this ).css( "background", "red" )});
+   // $("div.entity").delegate('click', function(){   $( this ).css( "background", "red" )});
+  // $("div.entity").on("DOMNodeInserted", function(){   $( this ).css( "background", "blue" )};);
+  // $("#accordion").on("DOMNodeInserted","div.entity", function(){  alert ("creado") });
+ // dim = function (nombre) {alert(nombre);};
+  //dimension = function (e) { $( e ).css( "background", "blue" ) ;} ;
+   colornode = function (e) { 
+    //$( e ).css( "background", "red" ) ;
+    // alert($( e ).parent().attr("data-graphURI"));
+      var prop = $( e ).attr("propertyrel");
+      var colorid = $( e ).attr("data-colorid");
+      var entprop =  prop.split(" ");
+      $("div.entity").css("border-width","1px").find ("p").css ("font-weight" , "normal");
+      //$("div.property").css("border-width","1px").find ("p").css ("font-weight" , "normal");
+
+      $("div.property").css({
+         'transition': 'all 0.3s',
+     //    'border-width' :'2px',
+         '-webkit-box-shadow' : '2px 2px 5px rgba(0,0,0,0)' ,
+         '-moz-box-shadow' : '2px 2px 5px rgba(0,0,0,0)' ,
+          'box-shadow' : '2px 2px 5px rgba(0,0,0,0)' ,
+     }).find ("p").css ("font-weight" , "normal");
+     //  $( "div[data-label='license']").css( "background", "blue" ) ;
+      for (var l = 0 ; l < entprop.length ; l++) {
+        //  $("div[data-label='"+entprop[l]+"']" ).css( "opacity" , 0.1 ).css( "background", colorid ).fadeTo("slow",0.5) ;
+     // $("div[data-label='"+entprop[l]+"']" ).find ("p").css ("font-weight" , "bold").css("border-width","2px");
+     $("div[data-label='"+entprop[l]+"']" ).css({
+         'transition': 'all 0.3s',
+     //    'border-width' :'2px',
+         '-webkit-box-shadow' : '2px 2px 5px #999' ,
+         '-moz-box-shadow' : '2px 2px 5px #999' ,
+          'box-shadow' : '2px 2px 5px #999' ,
+     }).find ("p").css ("font-weight" , "bold");
+
+/*
+     $("div[data-label='"+entprop[l]+"']" ).css("border-width","2px").find ("p").css ( {
+         'transition': 'all 0.5s',
+         'font-weight' : "bold" ,
+     }) ;*/
+     // css( "opacity" , 0.1 ).css( "background", colorid ).fadeTo("slow",0.5) ;
+      //    console.log ("PROPIEDAD");
+       //   console.log (entprop[l]);
+      }
+      //alert (ent);
+     // $ ("[entidadesrel=Person ]").css( "background", "red" ) ;
+    //var endpoint = $( e ).parent().attr("id");
+    // alert (endpoint);
+   // alert($( e ).attr("data-label"));
+
+    //var endpoints = Session.get('endpoints');
+ };
+   focusbutton = function (e) {  
+       $ (e).css({
+        'transition': 'all 0.5s',
+        'transform': 'scale(1.5)',
+    });
+    //$ (e).animate({   transform : "2,2" , borderWidth: "2px" }, 500 ) ;
+        //  $ (e ).find("p").animate({ fontSize:"1em" }, 500 ) ;
+    };
+ // focusbutton = function (e) {  alert(e) };
+ // dimension = function (e) { $( e ).css( "background", "red" ) ;} ;
+  //dimension = function (e) { $( e ).parent().css( "background", "blue" ) ;} ;
+   //dimension = function () { console.log ('hola')} ;
+
+      Nofocusbutton = function (e) {  
+       $ (e).css({
+        'transition': 'all 0.25s',
+        'transform': 'scale(1)',
+    }); };
   confirmEndpointDelete = function(ev) {
     console.log('entra delete');
     var endpointId = $('#dialogConfirm #okDelete').attr('data-endpointId');
