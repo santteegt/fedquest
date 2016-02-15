@@ -763,7 +763,11 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
         App.dashboard.sparqlEditor.setValue(query.sparql);
 	//Test edit template query
         //--$('#saveQuery').prop('disabled', true);
+        $('#deleteQuery').prop('disabled', false);
 	//EndTest
+      }else{
+        $('#deleteQuery').prop('disabled', true);
+
       }
     });
     return this;
@@ -999,11 +1003,38 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
 
     });
 
+
+    //////////////////
+    //Delete the query//
+    //////////////////
+
+$('div #deleteQuery').on('click', function(ev){
+  var request = {};
+  request._id_=Session.get('graphQuery');
+  if (request._id_) {
+    request.del=true;
+    var result = Meteor.call('saveQuery', request, function(error, result) {
+      App.dashboard.graph.clear();
+      $('div #saveQuery').removeAttr('disabled');
+      $('div #graph-title').val('');
+      $('div #graph-description').val('');
+      $('.top-right').notify({
+        message: { text: "Query deleted" },
+        type: 'success'
+      }).show();
+    });
+  }
+  
+});
+
+
+
     //////////////////
     //Save the query//
     //////////////////
     $('div #saveQuery').on('click', function(ev){
       var request = {};
+      request._id_=Session.get('graphQuery');
       request.title = $('div #graph-title').val();
       request.description = $('div #graph-description').val();
       request.jsonQuery = App.dashboard.graph.toJSON();
@@ -1020,6 +1051,16 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
       try {
         request.sparql = App.fedQueryUtils.graphToSPARQL();
         request.imageData = '';
+        
+        var txtval = ValidateSuggestionQuery (request.sparql);
+
+        if (txtval != ''){
+          if(!confirm ('Errors: \n'+txtval+'\nInvalid suggestion query... Continue saving/updating ?')){
+            return;
+          }
+        }
+
+
         /*var snapshot = App.dashboard.takeSnapshot($('#paper'));
         var data = snapshot.length > 0 && snapshot[0].canvas[0] ?snapshot[0].canvas[0].toDataURL('image/png').toString():undefined;
         var compress = LZString.compress(snapshot[0].canvas[0].toDataURL('image/png'));
@@ -1036,7 +1077,7 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
           }).show();
       } else {
         var result = Meteor.call('saveQuery', request, function(error, result) {
-         // $('div #saveQuery').attr('disabled','true'); Para deshabilitar el guardado
+          $('div #deleteQuery').attr('disabled','false');
           $('.top-right').notify({
             message: { text: result.statusCode == 200 ?"Query saved Successful":result.msg },
             type: result.statusCode == 200 ?'success':'danger'
@@ -1127,7 +1168,11 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
             $('#rawnodeValue select').val(endpointValue); 
             $('div #rawnodeValue #rawnode-uri').val('');
             $('div #rawnodeValue #rawnode-value').val('');
-            document.getElementById("rawnode-checkRegex").checked = false;
+		//JO
+            document.getElementById("rawnode-checkRegex").checked = true;
+	    document.getElementById("rawnode-checkRegex2").checked = false;
+            document.getElementById("rawnode-checkRegex3").checked = false;
+		//JO
 
 
             if(cellViewModel.attributes.subject != "null") { //entity raw node
@@ -1154,8 +1199,14 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
                 $('div #rawnodeValue .checkbox').show();
                 $('div #rawnodeValue #rawnode-value').val(cellViewModel.attr('text/text'));
                 var regex = cellViewModel.attr('text/regex');
+		//JO
                 var checkbox = document.getElementById("rawnode-checkRegex");
+                var checkbox2 = document.getElementById("rawnode-checkRegex2");
+                var checkbox3 = document.getElementById("rawnode-checkRegex3");
                 checkbox.checked = regex == 1;
+                checkbox2.checked = regex == 2;
+                checkbox3.checked = regex == 3;
+		//JO
               }
             }
             $('div #rawnodeValue').unbind('show.bs.modal');
@@ -1177,8 +1228,14 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
               if(link) {
                 App.dashboard.graph.getCell(link.id).label(0,{attrs:{text: {text: '<' + $('div #rawnodeValue #rawnode-uri').val() + '>'}}});
               }
+//JO
               var checkbox = document.getElementById("rawnode-checkRegex");
-              cellViewModel.attr('text/regex', checkbox.checked?1:0);
+              var checkbox2 = document.getElementById("rawnode-checkRegex2");
+              var checkbox3 = document.getElementById("rawnode-checkRegex3");
+	      var chkratio= checkbox.checked?1:checkbox2.checked?2:3;
+
+              cellViewModel.attr('text/regex', chkratio);
+//JO
               var objectValue = $('div #rawnodeValue #rawnode-value').val();
               if( objectValue.length > 0 ) {
                 cellViewModel.attr('text/text', objectValue );
@@ -1195,22 +1252,32 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
           $('div #nodeValue').on('show.bs.modal', function(e){
               var regex = cellView.model.attr('text/regex');
               var checkbox = document.getElementById("checkRegex");
-              if(regex == 1) {
-                checkbox.checked = true;
-              }else {
-                checkbox.checked = false;
-              }
+              var checkbox2 = document.getElementById("checkRegex2");
+              var checkbox3 = document.getElementById("checkRegex3");
+//JO
+                
+                checkbox.checked = regex == 1;
+                checkbox2.checked = regex == 2;
+                checkbox3.checked = regex == 3;
+              //JO
               //document.getElementById("checkRegex").checked = 'checked';            
           });
           $('div #nodeValue').on('hide.bs.modal', function(ev) {
             //en el SAVE 
             var checkbox = document.getElementById("checkRegex");
+            var checkbox2 = document.getElementById("checkRegex2");
+            var checkbox3 = document.getElementById("checkRegex3");
+
             if(checkbox.checked) {
                cellView.model.attr('text/regex', 1);
+              } 
+	    if(checkbox2.checked) {
+               cellView.model.attr('text/regex', 2);
               }
-              else {
-               cellView.model.attr('text/regex', 0);
-              }  
+ 	    if(checkbox3.checked) {
+               cellView.model.attr('text/regex', 3);
+              }
+
              //SAVE   
             if( $('div #nodeValue #node-value').val().length > 0 ) {
               cellView.model.attr('text/text', $('div #nodeValue #node-value').val() );

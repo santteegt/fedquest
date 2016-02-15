@@ -225,7 +225,11 @@
                      <input type="text" class="form-control" placeholder="Value" id="node-value">
                     </div>
                     <div class="checkbox">
-                      <label><input id="checkRegex" type="checkbox" value="">Regex</label>
+			<!-- JO -->
+                      <label><input id="checkRegex" type="radio" name="matchTy" value="" checked >Simple match</label>
+                      <label><input id="checkRegex2" type="radio" name="matchTy" value="">Regex</label>
+                      <label><input id="checkRegex3" type="radio" name="matchTy" value="">Full-text</label>
+			<!-- JO -->
                     </div>
                   </div>
                   <!-- <button class="btn btn-primary" data-dismiss="modal">Register</button> -->
@@ -273,7 +277,11 @@
                   </div>
                 </div>
                 <div class="checkbox">
-                  <label><input id="rawnode-checkRegex" type="checkbox" value="">Regex</label>
+		<!--JO-->
+                  <label><input id="rawnode-checkRegex" type="radio" name="MatchT" value="" checked >Simple match</label>
+		  <label><input id="rawnode-checkRegex2" type="radio" name="MatchT" value="">Regex</label>
+		  <label><input id="rawnode-checkRegex3" type="radio" name="MatchT" value="">Full-fext</label>
+		<!--JO-->
                 </div>
                 <button type="submit" class="btn btn-sm btn-primary">Save</button>
               </form>

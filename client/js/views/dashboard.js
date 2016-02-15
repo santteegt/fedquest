@@ -406,21 +406,34 @@ this.DashboardView = Backbone.View.extend({
             var _cfield = (childNode.attrs.text.text == childNode.attrs.text.label ? //no value specified
             childNode.attrs.text.text:childNode.attrs.text.label) + '_' + endpointIdprefix;
             var _cfieldValue = childNode.attrs.text.text;
-            var applyRegexFilter = childNode.attrs.text.regex == '1';
+//JO
+            var applyRegexFilter1 = childNode.attrs.text.regex == '2';
+            var applyRegexFilter2 = childNode.attrs.text.regex == '3';
+//JO
             //value starts with question mark (?) and its predicate
             if(_cfieldValue.match('^[?]') && _cptype != 'null') {
               _whereClause += "\n" + _entityField 
                             + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
                             + _cfield + ' .';
             } else { //node value specified
-              if(applyRegexFilter) {
+              if(applyRegexFilter1) {
                 _whereClause += "\n" + _entityField
                               + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
                               + _cfield + ' .';
                 //_whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'") .';
                 /////////////////// Modificado JS
                 _whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'", "i") .';
-              } else {
+              }
+//JO
+		if(applyRegexFilter2) {
+                _whereClause += "\n" + _entityField
+                              + ' ' + (_cptype == '' ? link.labels[0].attrs.text.text + '_rawNode':'<' + _cptype + '>') + ' ' 
+                              + _cfield + ' .';
+//                _whereClause += "\n" + 'FILTER REGEX(' + _cfield +  ', "' + _cfieldValue +'", "i") .';
+                _whereClause += "\n" + _cfield +  ' <http://jena.apache.org/text#query> "' + _cfieldValue +'".';
+              }
+	      if(!applyRegexFilter1 && !applyRegexFilter2){
+//JO
                 var endpointGraph =Session.get(endpoint);
                 var property = rawNode ? undefined:_.find(endpointGraph.properties,function(obj){return obj.fullName == _cptype});
                 var propertySubject = rawNode ? undefined:_.find(property.subjects, function(obj){return obj.fullName == _entityType});
@@ -1173,7 +1186,11 @@ $('div #deleteQuery').on('click', function(ev){
             $('#rawnodeValue select').val(endpointValue); 
             $('div #rawnodeValue #rawnode-uri').val('');
             $('div #rawnodeValue #rawnode-value').val('');
-            document.getElementById("rawnode-checkRegex").checked = false;
+		//JO
+            document.getElementById("rawnode-checkRegex").checked = true;
+	    document.getElementById("rawnode-checkRegex2").checked = false;
+            document.getElementById("rawnode-checkRegex3").checked = false;
+		//JO
 
 
             if(cellViewModel.attributes.subject != "null") { //entity raw node
@@ -1200,8 +1217,14 @@ $('div #deleteQuery').on('click', function(ev){
                 $('div #rawnodeValue .checkbox').show();
                 $('div #rawnodeValue #rawnode-value').val(cellViewModel.attr('text/text'));
                 var regex = cellViewModel.attr('text/regex');
+		//JO
                 var checkbox = document.getElementById("rawnode-checkRegex");
+                var checkbox2 = document.getElementById("rawnode-checkRegex2");
+                var checkbox3 = document.getElementById("rawnode-checkRegex3");
                 checkbox.checked = regex == 1;
+                checkbox2.checked = regex == 2;
+                checkbox3.checked = regex == 3;
+		//JO
               }
             }
             $('div #rawnodeValue').unbind('show.bs.modal');
@@ -1223,8 +1246,14 @@ $('div #deleteQuery').on('click', function(ev){
               if(link) {
                 App.dashboard.graph.getCell(link.id).label(0,{attrs:{text: {text: '<' + $('div #rawnodeValue #rawnode-uri').val() + '>'}}});
               }
+//JO
               var checkbox = document.getElementById("rawnode-checkRegex");
-              cellViewModel.attr('text/regex', checkbox.checked?1:0);
+              var checkbox2 = document.getElementById("rawnode-checkRegex2");
+              var checkbox3 = document.getElementById("rawnode-checkRegex3");
+	      var chkratio= checkbox.checked?1:checkbox2.checked?2:3;
+
+              cellViewModel.attr('text/regex', chkratio);
+//JO
               var objectValue = $('div #rawnodeValue #rawnode-value').val();
               if( objectValue.length > 0 ) {
                 cellViewModel.attr('text/text', objectValue );
@@ -1241,22 +1270,32 @@ $('div #deleteQuery').on('click', function(ev){
           $('div #nodeValue').on('show.bs.modal', function(e){
               var regex = cellView.model.attr('text/regex');
               var checkbox = document.getElementById("checkRegex");
-              if(regex == 1) {
-                checkbox.checked = true;
-              }else {
-                checkbox.checked = false;
-              }
+              var checkbox2 = document.getElementById("checkRegex2");
+              var checkbox3 = document.getElementById("checkRegex3");
+//JO
+                
+                checkbox.checked = regex == 1;
+                checkbox2.checked = regex == 2;
+                checkbox3.checked = regex == 3;
+              //JO
               //document.getElementById("checkRegex").checked = 'checked';            
           });
           $('div #nodeValue').on('hide.bs.modal', function(ev) {
             //en el SAVE 
             var checkbox = document.getElementById("checkRegex");
+            var checkbox2 = document.getElementById("checkRegex2");
+            var checkbox3 = document.getElementById("checkRegex3");
+
             if(checkbox.checked) {
                cellView.model.attr('text/regex', 1);
+              } 
+	    if(checkbox2.checked) {
+               cellView.model.attr('text/regex', 2);
               }
-              else {
-               cellView.model.attr('text/regex', 0);
-              }  
+ 	    if(checkbox3.checked) {
+               cellView.model.attr('text/regex', 3);
+              }
+
              //SAVE   
             if( $('div #nodeValue #node-value').val().length > 0 ) {
               cellView.model.attr('text/text', $('div #nodeValue #node-value').val() );
