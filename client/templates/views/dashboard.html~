@@ -58,10 +58,10 @@
           <div class="col-xs-12">
             <div style="position:absolute; right:0; padding: 0 35px;">
               <small class="footer-legend"><strong>Developed by:</strong></small>
-              <img src="images/ucuenca-logo.png" alt="ucuenca" style="height:40px" draggable="false">
+              <img src="/images/ucuenca-logo.png" alt="ucuenca" style="height:40px" draggable="false">
               <small class="footer-legend"><strong>Powered by:</strong></small>
               <!-- <img src="images/cepra-logo.png" alt="ucuenca" style="height:30px" draggable="false"> -->
-              <img src="images/gtr-logo.png" alt="ucuenca" style="height:30px" draggable="false">
+              <img src="/images/gtr-logo.png" alt="ucuenca" style="height:30px" draggable="false">
               <small class="footer-legend">GT-Repositorios</small>
             </div>
           </div>
@@ -225,7 +225,11 @@
                      <input type="text" class="form-control" placeholder="Value" id="node-value">
                     </div>
                     <div class="checkbox">
-                      <label><input id="checkRegex" type="checkbox" value="">Regex</label>
+			<!-- JO -->
+                      <label><input id="checkRegex" type="radio" name="matchTy" value="" checked >Simple match</label>
+                      <label><input id="checkRegex1" type="radio" name="matchTy" value="">Regex</label>
+                      <label><input id="checkRegex2" type="radio" name="matchTy" value="">Full-text</label>
+			<!-- JO -->
                     </div>
                   </div>
                   <!-- <button class="btn btn-primary" data-dismiss="modal">Register</button> -->
@@ -273,7 +277,11 @@
                   </div>
                 </div>
                 <div class="checkbox">
-                  <label><input id="rawnode-checkRegex" type="checkbox" value="">Regex</label>
+		<!--JO-->
+                  <label><input id="rawnode-checkRegex" type="radio" name="MatchT" value="" checked >Simple match</label>
+		  <label><input id="rawnode-checkRegex2" type="radio" name="MatchT" value="">Regex</label>
+		  <label><input id="rawnode-checkRegex3" type="radio" name="MatchT" value="">Full-fext</label>
+		<!--JO-->
                 </div>
                 <button type="submit" class="btn btn-sm btn-primary">Save</button>
               </form>

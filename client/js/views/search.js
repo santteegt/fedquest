@@ -264,14 +264,30 @@ function sleep() {
                 var v2 = en.endpoint; 
                 var v3 = en.graphURI; 
 
-		var r= Query(v2,v3,'select ?a {<'+v1+'> <http://purl.org/ontology/bibo/handle> ?a} limit 1');
-		r = JSON.parse(r.content).results.bindings;
+		//var r= Query(v2,v3,'select ?a {<'+v1+'> <http://purl.org/ontology/bibo/handle> ?a} limit 1');
 
-		if (r.length == 0) {
-			window.open(v1);
-		} else {
-			window.open(r[0].a.value);
-		}
+
+var redirectWindow = window.open('', '_blank');
+
+
+  Meteor.call('runQuery', v2, v3, 'select ?a {<'+v1+'> <http://purl.org/ontology/bibo/handle> ?a} limit 1', function(error, result) {
+    if(result) {
+      var r = JSON.parse(result.content).results.bindings;
+	if (r.length == 0) {
+		//window.open(v1);
+		redirectWindow.location=v1;
+	} else {
+		//window.open(r[0].a.value);
+		redirectWindow.location=r[0].a.value;
+	}
+    }else{
+	//window.open(v1);
+		redirectWindow.location=v1;
+    }
+}		
+);
+
+
 
 
               };
