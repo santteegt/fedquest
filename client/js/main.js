@@ -377,7 +377,7 @@ suggestedQueries: function(){
         w[q].description = w[q].description.replace("?", TextSearch);
       }
     }
-    w = w.filter(function (el) {  return ValidateSuggestionQuery(el.sparql)=='';  });
+    w = w.filter(function (el) {  return el.commend == true;  });
 
 
     return w;
