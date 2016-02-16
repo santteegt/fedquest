@@ -374,21 +374,28 @@ var resp = sq.match(new RegExp("REGEX\\((.*),","g"));  //[0]
 			resp = sq.match(new RegExp("\\((.*)\\)(.*)\\((.*)\\)","g"))[0];  
 		}
                   //var SearchVar = resp.split('(')[1].split(',')[0];
+		var txtvar='';
 		var SearchVar = '';
 		if (respp==1){
 			SearchVar = resp.split('(')[1].split(',')[0];
 		}else{
 			SearchVar = resp.split(' ?SC ')[1].split(')')[0];
+			txtvar='?SC '
 		}
                     resp = sq.match(new RegExp("(.*) a","g"))[0];
                     var MainVar = resp.split(' ')[0];
                     resp = sq.match(new RegExp(" (.*) \.","g")).filter(contieneType)[0];
                     resp = resp.split(' ');
                     var TypeVar = resp[resp.length-2];
-                    var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ","g"), 'SELECT DISTINCT '+SearchVar+' ');
+                    var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ","g"), 'SELECT DISTINCT '+txtvar+SearchVar+' ');
                     NewSQ = NewSQ.replace(new RegExp("FROM(.*)","g"),'');
                     var TextSearch = $("#textToSearch").val();
+if (respp==2){
+                    NewSQ = NewSQ.replace(new RegExp("'wildcard'","g"),'('+TextSearch+')');
+}else{
                     NewSQ = NewSQ.replace(new RegExp("'wildcard'","g"),TextSearch);
+}
+
                     var FromList = get_checkList_values("repositoriesList");
                     var Query ='select * {\n';
                     var SubQN=0;
@@ -431,10 +438,12 @@ var resp = sq.match(new RegExp("REGEX\\((.*),","g"));  //[0]
                       Query+='}\n';
                     }
                     Query+='}\n';
+if (respp==2){
+                    Query+='order by desc(?SC)\n';
+}
 
 
-
-            alert(Query);
+            //alert(Query);
 
 
             waitingDialog.show();
