@@ -601,13 +601,13 @@ var baseQuery = queryList[0].where.toString().replace(/[.],/g, '\n');
 
 
           var globalVars = _.pluck(queryList, 'fields').toString().replace(/,/g, ' ');
-          var stringSPARQL = 'SELECT DISTINCT ' + globalVars +'\n' + ALLFROMQUERY + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
+          var stringSPARQL = 'SELECT DISTINCT' + globalVars +'\n' + ALLFROMQUERY + ' WHERE {' + queryList[0].where.toString().replace(/[.],/g, '\n');
 
 //JO
 //Adding UNION support
 
 	if(applyUnion){
-		stringSPARQL = 'SELECT DISTINCT ' + globalVars +'\n' + ALLFROMQUERY + ' WHERE { {' + queryList[0].where.toString().replace(/[.],/g, '\n')+'}';
+		stringSPARQL = 'SELECT DISTINCT' + globalVars +'\n' + ALLFROMQUERY + ' WHERE { {' + queryList[0].where.toString().replace(/[.],/g, '\n')+'}';
 	}
 //JO*
 

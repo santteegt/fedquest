@@ -434,7 +434,7 @@ var resp = sq.match(new RegExp("REGEX\\((.*),","g"));  //[0]
 
 
 
-            //alert(Query);
+            alert(Query);
 
 
             waitingDialog.show();
