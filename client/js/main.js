@@ -442,22 +442,25 @@ function loadQueryFirstNode (element) {
 try{
 			     var spq =query[i].sparql;
 			     //var resp = spq.match(new RegExp("REGEX\\((.*),","g"))[0];
-				var resp = sq.match(new RegExp("REGEX\\((.*),","g"));  //[0]
+		var resp = spq.match(new RegExp("REGEX\\((.*),","g"));  //[0]
 		var respp=0;
 		if (resp && resp.length > 0) {
 			resp=resp[0];
 			respp=1;
 		}else{
 			respp=2;
-			resp = sq.match(new RegExp("\\((.*)\\)(.*)\\((.*)\\)","g"))[0];  
+			resp = spq.match(new RegExp("\\((.*)\\)(.*)\\((.*)\\)","g"))[0];  
 		}
 var SearchVar = '';
+var MainVar ='';
 		if (respp==1){
 			SearchVar = resp.split('(')[1].split(',')[0];
+		        MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
 		}else{
-			SearchVar = resp.split(' ?SC ')[1].split(')')[0];
+			MainVar = resp.split(' ?SC ')[0].split('(')[1].replace('?','').split('_')[0];
+			//MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
 		}		
-			     var MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
+
 			     //ClassV = js;
 			     ClassV= this.Properties.findOne({name:MainVar}).objectTypes[0].objectEntity.fullName;
 
