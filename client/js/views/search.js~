@@ -135,8 +135,8 @@ Session.set('Qmode2',0);
     //alert(Query);
     waitingDialog.show();
 
-    var jsonRequest = {"sparql": Query, "validateQuery": false};
-    Meteor.call('doQuery', jsonRequest, function(error, result) {
+    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI"};
+    Meteor.call('doQueryCache', jsonRequest, function(error, result) {
       if(result.statusCode != 200) {
         console.log(result.stack);
         $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
@@ -448,8 +448,8 @@ if (respp==2){
 
             waitingDialog.show();
 
-            var jsonRequest = {"sparql": Query, "validateQuery": false};
-            Meteor.call('doQuery', jsonRequest, function(error, result) {
+            var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?','') };
+            Meteor.call('doQueryCache', jsonRequest, function(error, result) {
               if(result.statusCode != 200) {
                 console.log(result.stack);
                 $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g,'&#60;').replace(/[\n\r]/g, '<br/>')):'');
