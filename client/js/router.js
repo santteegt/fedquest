@@ -13,6 +13,7 @@ this.Router = Backbone.Router.extend({
     'dashboard': 'dashboard',
     'samples': 'samples',
     'search': 'search',
+    'stats': 'stats',
     'dashboard/:id': 'dashboardParam',
     'graph/:uri/:endpoint/:graphuri':'graph'
   },
@@ -50,6 +51,10 @@ this.Router = Backbone.Router.extend({
     $('div.navbar .collapse li a#options').css('pointer-events','none');
     console.log('entra a search');
     new SearchView().render();        
+  },
+  stats: function() {
+    $('div.navbar .collapse li a#options').css('pointer-events','none');
+    new StatsView().render();        
   },
    graph: function(v1, v2, v3) {
     $('div.navbar .collapse li a#options').css('pointer-events','none');

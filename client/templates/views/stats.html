@@ -1,0 +1,132 @@
+<template name="stats">
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#fullpage').fullpage({
+                sectionsColor: ['#1bbc9b', '#4BBFC3', '#7BAABE', 'whitesmoke', '#ccddff', '#ccddff'],
+                anchors: ['p_1', 'p_2', 'p_3', 'p_4'],
+                menu: '#navigation'
+            });
+            var q = '{{g1}}{{g2}}{{g3}}{{g4}}{{g5}}{{g6}}';
+
+        });
+
+
+
+    </script>
+
+    <div id="fullpage">
+        <div class="section " id="section0">
+
+            <div id="ContainerCC" style="display: flex; align-items: center;  justify-content: center; height: 100%; width: 100%;">
+                <div id="ResourcesChart" class="statDiv" style="float: left; height: 300px; width: 25%; background-color: white;"></div>
+                <div id="RepositoriesChart" class="statDiv" style="float: left; height: 300px; width: 25%; background-color: white;"></div>
+                <div id="SubjectsChart" class="statDiv" style="float: left; height: 300px; width: 25%;">
+                    <div style="float: left; height: 10px; width: 100%;"></div>
+                    <p style="font-size: 22px; font-family: verdana;margin-top=32;" fill="#333333" text-anchor="middle"   class="p3_title" id="p3_title">Top topics</p>
+
+
+                    <canvas width="300px" height="250px" id="myCanvas">
+                        <p>Anything in here will be replaced on browsers that support the canvas element</p>
+                    </canvas>
+                </div>
+                <div id="tags">
+                    <ul id="lstags">
+                    </ul>
+                </div>
+            </div>
+
+
+
+        </div>		
+        <div class="section" id="section1">
+            <div id="ContainerCC_DOC" style="display: flex; align-items: center;  justify-content: center; height: 100%; width: 100%;">
+                <div id="DocumentsChart" class="statDiv" style="align:'center'; float: left; height: 300px; width: 30%; background-color: white;"></div>				
+                <div id="DocumentsChart_Ctrl" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
+
+                    <label >Group by:</label>
+                    <select id ="groupby_doc" onchange="Session.set('auxAct', Session.get('auxAct') + 1)">
+                        <option value="type">Type</option>
+                        <option value="language">Language</option>
+                        <option value="year">Year</option>
+                    </select>
+
+                    <label >Repository:</label>
+                    <select id ="repositories_doc" onchange="Session.set('auxAct', Session.get('auxAct') + 1)">
+                        <option value="All">All</option>
+                        {{#each endpointsAvailable}}
+                        <option value="{{name}}">{{name}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+            </div>
+
+        </div>
+        <div class="section" id="section2">
+            <div id="ContainerCC_PER" style="display: flex; align-items: center;  justify-content: center; height: 100%; width: 100%;">
+
+                <div id="PersonsChart_Ctrl" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
+                    <label >Repository:</label>
+                    <select id ="repositories_per" onchange="Session.set('auxAct', Session.get('auxAct') + 1)">
+                        <option value="All">All</option>
+                        {{#each endpointsAvailable}}
+                        <option value="{{name}}">{{name}}</option>
+                        {{/each}}
+                    </select>
+
+                </div>
+                <div id="PersonsChart" class="statDiv PersonsChartx" style="float: left; height: 300px; width: 30%; background-color: white;"></div>
+                <div id="TPersonsChart" class="statDiv" style="float: left; height: 300px; width: 25%;  background-color: white;">
+                    <div style="float: left; height: 10px; width: 100%;"></div>
+                    <p style="font-size: 22px; font-family: verdana;margin-top=32;" fill="#333333" text-anchor="middle"   class="p3_title" id="p3_title">Top Persons</p>
+                    <canvas width="300px" height="250px" id="myCanvas2">
+                        <p>Anything in here will be replaced on browsers that support the canvas element</p>
+                    </canvas>
+                </div>
+                <div id="tags2">
+                    <ul id="lstags2">
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="section" id="section3">
+            <div id="ContainerCC_COL" style="display: flex; align-items: center;  justify-content: center; height: 100%; width: 100%;">
+
+                <div id="CollectionsChart_Ctrl" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
+                    <label >Repository:</label>
+                    <select id ="repositories_col" onchange="Session.set('auxAct', Session.get('auxAct') + 1)">
+                        <option value="All">All</option>
+                        {{#each endpointsAvailable}}
+                        <option value="{{name}}">{{name}}</option>
+                        {{/each}}
+                    </select>
+
+                </div>
+                <div id="CollectionsChart" class="statDiv" style="float: left; height: 300px; width: 50%; background-color: white;"></div>
+
+
+            </div>
+
+        </div>
+    </div>
+    {{> menuStats}}
+
+
+
+</template>
+
+<template name='menuStats'>
+
+    <div id="menuStats">
+        <h3>Stats:</h3>
+        <a href="#p_1">Global</a>
+        <a href="#p_2">Documents</a>
+        <a href="#p_3">Persons</a>
+        <a href="#p_4">Collections</a>
+
+    </div>
+
+</template>
+
+
+
+

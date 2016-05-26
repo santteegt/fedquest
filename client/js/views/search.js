@@ -377,7 +377,7 @@ actAHyper = function (e) {
     if (respp == 2) {
         Query += 'order by desc(?Score)\n';
     }
-    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''), "AppyFilter": AppFilt};
+    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''), "ApplyFilter": AppFilt};
     Session.set('jsonRequest', jsonRequest);
     //Session.set('Qmode', 2);
     App.SearchRun(0, 2);

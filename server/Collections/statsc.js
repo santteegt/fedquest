@@ -3,15 +3,15 @@
 */
 
 // Declare the collection
-Queries = new Meteor.Collection("cache");
+Statsc = new Meteor.Collection("statsc");
 // Publish the collection to the client
-Meteor.publish("cache", function() {
-    return Queries.find();
+Meteor.publish("statsc", function() {
+    return Statsc.find();
 });
     
 
 // Set permissions on this collection
-Queries.deny({
+Statsc.deny({
     // Records can't be deleted or edited
     remove: function(userId, doc) {
         return false;
@@ -25,7 +25,7 @@ Queries.deny({
     }
 });
 
-Queries.allow({
+Statsc.allow({
     
 });
 

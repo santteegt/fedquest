@@ -5,9 +5,9 @@
 // Declare the collection
 Cache = new Meteor.Collection("cache");
 // Publish the collection to the client
-Meteor.publish("cache", function() {
-    return Queries.find();
-});
+//Meteor.publish("cache", function() {
+ //   return Queries.find();
+//});
     
 
 // Set permissions on this collection

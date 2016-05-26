@@ -1,28 +1,36 @@
 if (Meteor.isClient) {
+
+    window.d3 = require("d3");
+    window.d3pie = require("d3pie");
+    Session.set('auxAct', 0);
     SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
         return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
     };
-
     //Suscribe to Collections
     Tracker.autorun(function () {
+        Meteor.subscribe("statsc");
+
+
+
+
         Meteor.subscribe("allproperties");
         Meteor.subscribe("endpoints");
         Meteor.subscribe("queries");
         Meteor.subscribe("prefixes");
-        Meteor.subscribe("cache");
+        // Meteor.subscribe("cache");
+
     });
 
     this.App = {};
+    this.Statsc = new Meteor.Collection("statsc");
     this.Graphs = new Meteor.Collection("graphs");
     this.Properties = new Meteor.Collection("properties");
     this.Prefixes = new Meteor.Collection("prefixes");
     this.Endpoints = new Meteor.Collection("endpoints");
     this.Queries = new Meteor.Collection("queries");
-    this.Cache = new Meteor.Collection("cache");
     this.App.resultCollection = new Meteor.Collection(null);
     this.App.resultCollection2 = new Meteor.Collection(null);
-
-
+    this.App.resultCollection3 = new Meteor.Collection(null);
     this.App.FindRepository = (function (uri) {
 
         var answer = {};
@@ -77,7 +85,928 @@ if (Meteor.isClient) {
         });
         return "";
     });
+    Template.stats.helpers({
+        g1: function () {
+            var str = {};
+            var data = Statsc.find({cod: 1}).fetch();
+            if (Statsc && data && data[0] && data[0].val) {
 
+                data = data[0];
+                data = data.val;
+                var C = 0;
+                var D = 0;
+                var P = 0;
+                for (var i = 0; i < data.length; i++) {
+                    C += Number(data[i].C.value);
+                    D += Number(data[i].D.value);
+                    P += Number(data[i].P.value);
+                }
+                str = [{value: C, label: "Collections"}, {value: D, label: "Documents"}, {value: P, label: "Persons"}];
+            } else {
+                str = [{value: 100, label: "Something"}];
+            }
+            try {
+                // if ($('#ResourcesChart').length == 0) {
+                //     return str;
+                //  }
+
+                //ResourcesChart
+                var pie = new d3pie("ResourcesChart", {
+                    "header": {
+                        "title": {
+                            "text": "Resources",
+                            "fontSize": 22,
+                            "font": "verdana"
+                        },
+                        "subtitle": {
+                            "text": "Total amount of resources within the registered repositories",
+                            "color": "#999999",
+                            "fontSize": 10,
+                            "font": "verdana"
+                        },
+                        "titleSubtitlePadding": 12
+                    },
+                    "footer": {
+                        "color": "#999999",
+                        "fontSize": 11,
+                        "font": "open sans",
+                        "location": "bottom-center"
+                    },
+                    "size": {
+                        "canvasHeight": 300,
+                        "canvasWidth": $('#ResourcesChart').width(),
+                        "pieOuterRadius": "80%"
+                    },
+                    "data": {
+                        "sortOrder": "label-asc",
+                        "content": str
+                    },
+                    "labels": {
+                        "outer": {
+                            "pieDistance": 5
+                        },
+                        "inner": {
+                            "hideWhenLessThanPercentage": 3
+                        },
+                        "mainLabel": {
+                            "font": "verdana"
+                        },
+                        "percentage": {
+                            "color": "#000000",
+                            "font": "verdana",
+                            "decimalPlaces": 0
+                        },
+                        "value": {
+                            "color": "#e1e1e1",
+                            "font": "verdana"
+                        },
+                        "lines": {
+                            "enabled": true,
+                            "style": "straight"
+                        },
+                        "truncation": {
+                            "enabled": true
+                        }
+                    },
+                    "effects": {
+                        "pullOutSegmentOnClick": {
+                            "effect": "linear",
+                            "speed": 400,
+                            "size": 8
+                        }
+                    },
+                    "tooltips": {
+                        "enabled": true,
+                        "type": "placeholder",
+                        "string": "{label}: {value}, {percentage}%"
+                    },
+                    "callbacks": {
+                        onClickSegment: function (a) {
+                            switch (a.index) {
+                                case 0:
+                                    {
+                                        window.open("/stats#p_4","_self");
+                                    }
+                                    break;
+                                case 1:
+                                    {
+                                        window.open("/stats#p_2","_self");
+                                    }
+                                    break;
+                                case 2:
+                                    {
+                                        window.open("/stats#p_3","_self");
+                                    }
+                                    break;
+
+                            }
+                        }
+                    }
+                });
+            } catch (az) {
+                //console.log(az);
+            }
+            return str;
+        },
+        g2: function () {
+            var str = {};
+            var data = Statsc.find({cod: 1}).fetch();
+            if (Statsc && data && data[0] && data[0].val) {
+                data = data[0];
+                data = data.val;
+                var C = 0;
+                var D = 0;
+                var P = 0;
+                str = [];
+                for (var i = 0; i < data.length; i++) {
+                    C = Number(data[i].C.value);
+                    D = Number(data[i].D.value);
+                    P = Number(data[i].P.value);
+                    var T = C + D + P;
+                    str.push({value: T, label: "" + data[i].EP.value});
+                }
+                //str = [{y:C,indexLabel:"Collections"},{y:D,indexLabel:"Documents"},{y:P,indexLabel:"Persons"}];
+            } else {
+                str = [{value: 100, label: "Something"}];
+            }
+            try {
+                if ($('#RepositoriesChart').length == 0) {
+                    return str;
+                }
+
+                var pie = new d3pie("RepositoriesChart", {
+                    "header": {
+                        "title": {
+                            "text": "Repositories",
+                            "fontSize": 22,
+                            "font": "verdana"
+                        },
+                        "subtitle": {
+                            "text": "Registered repositories",
+                            "color": "#999999",
+                            "fontSize": 10,
+                            "font": "verdana"
+                        },
+                        "titleSubtitlePadding": 12
+                    },
+                    "footer": {
+                        "color": "#999999",
+                        "fontSize": 11,
+                        "font": "open sans",
+                        "location": "bottom-center"
+                    },
+                    "size": {
+                        "canvasHeight": 300,
+                        "canvasWidth": $('#RepositoriesChart').width(),
+                        "pieOuterRadius": "80%"
+                    },
+                    "data": {
+                        "sortOrder": "random",
+                        "content": str
+                    },
+                    "labels": {
+                        "outer": {
+                            "pieDistance": 5
+                        },
+                        "inner": {
+                            "hideWhenLessThanPercentage": 3
+                        },
+                        "mainLabel": {
+                            "font": "verdana"
+                        },
+                        "percentage": {
+                            "color": "#000000",
+                            "font": "verdana",
+                            "decimalPlaces": 0
+                        },
+                        "value": {
+                            "color": "#e1e1e1",
+                            "font": "verdana"
+                        },
+                        "lines": {
+                            "enabled": true,
+                            "style": "straight"
+                        },
+                        "truncation": {
+                            "enabled": true
+                        }
+                    },
+                    "effects": {
+                        "pullOutSegmentOnClick": {
+                            "effect": "linear",
+                            "speed": 400,
+                            "size": 8
+                        }
+                    },
+                    "tooltips": {
+                        "enabled": true,
+                        "type": "placeholder",
+                        "string": "{label}: {value}, {percentage}%"
+                    }
+                });
+
+
+
+            } catch (az) {
+            }
+            return str;
+        },
+        g3: function () {
+            var data = Statsc.find({cod: 2}).fetch();
+            var frequency_list = [];
+
+            if (data && data[0]) {
+                data = data[0].val;
+                var max = 0;
+                for (var q = 0; q < data.length; q++) {
+                    var words1 = data[q].Data;
+                    for (var w = 0; w < words1.length; w++) {
+                        //console.log(words1[w].D.value.trim());
+                        var ex = frequency_list.filter(function (a) {
+                            return a.text.trim() === words1[w].D.value.trim();
+                        });
+                        if (ex.length == 0) {
+                            frequency_list.push({text: words1[w].D.value + '', size: Number(words1[w].cou.value) + 0});
+                            if (Number(words1[w].cou.value) > max) {
+                                max = Number(words1[w].cou.value);
+                            }
+                        } else {
+                            ex[0].size += Number(words1[w].cou.value);
+                            if (ex[0].size > max) {
+                                max = ex[0].size;
+                            }
+                        }
+                    }
+                }
+                frequency_list = _.sample(frequency_list, 25);
+
+
+                for (var q = 0; q < frequency_list.length; q++) {
+                    frequency_list[q].size = (frequency_list[q].size / max) * 15 + 10;
+                }
+            } else {
+                frequency_list = [{"text": "study", "size": 40}, {"text": "motion", "size": 15}];
+            }
+
+
+
+            try {
+                if ($('#lstags').length == 0 || $('#myCanvas').length == 0 || $('#SubjectsChart').length == 0) {
+                    return str;
+                }
+
+                $('#lstags').empty();
+                var ul = document.getElementById("lstags");
+
+                for (var i = 0; i < frequency_list.length; i++) {
+                    var li = document.createElement("li");
+                    var a = document.createElement("a");
+                    var txt = document.createTextNode(frequency_list[i].text);
+                    a.appendChild(txt);
+                    a.setAttribute("data-weight", "" + frequency_list[i].size);
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+                TagCanvas.Start('myCanvas', 'tags', {
+                    textColour: '#000000',
+                    outlineColour: '#ff00ff',
+                    reverse: true,
+                    depth: 1.0,
+                    weight: true,
+                    weightFrom: 'data-weight',
+                    initial: [0.0, -0.05],
+                    maxSpeed: 0.05,
+                    shadow: '#ccf',
+                    shadowBlur: 3
+                });
+            } catch (e) {
+                // something went wrong, hide the canvas container
+                //document.getElementById('SubjectsChart').style.display = 'none';
+            }
+
+
+
+
+            return frequency_list;
+
+
+
+        },
+        g4: function () {
+            Session.get('auxAct');
+            var e = document.getElementById("groupby_doc");
+            var strUser = (e) ? e.options[e.selectedIndex].value : undefined;
+            e = document.getElementById("repositories_doc");
+            var strUser2 = (e) ? e.options[e.selectedIndex].value : undefined;
+            var str = {};
+            var data = Statsc.find({cod: 3}).fetch();
+            if (strUser && strUser2 && Statsc && data && data[0] && data[0].val) {
+                data = data[0];
+                data = data.val;
+                if (strUser2 != 'All') {
+                    data = data.filter(function (a) {
+                        return a.EP == strUser2;
+                    });
+                }
+                var lsc = {};
+                var res = 0;
+                for (var i = 0; i < data.length; i++) {
+                    var v = 't';
+                    var g = undefined;
+                    switch (strUser) {
+                        case 'type':
+                            v = 't';
+                            g = 'Document';
+                            break;
+                        case 'language':
+                            v = 'l';
+                            break;
+                        case 'year':
+                            v = 'y';
+                            break;
+                    }
+                    var st = data[i].val;
+                    for (var j = 0; j < st.length; j++) {
+                        var clas = st[j][v + ''].value;
+                        clas = clas.substr(clas.lastIndexOf('/') + 1);
+                        clas = clas.substr(clas.lastIndexOf('#') + 1);
+                        var cou = Number(st[j].c.value);
+                        if (lsc[clas + '']) {
+                            lsc[clas + ''] = lsc[clas + ''] + cou;
+                        } else {
+                            lsc[clas + ''] = cou;
+                        }
+                        if (g && clas != g) {
+                            res += cou;
+                        }
+                    }
+                }
+                if (g) {
+                    lsc[g + ''] -= res;
+                }
+                str = [];
+                for (var propertyName in lsc) {
+                    str.push({value: lsc[propertyName + ''], label: propertyName + ""});
+                }
+                str.sort(function (a, b) {
+                    return (a.label > b.label) ? 1 : 0;
+                });
+            } else {
+                str = [{value: 100, label: "Something"}];
+            }
+            $('#DocumentsChart').empty();
+            try {
+                if (strUser == 'year') {
+                    var data = str;
+
+                    // Get the data
+
+                    data.forEach(function (d) {
+                        d.label = Number(d.label);
+                        d.value = Number(d.value);
+                    });
+                    data = data.filter(function (d) {
+                        return d.label > 1850;
+                    });
+                    var vmin = d3.min(data, function (d) {
+                        return d.label;
+                    });
+                    var since = (vmin < 1850) ? 1850 : vmin;
+
+                    //console.log(data);
+                    // Set the dimensions of the canvas / graph
+                    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+                    width = $('#DocumentsChart').width() - margin.left - margin.right,
+                            height = 300 - margin.top - margin.bottom;
+// Parse the date / time
+                    var parseDate = d3.time.format("%Y").parse;
+                    var formatTime = d3.time.format("%Y %B");
+
+// Set the ranges
+                    var x = d3.scale.linear().range([0, width]);
+                    var y = d3.scale.log().base(10).range([height, 0]);
+
+// Define the axes
+
+                    var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹",
+                            formatPower = function (d) {
+                                return (d + "").split("").map(function (c) {
+                                    return superscript[c];
+                                }).join("");
+                            };
+
+
+                    var xAxis = d3.svg.axis().scale(x)
+                            .orient("bottom").ticks(7);
+
+                    var yAxis = d3.svg.axis().scale(y)
+                            .orient("left").tickFormat(function (d) {
+                        return (d == 1 || d == 10 || d == 100 || d == 1000 || d == 10000 || d == 100000) ? d : '';
+                    }).ticks(5);
+
+// Define the line
+                    var valueline = d3.svg.line()
+                            .x(function (d) {
+                                return x(d.label);
+                            })
+                            .y(function (d) {
+                                return y(d.value);
+                            });
+
+// Define the div for the tooltip
+                    var div = d3.select("body").append("div")
+                            .attr("class", "tooltip")
+                            .style("opacity", 0);
+
+// Adds the svg canvas
+                    var svg = d3.select("#DocumentsChart")
+                            .append("svg")
+                            .attr("width", width + margin.left + margin.right)
+                            .attr("height", height + margin.top + margin.bottom)
+                            .append("g")
+                            .attr("transform",
+                                    "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+                    // Scale the range of the data
+                    x.domain([since, d3.max(data, function (d) {
+                            return d.label;
+                        })]);
+                    y.domain([1, d3.max(data, function (d) {
+                            return d.value;
+                        })]);
+
+                    // Add the valueline path.
+                    // svg.append("path")
+                    //       .attr("class", "line")
+                    //     .attr("d", valueline(data));
+
+                    // Add the scatterplot
+                    svg.selectAll("dot")
+                            .data(data)
+                            .enter().append("circle")
+                            .attr("r", 2)
+                            .attr("cx", function (d) {
+                                return x(d.label);
+                            })
+                            .attr("cy", function (d) {
+                                return y(d.value);
+                            })
+                            .on("mouseover", function (d) {
+                                div.transition()
+                                        .duration(200)
+                                        .style("opacity", .9);
+                                div.html(d.label + "<br/>" + d.value)
+                                        .style("left", (d3.event.pageX) + "px")
+                                        .style("top", (d3.event.pageY - 28) + "px");
+                            })
+                            .on("mouseout", function (d) {
+                                div.transition()
+                                        .duration(500)
+                                        .style("opacity", 0);
+                            });
+
+                    // Add the X Axis
+                    svg.append("g")
+                            .attr("class", "x axis")
+                            .attr("transform", "translate(0," + height + ")")
+                            .call(xAxis);
+
+                    // Add the Y Axis
+                    svg.append("g")
+                            .attr("class", "y axis")
+                            .call(yAxis);
+
+                } else
+                {
+                    if (strUser == 'language' || strUser == 'type'){
+                        
+                        var max =3;
+                        if (strUser == 'type'){
+                           max=5; 
+                        }
+                        
+                        
+                        str.sort(function(a,b) {return (a.value > b.value) ? -1 : ((b.value > a.value) ? 1 : 0);} ); 
+                        
+                        
+                        var str2=[];
+                        for (var i=0;i<str.length;i++){
+                            if (i<=max){
+                                str2.push(str[i]);
+                            }else{
+                                str2[max].label = 'Others';
+                                str2[max].value += str[i].value;
+                            }
+                            
+                        }
+                        str = str2;
+                    }
+                    
+                    var pie2 = new d3pie("DocumentsChart", {
+                        "header": {
+                            "title": {
+                                "text": "Documents",
+                                "fontSize": 22,
+                                "font": "verdana"
+                            },
+                            "subtitle": {
+                                "text": "",
+                                "color": "#999999",
+                                "fontSize": 10,
+                                "font": "verdana"
+                            },
+                            "titleSubtitlePadding": 12
+                        },
+                        "footer": {
+                            "color": "#999999",
+                            "fontSize": 11,
+                            "font": "open sans",
+                            "location": "bottom-center"
+                        },
+                        "size": {
+                            "canvasHeight": 300,
+                            "canvasWidth": $('#DocumentsChart').width(),
+                            "pieOuterRadius": "80%"
+                        },
+                        "data": {
+                            "sortOrder": "random",
+                            "content": str
+                        },
+                        "labels": {
+                            "outer": {
+                                "pieDistance": 5
+                            },
+                            "inner": {
+                                "hideWhenLessThanPercentage": 3
+                            },
+                            "mainLabel": {
+                                "font": "verdana"
+                            },
+                            "percentage": {
+                                "color": "#000000",
+                                "font": "verdana",
+                                "decimalPlaces": 0
+                            },
+                            "value": {
+                                "color": "#e1e1e1",
+                                "font": "verdana"
+                            },
+                            "lines": {
+                                "enabled": true,
+                                "style": "straight"
+                            },
+                            "truncation": {
+                                "enabled": true
+                            }
+                        },
+                        "effects": {
+                            "pullOutSegmentOnClick": {
+                                "effect": "linear",
+                                "speed": 400,
+                                "size": 8
+                            }
+                        },
+                        "tooltips": {
+                            "enabled": true,
+                            "type": "placeholder",
+                            "string": "{label}: {value}, {percentage}%"
+                        },
+                        callbacks: {
+                            onMouseoverSegment: function (info) {
+                                //console.log("mouseover:", info);
+                            },
+                            onMouseoutSegment: function (info) {
+                                // console.log("mouseout:", info);
+                            }
+                        }
+                    });
+                }
+            } catch (az)
+            {
+                //console.log(az);
+            }
+            return str;
+        },
+        g5: function () {
+            Session.get('auxAct');
+            var e = document.getElementById("repositories_per");
+            var strUser2 = (e) ? e.options[e.selectedIndex].value : undefined;
+            var str = {};
+            var frequency_list = [];
+            var data = Statsc.find({cod: 4}).fetch();
+            var data2 = Statsc.find({cod: 5}).fetch();
+
+            if (strUser2 && Statsc && data && data[0] && data[0].val && data2 && data2[0] && data2[0].val) {
+                data = data[0];
+                data = data.val;
+                //Top A
+                data2 = data2[0];
+                data2 = data2.val;
+                //Top A
+                if (strUser2 != 'All') {
+                    data = data.filter(function (a) {
+                        return a.EP == strUser2;
+                    });
+                    //TopA
+                    data2 = data2.filter(function (a) {
+                        return a.EP.value == strUser2;
+                    });
+                    //TopA
+                }
+                var lsc = {};
+                var res = 0;
+                var resTot = 0;
+                for (var i = 0; i < data.length; i++) {
+                    var st = data[i].val.val;
+                    var tot = data[i].val.total;
+                    resTot += tot;
+
+                    for (var j = 0; j < st.length; j++) {
+                        var clas = st[j].p.value;
+                        clas = clas.substr(clas.lastIndexOf('/') + 1);
+                        clas = clas.substr(clas.lastIndexOf('#') + 1);
+
+                        switch (clas) {
+                            case 'P50195':
+                                clas = 'Authors';
+                                break;
+                            case 'P50161':
+                                clas = 'Editors';
+                                break;
+                        }
+
+                        var cou = Number(st[j].c.value);
+                        if (lsc[clas + '']) {
+                            lsc[clas + ''] = lsc[clas + ''] + cou;
+                        } else {
+                            lsc[clas + ''] = cou;
+                        }
+                        res += cou;
+                    }
+                }
+                var inter = res - resTot;
+                str = [];
+                var inters = '';
+                for (var propertyName in lsc) {
+                    str.push({value: lsc[propertyName + ''] - inter, label: propertyName + ""});
+                    inters = inters + propertyName + ' & ';
+                }
+                inters = inters.substring(0, inters.length - 3);
+                if (inter > 0) {
+                    str.push({value: inter, label: inters + ""});
+                }
+                //TopA
+                frequency_list = [];
+                var max = 0;
+                for (var i = 0; i < data2.length; i++) {
+                    frequency_list.push({"text": data2[i].name.value, "size": Number(data2[i].counter.value), "uri": data2[i].a.value});
+                    if (max < Number(data2[i].counter.value)) {
+                        max = Number(data2[i].counter.value);
+                    }
+                }
+                frequency_list = _.sample(frequency_list, 25);
+
+                for (var q = 0; q < frequency_list.length; q++) {
+                    frequency_list[q].size = (frequency_list[q].size / max) * 10 + 10;
+                }
+
+
+
+                //TopA
+            } else {
+                str = [{value: 100, label: "Something"}];
+                frequency_list = [{"text": "study", "size": 40}, {"text": "motion", "size": 15}];
+            }
+            $('#PersonsChart').empty();
+            try {
+                var pie2 = new d3pie("PersonsChart", {
+                    "header": {
+                        "title": {
+                            "text": "Persons",
+                            "fontSize": 22,
+                            "font": "verdana"
+                        },
+                        "subtitle": {
+                            "text": "",
+                            "color": "#999999",
+                            "fontSize": 10,
+                            "font": "verdana"
+                        },
+                        "titleSubtitlePadding": 12
+                    },
+                    "footer": {
+                        "color": "#999999",
+                        "fontSize": 11,
+                        "font": "open sans",
+                        "location": "bottom-center"
+                    },
+                    "size": {
+                        "canvasHeight": 300,
+                        "canvasWidth": $('#PersonsChart').width(),
+                        "pieOuterRadius": "80%"
+                    },
+                    "data": {
+                        "sortOrder": "random",
+                        "content": str
+                    },
+                    "labels": {
+                        "outer": {
+                            "pieDistance": 5
+                        },
+                        "inner": {
+                            "hideWhenLessThanPercentage": 3
+                        },
+                        "mainLabel": {
+                            "font": "verdana"
+                        },
+                        "percentage": {
+                            "color": "#000000",
+                            "font": "verdana",
+                            "decimalPlaces": 0
+                        },
+                        "value": {
+                            "color": "#e1e1e1",
+                            "font": "verdana"
+                        },
+                        "lines": {
+                            "enabled": true,
+                            "style": "straight"
+                        },
+                        "truncation": {
+                            "enabled": true
+                        }
+                    },
+                    "effects": {
+                        "pullOutSegmentOnClick": {
+                            "effect": "linear",
+                            "speed": 400,
+                            "size": 8
+                        }
+                    },
+                    "tooltips": {
+                        "enabled": true,
+                        "type": "placeholder",
+                        "string": "{label}: {value}, {percentage}%"
+                    },
+                    callbacks: {
+                        onMouseoverSegment: function (info) {
+                            //console.log("mouseover:", info);
+                        },
+                        onMouseoutSegment: function (info) {
+                            // console.log("mouseout:", info);
+                        }
+                    }
+                });
+
+
+                if ($('#lstags2').length == 0 || $('#myCanvas2').length == 0 || $('#TPersonsChart').length == 0) {
+                    return str;
+                }
+
+                $('#lstags2').empty();
+                var ul = document.getElementById("lstags2");
+
+                for (var i = 0; i < frequency_list.length; i++) {
+                    var li = document.createElement("li");
+                    var a = document.createElement("a");
+                    a.setAttribute("href", frequency_list[i].uri);
+                    a.setAttribute("target", '_blank');
+                    var txt = document.createTextNode(frequency_list[i].text);
+                    a.appendChild(txt);
+                    a.setAttribute("data-weight", "" + frequency_list[i].size);
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+                TagCanvas.Start('myCanvas2', 'tags2', {
+                    textColour: '#000000',
+                    outlineColour: '#ff00ff',
+                    reverse: true,
+                    depth: 1.0,
+                    weight: true,
+                    weightFrom: 'data-weight',
+                    initial: [0.0, -0.05],
+                    maxSpeed: 0.05,
+                    shadow: '#ccf',
+                    shadowBlur: 3
+                });
+            } catch (az) {
+                //console.log(az);
+            }
+            return str;
+
+        },
+        g6: function () {
+            Session.get('auxAct');
+            var e = document.getElementById("repositories_col");
+            var strUser2 = (e) ? e.options[e.selectedIndex].value : undefined;
+            var str = [];
+            var data = Statsc.find({cod: 6}).fetch();
+            if (strUser2 && Statsc && data && data[0] && data[0].val) {
+                data = data[0];
+                data = data.val;
+                if (strUser2 != 'All') {
+                    data = data.filter(function (a) {
+                        return a.EP.value == strUser2;
+                    });
+                }
+                var max = 10;
+                for (var i = 0; i < data.length; i++) {
+                    if (i <= max) {
+                        str.push({value: Number(data[i].counter.value), label: data[i].name.value});
+                    } else {
+                        str[max].label = 'Others';
+                        str[max].value += Number(data[i].counter.value);
+                    }
+                }
+            } else {
+                str = [{value: 100, label: "Something"}];
+            }
+            $('#CollectionsChart').empty();
+            try {
+
+                var pie = new d3pie("CollectionsChart", {
+                    "header": {
+                        "title": {
+                            "text": "Collections",
+                            "fontSize": 22,
+                            "font": "verdana"
+                        },
+                        "subtitle": {
+                            "text": "Top collections",
+                            "color": "#999999",
+                            "fontSize": 10,
+                            "font": "verdana"
+                        },
+                        "titleSubtitlePadding": 12
+                    },
+                    "footer": {
+                        "color": "#999999",
+                        "fontSize": 11,
+                        "font": "open sans",
+                        "location": "bottom-center"
+                    },
+                    "size": {
+                        "canvasHeight": 300,
+                        "canvasWidth": $('#CollectionsChart').width(),
+                        "pieOuterRadius": "80%"
+                    },
+                    "data": {
+                        "sortOrder": "random",
+                        "content": str
+                    },
+                    "labels": {
+                        "outer": {
+                            "pieDistance": 5
+                        },
+                        "inner": {
+                            "hideWhenLessThanPercentage": 3
+                        },
+                        "mainLabel": {
+                            "font": "verdana"
+                        },
+                        "percentage": {
+                            "color": "#000000",
+                            "font": "verdana",
+                            "decimalPlaces": 0
+                        },
+                        "value": {
+                            "color": "#e1e1e1",
+                            "font": "verdana"
+                        },
+                        "lines": {
+                            "enabled": true,
+                            "style": "straight"
+                        },
+                        "truncation": {
+                            "enabled": true
+                        }
+                    },
+                    "effects": {
+                        "pullOutSegmentOnClick": {
+                            "effect": "linear",
+                            "speed": 400,
+                            "size": 8
+                        }
+                    },
+                    "tooltips": {
+                        "enabled": true,
+                        "type": "placeholder",
+                        "string": "{label}: {value}, {percentage}%"
+                    }
+                });
+            } catch (az) {
+                //console.log(az);
+            }
+
+
+
+        },
+        endpointsAvailable: function () {
+            return Endpoints.find({status: 'A'}).fetch();
+        }
+    });
     // Muestra consultas - JS
     Template.samples.helpers({
         queriesAvailable: function () {
@@ -105,7 +1034,6 @@ if (Meteor.isClient) {
             };
         }
     });
-
 
 //JO
 //zero padding function
@@ -351,8 +1279,6 @@ if (Meteor.isClient) {
         }
     });
 //*
-    Session.set('auxAct', 0);
-
     Template.search.helpers({
         endpointsAvailable: function () {
             return Endpoints.find({status: 'A'}).fetch();
@@ -404,8 +1330,8 @@ if (Meteor.isClient) {
         paginationSettings: function () {
             var n = Session.get("NResult");
             n = n ? n : 0;
-            if(n==0){
-                n=1;
+            if (n == 0) {
+                n = 1;
             }
             var pagcon = {};
             pagcon.total = Math.ceil(n / 10);
@@ -423,7 +1349,6 @@ if (Meteor.isClient) {
         }
     });
 
-
     function get_radio_value(RadioName) {
         var inputs = document.getElementsByName(RadioName);
         for (var i = 0; i < inputs.length; i++) {
@@ -432,7 +1357,6 @@ if (Meteor.isClient) {
             }
         }
     }
-    ;
     function loadQueryFirstNode(element) {
         result = {};
         result.statusCode = 200;
@@ -623,8 +1547,6 @@ if (Meteor.isClient) {
         return toShow;
     }
 
-
-
     function compare(a, b) {
         if (a.Weight < b.Weight)
             return 1;
@@ -640,11 +1562,9 @@ if (Meteor.isClient) {
         return 0;
     }
 
-
     function strStartsWith(str, prefix) {
         return str.indexOf(prefix) === 0;
     }
-
 
 //*
     Template.hello.events({
@@ -664,9 +1584,6 @@ if (Meteor.isClient) {
         });
     });
 
-
-
-
 //--------------------------------------
     function Query(endpoint, graph, query) {
         var aux = undefined;
@@ -684,8 +1601,6 @@ if (Meteor.isClient) {
         ;
         return aux;
     }
-
-
     function sleep() {
         try {
             var xmlHttp = new XMLHttpRequest();
