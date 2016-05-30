@@ -8,6 +8,7 @@ this.WelcomeView = Backbone.View.extend({
   initialize: function() {
     var me;
     me = this;
+   
     /*
     Template.header.events = {
       "click a": function(e) {
@@ -31,6 +32,59 @@ this.WelcomeView = Backbone.View.extend({
   },
   render: function() {
     this.$el.html(this.template);
+   //  this.setEvents($('#sparql-content'));
+     this.setEvents(this.template);
+     console.log('REnder Welcome');
+     //var window_height = $(window).height();
+     //console.log (window_height);
+    // $(".lavel-up-header, .lavel-up-color-overlay").css('min-height', window_height);
+   //  $(window).bind('resize', level_up_min_height);
+
     return this;
+  } , 
+  setEvents: function (divNode) {
+ /*   alert($("#documentos"));
+   $("radio#documentos").on('click', function (ev) {  
+    //alert($('input:radio[id=documentos]:checked').val());
+    $(".recurso").text ("Buscando por: Documentos");
+    alert("click");
+  });
+  
+  $("radio#autores").on('click', function (ev) {
+    $(".recurso").text ("Buscando por: Autores");
+  });
+  
+  $("radio#colecciones").on('click', function (ev) {  
+    $(".recurso").text ("Buscando por: Colecciones");
+  });
+  */
   }
 });
+
+search_query = function (e) {
+   
+    var obj = e.target;
+   // alert(obj);
+    /*var obj = e.target;
+    if (obj.tagName == "IMG") {
+        obj = obj.parentElement;
+
+    }*/
+    var result = Meteor.call('findbase', function(error, result) {
+               //console.log ("Querys");
+               console.log (result);
+            //   alert (result);
+          //  alert ("Hola");
+          
+
+   // var en = Endpoints.find({name: obj.attributes['data-endpoint'].value}).fetch()[0]
+    var v1 = encodeURIComponent($('input:text[name=terms]').val());
+    var v2 = encodeURIComponent($('input:radio[name=opciones]:checked').val());
+    var v3 = encodeURIComponent(result.name);
+    window.open('/search/' + v1 + '/' + v2 + '/' + v3 ,"_self" );
+    });
+};
+
+
+
+

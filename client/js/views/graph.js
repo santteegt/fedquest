@@ -1,3 +1,7 @@
+var jsonld = require('jsonld');
+var d3 = require("d3");
+var d3tip = require('d3-tip')(d3);
+
  this.GraphView = Backbone.View.extend({
       tagName: "div",
       id: "graph",
@@ -28,6 +32,7 @@
       
 
     this.setEvents($('#sparql-content'));
+    console.log('render Graph');
     return this;
   },
   setEvents: function(divNode) {
@@ -95,7 +100,25 @@
   // console.log (data);
   //var data =   {"@context":{"foaf":"http://xmlns.com/foaf/0.1/"},"@graph":[{"@id":"http://190.15.141.102:8080/dspace/contribuidor/autor/EspinozaMejia_Mauricio","@type":"foaf:Person","foaf:name":"Espinoza Mejia, Mauricio"}],"@id":"http://190.15.141.85:8080/marmotta/context/default"};
 
- 
+/*
+    $( "#dialog-confirm" ).dialog({
+      resizable: true,
+      height:250,
+      autoOpen: false,
+ //     width:300,
+       modal: true,
+      buttons: {
+        "Muestra": function() {
+          $( this ).dialog( "close" );
+        },
+        "Todos ": function() {
+          $( this ).dialog( "close" );
+        }
+      }
+    });
+*/
+
+     
   
     
   }
@@ -147,6 +170,7 @@
 
                      console.log ("Compactcall");
                      jsonld.compact(data , context, function(err, compacted) {
+                     console.log (err);
                      console.log ("Compacted");
                      console.log(JSON.stringify(compacted, null, 2)); 
                      
@@ -160,7 +184,9 @@
                            } else if ( compacted['@type'] == "foaf:Person") {
                               entityname ='author';
 
-                           }else {
+                           }else //if (  "bibo:Document" in compacted['@type'] )  //CHange
+                            {
+                               
                               entityname = 'publication';
                            }
 
@@ -224,6 +250,23 @@
 
 
  function draw(svg, width, height, data, scope , endpoint ) {
+         var tip = d3.tip()
+                        .attr('class', 'tree-d3-tip')
+                       /*  .offset(function() {
+                        // console.log (this);
+                          return [this.getBBox().height / 2, 0]
+                        })*/
+                        .html(function (d) {
+                            return ' ';
+                        });
+/*
+         var tip2 = d3.tip()
+                        .attr('class', 'tree-d3-tip-rel')
+                        //.offset([-10, 0])
+                        .html(function (d) {
+                            return ' ';
+                        });*/
+
             //alert('graph');
             // Misc. variables
             var endpointactual = endpoint ;
@@ -427,13 +470,27 @@
                   'children': null
                 }*/
             }  ;
-
+           
+            function searchTree(element, matchingTitle){
+            if(element["@id"] == matchingTitle){
+            return element;
+            }else if (element.children != null){
+            var result = null;
+            for(i=0; result == null && i < element.children.length; i++){
+               result = searchTree(element.children[i], matchingTitle);
+            }
+            return result;
+            }
+            return null;
+            };
 
 
             function update(source, expand) {
                 var levelWidth = [1];
                 var childCount = function (level, n) {
                     if (n.children && n.children.length > 0) {
+                        console.log ("Arbol");
+                        console.log (n["@id"]);
                         if (levelWidth.length <= level + 1)
                             levelWidth.push(0);
                         levelWidth[level + 1] += n.children.length;
@@ -467,11 +524,11 @@
                         });
                 // Tip Creation for title
 
-                var tip = d3.tip()
+          /*      var tip = d3.tip()
                         .attr('class', 'tree-d3-tip')
                         .html(function (d) {
                             return ' ';
-                        });
+                        });*/
 
 
                 // Enter any new nodes at the parent's previous position.
@@ -486,26 +543,41 @@
                         })
                         .on("mouseover", function (d) {
                             var node = d;
+                           var id;
                             if ('publication' in d) {
-                                var id = d.publication["@id"];
+                                 id = d.publication["@id"];
                               //  var title = _.findWhere(node.publication.jsonld["@graph"], {"@id": id, "@type": "bibo:Document"})["dcterms:title"];
                               //  tip.html(title);
-                                tip.html(id);
-                                tip.show(d);
+                              //  tip.html(id);
+                              //  tip.show(d);
                                 //AE.getInfo(d.author);
                             } else if ('author' in d)
                             {
                                 var id = d.author["@id"];
-                                tip.html(id);
-                                tip.show(d);
+                             //   tip.html(id);
+                              //  tip.show(d);
                             } else  if ('collection' in d) {
                                 var id = d.collection["@id"];
+                              //  tip.html(id);
+                               // tip.show(d);
+                            }
+                            // console.log ( d3.select(this));
+                            // console.log (scale);
+                            // console.log ($("svg.tree-overlay").children('g'));
+                            /* tip.offset(function() {
+                             return [10, 0]
+                             })*/
+                          tip.offset(function() {
+                      
+                                  return [ 0 , 0] ;
+                          });
+                           tip.direction('n');
+
                                 tip.html(id);
                                 tip.show(d);
-                            }
                         })
                         .on("mouseout", function (d) {
-                            if ('publication' in d) {
+                           /* if ('publication' in d) {
                                 tip.hide(d);
                                 //AE.getInfoCancel();
                             }
@@ -515,7 +587,8 @@
                             } else if ('collection' in d){
                                 tip.hide (d);
                             }else {tip.hide (d); 
-                            }
+                            }*/
+                            tip.hide(d);
                         })
                         .on('contextmenu', function (d) {
                             d3.event.preventDefault();
@@ -579,14 +652,24 @@
                         .attr('class', 'tree-nodeText')
                         .attr("text-anchor", function (d) {
                             return "start";
+                            //return "middle";
                         })
                         .text(function (d) {
                             if (isAuthor(d)) {
                                 //return d.author.name;
                                 var id = d.author["@id"];
-                                       
+                                var name = d.author.data['foaf:name']; 
+
                                 //var author = _.findWhere(d.author.jsonld["@graph"], {"@id": id, "@type": "foaf:Person"});
-                                return d.author.data['foaf:name'] ;
+                              ///   console.log ("AUTORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
+                               // console.log (name);
+                               //   console.log ("---");
+                                  if (Array.isArray(name)) {
+                                    name = name[0];
+                                  }
+
+                                return name ;
+
                             } else if (isPublication(d)) {
                              var id = d.publication["@id"];
                             // var publication = _.findWhere( d.publication.data["@graph"], {"@id": id, "@type": "bibo:Document"} );
@@ -637,11 +720,56 @@
                 var link = svgGroup.selectAll("path.tree-link")
                         .data(links, function (d) {
                             return d.target.id;
-                        });
+                        }) ;
+                   /*       .enter()
+                          .append("g")
+                          .attr("class", "tree-link")
+                        ;*/
+                  
                 // Enter any new links at the parent's previous position.
-                link.enter().insert("path", "g")
-                        .attr("class", "tree-link")
+             //             link.append("path")
+                 link.enter().insert("path", "g")
+                 //    link.enter().insert("path", "g")
+                 .attr("class", "tree-link")
+                        .on("mouseover", function (d) {
+                         tip.offset(function() {
+                          console.log ("Offset");
+                          var s = zoomListener.scale();
+                          if (s < 1) {
+                            s  = s + (0.05);
+                          }
+                          console.log (s);
+                        //  console.log (Math.abs((d.source.x - d.target.x)/10));
+                          return [ 0 , -190*s] ;
+                          });
+
+                         tip.direction('e');
+                         console.log ("Etiqueta");
+                         console.log (d);
+                          tip.html( function (d) 
+                          {
+                            var enlace = "" ;
+                          if (isAuthor(d.target)) {
+                          
+                              enlace = d.target["author"]["relation"];
+                          } else if (isPublication(d.target)) {
+                             
+                             enlace = d.target["publication"]["relation"];
+                    
+                          } else if (isCollection(d.target)) {
+                      
+                             enlace = d.target["collection"]["relation"];
+                           }
+                           return   equivalencias (enlace);
+
+                          }
+                            );
+                          tip.show(d);})
+                         .on("mouseout", function (d) { tip.hide (d); })
                         .attr("d", function (d) {
+                           //   console.log ("Ruta Link");
+                           //   console.log (diagonal.projection);
+                           //   console.log (d);
                             var o = {
                                 x: source.x0,
                                 y: source.y0
@@ -650,11 +778,53 @@
                                 source: o,
                                 target: o
                             });
-                        });
+                        }) ;
+                       
+                  
+            
+
+                     
+
+               // Add label to Link
+                link.append("text")
+              // .attr("font-family", "Arial, Helvetica, sans-serif")
+                //.attr("fill", "Black")
+              //  .style("font", "normal 12px Arial")
+               /* .attr("transform", function(d) {
+                       console.log ("Ruta Link");
+                           //   console.log (diagonal.projection);
+                       console.log (d);
+                return "translate(" +
+                ((d.source.y0 + d.target.y)/2) + "," + 
+                ((d.source.x0 + d.target.x)/2) + ")";
+                 })  */
+           //     .attr("dy", ".35em")
+                .attr("x", function (d) {
+                     return (d.source.y + d.target.y)/2;
+                        })
+                .attr("dy", function (d) {
+                        return   (d.source.x + d.target.x)/2;
+                        })
+                //.attr("dy", "50")
+                .attr("text-anchor", "start")
+                .attr('class', 'tree-textLink')
+                .text(function(d) {
+                 //console.log("Enlace");
+                 return "Enlace";
+                }).style("fill-opacity", 0);
+                  
+               link.select("text")
+                        .style("fill-opacity", 1);
+
+
                 // Transition links to their new position.
                 link.transition()
                         .duration(duration)
                         .attr("d", diagonal);
+
+                  link.select("text")
+                        .style("fill-opacity", 1);
+
                 // Transition exiting nodes to the parent's new position.
                 link.exit().transition()
                         .duration(duration)
@@ -675,6 +845,21 @@
                     d.y0 = d.y;
                 });
             }
+                function equivalencias(text) {
+                    if (text == "http://rdaregistry.info/Elements/a/P50195"){
+                        return "author of";
+                      }
+                      else if (text == "http://rdaregistry.info/Elements/a/P50161"){
+                         return  "contributor of";
+                      }else {
+                        if ( text.indexOf(":") > 0) {
+                          text = text.substr(text.indexOf(":") + 1);
+                        }
+
+                        return text ;
+                      }
+
+                }
 
              function toggleChildrenRightClick(d) {
                 if (d.children) {
@@ -694,6 +879,10 @@
                 if (d.children) {
                     d.children.forEach(function (node) {
                         removeExpandedId(node);
+                        tip.hide(node);
+                        console.log("ocultar2");
+                        console.log(node);
+
                     });
                 }
                 
@@ -710,6 +899,10 @@
             function removeChildrenFromExplored(d) {
                 d.children.forEach(function (node) {
                     removeExpandedId(node);
+                        tip.hide(node);
+                        console.log("ocultar2");
+                        console.log(node);
+
                 });
             }
 
@@ -743,8 +936,65 @@
                 $('div.tree-node-info .entityInfo').html('');
                 console.log ('Click d');
                 console.log (d);
+                console.log ("BASE TREE");
+                console.log (root);
+
+                if (d.children) {
+                  Expand (d);
+                } else {
+                var levelWidth = [1];
+                var nodorepetido;
+                var childCount = function (level, n , id) {
+                    if (n.children && n.children.length > 0) {
+                       if (id ==  n["@id"]){
+                        console.log ("Arbol encontrado");
+                        console.log (n["@id"]);
+                        console.log (n["x"]);
+                        console.log (n["y"]);
+                        nodorepetido = n;
+                        }else {
+                        console.log ("Arbol");
+                        console.log (n["@id"]);
+                        console.log (n["x"]);
+                        console.log (n["y"]);
+                        }
+                        if (levelWidth.length <= level + 1)
+                            levelWidth.push(0);
+                        levelWidth[level + 1] += n.children.length;
+                        n.children.forEach(function (d) {
+                            childCount(level + 1, d , id);
+                        });
+                    }
+                };
+
+                childCount(0, root, d["@id"]);
+                
+              
+                 console.log ("Valor Nodo");
+                 console.log (nodorepetido);
+
+                if ( typeof nodorepetido === "undefined" )
+                {
+                   Expand (d);
+                } else {
+                  console.log ("Valor encontrado");
+                  console.log (nodorepetido);
+                  centerNode (nodorepetido) ;
+                     
+                }
+                }
+
+                 //var copia = _.clone( root);
+               /* var nodot = searchTree ( root , d["@id"]);
+                console.log ("NODO REPETIDO --------------------");
+                console.log (nodot);
                // d = toggleChildren(d);
-               Expand (d);
+                if (nodot.children &&  nodot.children.length > 0 ) {
+                  //centerNode(d);
+                 } else {  
+                  Expand (d);
+                }*/
+             
             }
        
 
@@ -774,12 +1024,16 @@
                 }  
              }
 
+
+
                function Datachild (node  , endpointselect)
                 {   // var idbase =  'http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES';
-                     
+                   
                     console.log ("Consulta");
                     console.log (node);
                     var idbase = node["@id"];
+                      
+                     if (isCollection(node)) { waitingDialog.show(); }
 
                     var prefix =  ' PREFIX dct: <http://purl.org/dc/terms/> '
                                 + ' PREFIX bibo: <http://purl.org/ontology/bibo/> '
@@ -821,7 +1075,8 @@
                   +   'OPTIONAL {  ?c  <http://xmlns.com/foaf/0.1/firstName>  ?fn }'
                   +   'OPTIONAL { ?c <http://purl.org/dc/terms/description> ?cdes }'
                   +   'OPTIONAL { ?c <http://purl.org/ontology/bibo/uri> ?ur } ' 
-                  +  'OPTIONAL {?c   <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>   ?tipe}}' ;
+                  +  'OPTIONAL {?c   <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>   ?tipe}}' 
+                  +  'Order by (?b)' ;
                //   + 'filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))'
 
 
@@ -852,8 +1107,8 @@
                    //alert (result.resultSet);
                     
                     
-                    console.log ("Resultado");
-                    console.log (result.resultSet);
+                   // console.log ("Resultado");
+                  //  console.log (result.resultSet);
 
                      var context = {
                                 "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
@@ -867,13 +1122,86 @@
                     
                    var resultjson = jQuery.parseJSON( result.resultSet.content);
 
-                     console.log ("Compactcall");
+                    // console.log ("Compactcall");
+                    waitingDialog.hide();
                      if (resultjson.hasOwnProperty("@graph")) {
                      jsonld.compact(resultjson , context, function(err, compacted) {
                      console.log ("Compacted");
                      console.log(JSON.stringify(compacted, null, 2)); 
-                     datachildren (idbase , compacted , node , "publication");
+
+                        var dataresult  = compacted['@graph'];
+
+                        var num = 0;
+                     
+                      for (var j = 0 ; j <dataresult.length; j++){ 
+                            if (dataresult[j]["@id"] == idbase && j > 0){
+                                 var  aux = dataresult[0];
+                                 dataresult[0] = dataresult[j];
+                                 dataresult[j] = aux;
+                            }else if (dataresult[j]["@type"] != "owl:Thing"){
+                                 num ++;
+                            }
+                      }
+
+
+                      
+
+
+                          /* $( "#dialog-confirm" ).dialog({
+                              resizable: true,
+                              height:250,
+                              autoOpen: false,
+ //     width:300,
+                               modal: true,
+                              buttons: {
+                              "Muestra": function() {
+                                
+                                datachildren (idbase , dataresult, node , "publication" , true);
+                                $( this ).dialog( "close" );
+                                 },
+                                 "Todos ": function() {
+                                 
+                                 datachildren (idbase , dataresult , node , "publication" , false);
+                                 $( this ).dialog( "close" );
+                                }
+                                 }
+                               });*/
+                              
+                           Session.set('numresultgraph', num);
+
+
+                          if (num > 20){
+                         
+                           // confirm ("Muchos registros");
+                       //     $( "#dialog-confirm" ).dialog( "open" );
+                              $( "#Despl-todos").click (function () 
+                              {
+                                datachildren (idbase , dataresult , node , "publication" , false);
+                                $( "#myModal").modal('hide');
+                              });
+                            
+                                $( "#Despl-Muestra").click (function () 
+                              {  //alert ();
+                                datachildren (idbase , dataresult , node , "publication" , true);
+                                $( "#myModal").modal('hide');
+                              });
+
+                            $( "#myModal").modal();
+
+                          
+
+                        
+
+                          } else {
+                            datachildren (idbase , dataresult , node , "publication" , false);
+                          }
+
+                           
+
+                   //  datachildren (idbase , compacted , node , "publication");
                       });
+
+
                      } else {
                             
                            Meteor.call('findendpointactual', idbase  , function(error, result) { 
@@ -917,17 +1245,23 @@
                   
                }
 
-               function datachildren (idbase ,jsondata , node , entityname){
+               function datachildren (idbase ,jsondata , node , entityname , trial){
                  
-                     var resultjson = jsondata;
+                  //   var resultjson = jsondata;
                   // var resultjson = jQuery.parseJSON( jsondata);
 
 
 
 
-                   var dataresult = resultjson['@graph'] ;
+                   //var dataresult = resultjson['@graph'] ;
+                   var dataresult = jsondata ;
+                    if (trial)
+                    {   dataresult = dataresult.slice (0,10);
+                        
+                    }
+
                    console.log ("Resultadojson");
-                   console.log (resultjson);
+                  // console.log (resultjson);
                    console.log (dataresult);
                    //var objbase = resultjson[idbase];
                   // var dataresult =   resultjson.results.bindings ;
@@ -939,14 +1273,30 @@
 
                      if (!node.children) {
                     node.children = []
-                   }
+                   }  
+
+                   ///ordenar 
+                  
+
+                    var relations = {};
 
                     for (var i = 0 ; i<dataresult.length; i++){
                           var objson = dataresult[i];
+
+                          
+                    
+                              
+
                          if (objson["@id"] == idbase   ) 
                           {
                               console.log ("Entra datos");
                               console.log (node);
+
+                          relations = hrelations (objson);
+                          console.log ("Propiedades");
+                          console.log (relations);
+
+
                               if ( objson["@type"] == "foaf:Person" ){
                                  node['author']['data'] =  objson;
                              //    node ['author']['data']['Relation'] = "SameAs";
@@ -955,7 +1305,8 @@
                               // node['collection']['data'] = _.union( objson , node['collection']['data'] );
                                   node['collection']['data'] = objson;
                                //   node['collection']['data']['Relation'] = "SameAs";
-                              }else {
+                              }else if ( objson["@type"] == "bibo:Document" )  // Change
+                              {
                                // node['publication']['data'] = _.union( objson , node['publication']['data'] );
                                  node['publication']['data'] =  objson;
                                //  node['publication']['data']['Relation'] =  "SameAs";
@@ -986,46 +1337,103 @@
                              for (var j = 0 ; j < objsame.length ;j++)
                               {  
                            var child = {};
-                            console.log ("Same as");
+                          /*  console.log ("Same as");
                             console.log ("ObjCompleto");
                             console.log (objsame);
 
                             console.log ("Obj1");
-                            console.log (objsame[j]);
+                            console.log (objsame[j]);*/
 
-
+                            console.log (relations[objsame[j]["@id"]]);
                            // var typeRelation["Relation"] = "SameAs";
                            child ['@id'] =  objsame[j]["@id"]; 
-                           child ["author"] = {'@id' : objsame[j]["@id"] , 'data' : { 'Relation': "SameAs" } , children : [] }
+                           child ["author"] = {'@id' : objsame[j]["@id"] , 'data' : { 'Relation': "SameAs" } , children : [] , 'relation': relations[objsame[j]["@id"]] };
                            node.children.push(child);
-                           exploredArtistIds.push(idbase);
-
+                          
+                          // exploredArtistIds.push(objsame[j]["@id"]);
+                          // console.log ("Explorados");
+                           //console.log (exploredArtistIds);
 
                               }
 
                            }
 
+                   
+                       /*  for (x in objson) {
+                       
+                      //   console.log (x);
+                        // console.log (objson[x]);
+                         if (typeof(objson[x])== "object"){ 
+                       //     console.log (objson[x]);
+                               if (!Array.isArray(objson[x])){
+                                 relations[objson[x]["@id"]] = x;
+                               } else {
+                                 for ( y in objson[x])
+                                 {
+                                   console.log (y);
+                                   relations[objson[x][y]["@id"]]= x;
 
+                                 }
 
-
+                               }
+                            }
+                          }*/
+                              
                            
                          }else 
                          { var child = {};
+                           console.log ("ComienzaCHild");
+                           console.log (dataresult[i]);
                            child = {'@id' : objson["@id"]};
-                             var typedata = dataresult[i]['@type'];
-                           if (typedata ==  'bibo:Collection' ) {
+                              var valtype = dataresult[i]['@type'];
+                               var typedata = [];
+
+                           if ( !Array.isArray(valtype) ){
+                             typedata[0] = dataresult[i]['@type'];
+                           } else  {
+                           	 typedata = dataresult[i]['@type'];
+                           }
+
+
+                           _.map(typedata, function (value, idx) {
+                            
+                           
+                           if (value ==  'bibo:Collection' ) {
                             
                               entityname = 'collection';
-                           } else if ( typedata == "foaf:Person") {
+                           } else if ( value == "foaf:Person") {
                               entityname ='author';
 
-                           }else {
+                           }else if ( value == "bibo:Document" )  // Change
+                           {
                               entityname = 'publication';
+                           }else {
+                           	  entityname  =   'false';
                            }
-                           child [entityname] = {'@id' : objson["@id"] , 'data' : dataresult[i] , children : [] }
+
+
+                            if (entityname != 'false'){
+
+                           child [entityname] = {'@id' : objson["@id"] , 'data' : dataresult[i] , children : [] ,  'relation': relations[objson["@id"]] };
                            node.children.push(child);
-                           exploredArtistIds.push(idbase);
-                           console.log (child);
+                        //   exploredArtistIds.push(objson[j]["@id"]);
+                        console.log (relations[objson["@id"]]);
+                          console.log ("Nuevo Child");
+                          console.log (child);
+                          // console.log ("Explorados");
+                          // console.log (exploredArtistIds);
+                             }
+
+
+                        }
+                              
+
+
+                        );
+
+                          
+
+                         
                          }
 
                       /*      
@@ -1062,6 +1470,31 @@
                 update(node, true);
                 centerNode(node);
                }
+
+                function hrelations (objson ){
+                         var relations = {};
+                         for (x in objson) {
+                       
+                      //   console.log (x);
+                        // console.log (objson[x]);
+                         if (typeof(objson[x])== "object"){ 
+                       //     console.log (objson[x]);
+                               if (!Array.isArray(objson[x])){
+                                 relations[objson[x]["@id"]] = x;
+                               } else {
+                                 for ( y in objson[x])
+                                 {
+                                 //  console.log (y);
+                                   relations[objson[x][y]["@id"]]= x;
+
+                                 }
+
+                               }
+                            }
+                          }
+                           return relations;
+
+                }
 
                function  drawpanel (node , entityname) {
 

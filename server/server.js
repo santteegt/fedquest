@@ -1,4 +1,21 @@
+import {
+    Meteor
+}
+from
+'meteor/meteor';
 if (Meteor.isServer) {
+
+
+    function merge_(obj1, obj2) {
+        var result = {};
+        for (var key in obj1)
+            result[key] = obj1[key];
+        for (var key in obj2)
+            result[key] = obj2[key];
+        return result;
+    }
+ 
+
     String.prototype.hashCode = function () {
         var a = 0, b, c, d;
         if (0 === this.length)
@@ -22,6 +39,204 @@ if (Meteor.isServer) {
         var parserInstance = new SparqlParser();
 
         Meteor.methods({
+            updateStats: function () {
+                Statsc.remove({});
+                var endp = Endpoints.find().fetch();
+                //Numero totales
+                var sparql_p = "select (count(*) AS ?P) ('__' AS ?EP) {?x a <http://xmlns.com/foaf/0.1/Person>}";
+                var sparql_d = "select (count(*) AS ?D) ('__' AS ?EP) {?x a <http://purl.org/ontology/bibo/Document>}";
+                var sparql_c = "select (count(*) AS ?C) ('__' AS ?EP) {?x a <http://purl.org/ontology/bibo/Collection>}";
+                //Consulta	
+                var sparql_ = 'select * {\n';
+                for (var i = 0; i < endp.length; i++) {
+                    var endpoint = endp[i];
+                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
+                    sparql_ += sparql_p.replace(new RegExp("__", "g"), endpoint.name) + '\n';
+                    sparql_ += '}}union' + '\n';
+                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
+                    sparql_ += sparql_d.replace(new RegExp("__", "g"), endpoint.name) + '\n';
+                    sparql_ += '}}union' + '\n';
+                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
+                    sparql_ += sparql_c.replace(new RegExp("__", "g"), endpoint.name) + '\n';
+                    sparql_ += '}}' + '\n';
+                    if (i != endp.length - 1) {
+                        sparql_ += 'union' + '\n';
+                    }
+                }
+                sparql_ += '}';
+                //Preprocesamiento	
+                var r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
+                var Obj = JSON.parse(r).results.bindings;
+                var Stats1 = [];
+                for (var i = 0; i < endp.length; i++) {
+                    var ls = Obj.filter(function (a) {
+                        return a.EP.value == endp[i].name;
+                    });
+                    var result1 = {};
+                    var result = {};
+                    result1 = merge_(ls[0], ls[1]);
+                    result = merge_(result1, ls[2]);
+                    Stats1.push(result);
+                }
+                Statsc.insert({cod: 1, val: Stats1});
+                var Stats__ = Stats1;
+                //console.log(Stats1);
+                //Numero recursos totales
+
+                //Palabras clave
+                var topK = '20';
+                sparql_ = "select * {service <==>{ select  ?D (count(*) AS ?cou) ('__' AS ?EP) where { { [] <http://purl.org/saws/ontology#refersTo> ?d . BIND (lcase(?d) AS ?D) }union{ [] <http://purl.org/dc/terms/subject> ?d . filter (isLiteral (?d)) . BIND (lcase(?d) AS ?D) }union{  [] <http://vivoweb.org/ontology/core#freetextKeyword> ?d . BIND (lcase(?d) AS ?D) } } group by ?D order by desc(?cou) limit " + topK + ' }} ';
+                var lsKW = [];
+                for (var i = 0; i < endp.length; i++) {
+                    var endpoint = endp[i];
+                    var r = Meteor.call('doQueryCacheStats', {sparql: sparql_.replace(new RegExp("__", "g"), endpoint.name).replace(new RegExp("==", "g"), endpoint.endpoint)}).resultSet.value;
+                    var Obj1 = JSON.parse(r).results.bindings;
+
+
+                    var stopWords = ['cuenca-ecuador', 'ecuador', 'cuenca', 'azuay', 'tesis', 'quito', 'quito-ecuador', 'guayaquil'];
+
+                    Obj1_ = Obj1.filter(function (a) {
+                        return stopWords.indexOf(a.D.value.trim()) == -1;
+                    });
+
+                    lsKW.push({EP: endpoint.name, Data: Obj1_});
+                }
+                Statsc.insert({cod: 2, val: lsKW});
+                //Palabras clave
+                //Por tipo de documento
+
+                var sparql_td = "select ?t ?l ?y (count (*) as ?c) ('__' AS ?EP) { ?d a <http://purl.org/ontology/bibo/Document> . ?d a ?t . ?d <http://purl.org/dc/terms/language> ?l. ?d <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?y ). } group by ?t ?l ?y";
+                sparql_ = 'select * {\n';
+                for (var i = 0; i < endp.length; i++) {
+                    var endpoint = endp[i];
+                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
+                    sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
+                    sparql_ += '}}' + '\n';
+
+                    if (i != endp.length - 1) {
+                        sparql_ += 'union' + '\n';
+                    }
+                }
+                sparql_ += '}';
+                r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
+                //console.log(sparql_);
+                Obj = JSON.parse(r).results.bindings;
+
+                Stats1 = [];
+                for (var i = 0; i < endp.length; i++) {
+                    var ls = Obj.filter(function (a) {
+                        return a.EP.value == endp[i].name;
+                    });
+
+                    Stats1.push({EP: endp[i].name, val: ls});
+                }
+                Statsc.insert({cod: 3, val: Stats1});
+//Por tipo de documento
+//
+//Autores por tipo de contribucion
+                sparql_td = "select ?p (count (*) as ?c) ('__' AS ?EP) {  select distinct ?a ?p {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a ?p ?v.    ?v a <http://purl.org/ontology/bibo/Document>  } } group by ?p ";
+                sparql_ = 'select * {\n';
+                for (var i = 0; i < endp.length; i++) {
+                    var endpoint = endp[i];
+                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
+                    sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
+                    sparql_ += '}}' + '\n';
+
+                    if (i != endp.length - 1) {
+                        sparql_ += 'union' + '\n';
+                    }
+                }
+                sparql_ += '}';
+                r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
+                //console.log(sparql_);
+                Obj = JSON.parse(r).results.bindings;
+                Stats1 = [];
+                for (var i = 0; i < endp.length; i++) {
+                    var ls = Obj.filter(function (a) {
+                        return a.EP.value == endp[i].name;
+                    });
+                    var TotDoc = Stats__.filter(function (a) {
+                        return a.EP.value == endp[i].name;
+                    }) [0];
+                    Stats1.push({EP: endp[i].name, val: {total: Number(TotDoc.P.value), val: ls}});
+                }
+                Statsc.insert({cod: 4, val: Stats1});
+//Autores por tipo de contribucion
+//Top Autores
+                var topKA = 20;
+                sparql_td = "select ?a (max (?n) as ?name) (max (?coun) as ?counter) ('__' AS ?EP) {   ?a <http://xmlns.com/foaf/0.1/name> ?n.   {      select ?a (count(*) as ?coun)      {         ?a a <http://xmlns.com/foaf/0.1/Person> .            ?a ?p ?v.             ?v a <http://purl.org/ontology/bibo/Document> .      } group by (?a) order by desc (?coun) limit " + topKA + "    } } group by (?a) order by desc(?co)";
+                sparql_ = 'select * {\n';
+                for (var i = 0; i < endp.length; i++) {
+                    var endpoint = endp[i];
+                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
+                    sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
+                    sparql_ += '}}' + '\n';
+
+                    if (i != endp.length - 1) {
+                        sparql_ += 'union' + '\n';
+                    }
+                }
+                sparql_ += '} order by desc (?coun)';
+                r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
+                Obj = JSON.parse(r).results.bindings;
+                Stats1 = Obj;
+                Statsc.insert({cod: 5, val: Stats1});
+//Top Autores
+
+
+//Colecciones
+                var topKC = 20000;
+                sparql_td = "select ?c (max(?n) as ?name) (count(*) as ?counter) ('__' AS ?EP) {    ?c a <http://purl.org/ontology/bibo/Collection>.    ?c <http://purl.org/dc/terms/description> ?n.   ?d <http://purl.org/dc/terms/isPartOf> ?c. } group by ?c order by desc (?co) limit "+topKC;
+                sparql_ = 'select * {\n';
+                for (var i = 0; i < endp.length; i++) {
+                    var endpoint = endp[i];
+                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
+                    sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
+                    sparql_ += '}}' + '\n';
+
+                    if (i != endp.length - 1) {
+                        sparql_ += 'union' + '\n';
+                    }
+                }
+                sparql_ += '}  order by desc (?counter)';
+                r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
+                Obj = JSON.parse(r).results.bindings;
+                var StopWords2 = ['Tesis de Grado - ', 'Tesis en ', 'Carrera de ', 'Facultad de ', 'Tesis - Carrera de ', 'Tesis - ', 'Tesis de ', 'Instituto de ', 'Facultad ', 'Licenciatura en ', 'Tesis ', 'Escuela de ', 'Exámenes - '];
+
+                for (var i = 0; i < Obj.length; i++) {
+                    for (var j = 0; j < StopWords2.length; j++) {
+                        Obj[i].name.value = Obj[i].name.value.replace(new RegExp(StopWords2[j], "g"), '');
+
+                    }
+                    //Obj[i].name.value = Obj[i].name.value.toLowerCase();
+                }
+
+                /*
+                var result = [];
+                Obj.reduce(function (res, value) {
+                    if (!res[value.name.value]) {
+                        res[value.name.value] = {
+                            counter: 0,
+                            name: value.name.value,
+                            c: value.c.value,
+                            EP: value.EP.value
+                        };
+                        result.push(res[value.name.value])
+                    }
+                    res[value.name.value].qty += Number(value.counter.value);
+                    return res;
+                }, {});
+                */
+                Stats1 = Obj;
+                Statsc.insert({cod: 6, val: Stats1});
+//Colecciones
+
+
+
+
+
+
+            },
             validateSPARQL: function (sparqlQuery) {
                 var response = {};
                 try {
@@ -64,6 +279,43 @@ if (Meteor.isServer) {
                 }
                 return response;
 
+            },
+            doQueryCacheStats: function (a) {
+                var g = a.timeout ? a.timeout : 30000;
+                var h = {};
+                h.statusCode = 200;
+                h.msg = void 0;
+                h.stack = void 0;
+                var i = Endpoints.findOne({
+                    base: true
+                });
+                if (!i) {
+                    h.statusCode = 400;
+                    h.msg = "Base Endpoint is not registered!";
+                } else
+                    try {
+                        var j = a.sparql.trim().hashCode();
+                        var k = Cache.find({key: j}).fetch();
+                        var l = {};
+                        if (0 == k.length) {
+                            l = Meteor.call("runQuery", i.endpoint, i.graphURI, a.sparql, undefined, g);
+                            Cache.insert({
+                                key: j,
+                                value: l.content,
+                                ttl_date: new Date(),
+                                nresult: 0,
+                                original: true
+                            });
+                            k = Cache.find({key: j}).fetch();
+                        }
+                        h.resultSet = k[0];
+                    } catch (C) {
+                        console.log(C.stack);
+                        h.statusCode = 400;
+                        h.msg = "Error executing SPARQL Query: See console for details";
+                        h.stack = C.toString();
+                    }
+                return h;
             },
             doQueryCache: function (a) {
                 var c = a.ApplyFilter ? a.ApplyFilter : false;
@@ -157,6 +409,10 @@ if (Meteor.isServer) {
                                     $gte: e,
                                     $lt: e + f
                                 }
+                            }, {
+                                sort: {
+                                    nresult: +1
+                                }
                             }).fetch();
                             if (0 == q) {
                                 k = [{
@@ -175,7 +431,7 @@ if (Meteor.isServer) {
                         }).fetch();
                         var x = 0;
                         if (w.length > 0) {
-                            x = w[0].nresult+1;
+                            x = w[0].nresult + 1;
                         }
                         var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
                         var y = {};
@@ -852,11 +1108,20 @@ if (Meteor.isServer) {
                 console.log("Resp" + endpoint.opt);
                 return endpoint.opt;
 
+            },
+            findbase: function () {
+               // console.log(endpointURI + defaultGraph);
+                var endpoint = Endpoints.findOne({base : true});
+               // console.log("Resp" + endpoint.opt);
+                return endpoint;
+
             }
         });
 
         //Update Prefixes schema on every server startup
         Meteor.call('updatePrefixes');
+        Meteor.call('updateStats');
+
     });
 }
 

@@ -1,3 +1,8 @@
+
+
+
+
+
 .tree-node {
   cursor: pointer;
 }
@@ -16,7 +21,9 @@
 .tree-link {
   fill: none;
   stroke: #ccc;
-  stroke-width: 1.5px;
+  /*stroke-width: 1.5px;*/
+  stroke-width: 2px;
+  stroke-opacity: 0.75;
 }
 
 .tree-overlay{
@@ -27,4 +34,45 @@
   overflow: hidden;
   height: auto;
   background-color: #F6F6F6;
+}
+
+.ui-dialog .ui-dialog-buttonpane {
+    text-align: center;
+}
+
+
+
+.modal-show{
+ /*   border: 1px solid #cbdcea;
+        border-top-width: 1px;
+        border-right-width: 1px;
+        border-bottom-width: 1px;
+        border-left-width: 1px;
+        border-top-style: solid;
+        border-right-style: solid;
+        border-bottom-style: solid;
+        border-left-style: solid;
+        border-top-color: rgb(203, 220, 234);
+        border-right-color: rgb(203, 220, 234);
+        border-bottom-color: rgb(203, 220, 234);
+        border-left-color: rgb(203, 220, 234);
+        -moz-border-top-colors: none;
+        -moz-border-right-colors: none;
+        -moz-border-bottom-colors: none;
+        -moz-border-left-colors: none;
+        border-image-source: none;
+        border-image-slice: 100% 100% 100% 100%;
+        border-image-width: 1 1 1 1;
+        border-image-outset: 0 0 0 0;
+        border-image-repeat: stretch stretch;*/
+    background-color: #a1a5a7;
+   /* background-color: #d9edf7;*/
+    /*url("/images/ui-bg_gloss-wave_35_f6a828_500x100.png") 50% 50% repeat-x;*/
+    color: #ffffff;
+    font-weight: bold;
+  /*  background-image: linear-gradient(to bottom,#d9edf7 0,#c4e3f3 100%);*/
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+   /* border-color: #bce8f1;*/
+
 }

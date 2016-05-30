@@ -1,15 +1,21 @@
 /*
  View logic for the query samples list component
  */
+var jsonld = require("jsonld");
+
 this.SearchView = Backbone.View.extend({
     tagName: "div",
     id: "search",
     /////////////////////////
     // View Initialization //
     /////////////////////////
-    initialize: function () {
+    initialize: function (s1, s2, s3) {
         var me;
         me = this;
+        Session.set('s1', s1);
+        Session.set('s2', s2);
+        Session.set('s3', s3);
+
     },
     //////////////////////////
     //Render Samples Views//
@@ -17,16 +23,74 @@ this.SearchView = Backbone.View.extend({
     render: function () {
         Blaze.render(Template.search, $('#sparql-content')[0]);
         this.setEvents($('#sparql-content'));
+
+
+        console.log('render search');
+        //Session.get('v1');
+
+
         return this;
     },
+    // setEvents: function (divNode) {
     setEvents: function (divNode) {
-        $('button.runSearch').on('click', function (ev) {
+        var FromList = [];
+
+        var term = Session.get('s1');
+        var type = Session.get('s2');
+        var base = Session.get('s3')
+        //      alert (term);
+        //$('input:radio[data-name='+base+']').prop("checked", "checked");
+        //alert($('input:radio[data-name='+base+']'));
+        //console.log($('input:radio[data-name='+base+']'));
+        //  $('input:radio[data-name='+base+']').prop("checked", "checked");
+        // var FromList = get_checkList_values("repositoriesList");
+        //console.log($('input[data-name='+base+']'));
+        //console.log (FromList);
+        var prev;
+        $("#documentos2").click(function () {
+            var val = 'documentos';
+            prev = selec2(prev, val);
+
+        });
+
+        $("#autores2").click(function () {
+
+            var val = 'autores';
+            prev = selec2(prev, val);
+            console.log($('input[data-name=' + base + ']'));
+        });
+
+        $("#colecciones2").click(function () {
+            var val = 'colecciones';
+            prev = selec2(prev, val);
+        });
+
+        $('input.runSearch').on('click', function (ev) {
+
             //Session.set("auxAct", Session.get("auxAct") + 1);
             //App.resultCollection2.remove({});
+            //var EntitySearch = get_radio_value("resourceType");
+            var EntitySearch = get_radio_value("opciones");
 
-            var EntitySearch = get_radio_value("resourceType");
-            var FromList = get_checkList_values("repositoriesList");
-            var TextSearch = $("#textToSearch").val();
+            var FromListaux = get_checkList_values("repositoriesList");
+            if (FromListaux.length > 0) {
+
+                FromList = FromListaux;
+
+            }
+
+            var TextSearch = $("input.textToSearch").val();
+            // alert(FromList);
+            // console.log($('input[data-name='+base+']'));
+            console.log("Radio");
+            console.log(EntitySearch);
+            console.log("check");
+            console.log(FromList);
+            console.log("text");
+            console.log(TextSearch);
+
+
+
             var ResultLimit = ''; //limit 100
             var ResultLimitSubQ = '';
             var DocSearchRequest = {};
@@ -54,28 +118,29 @@ this.SearchView = Backbone.View.extend({
 
             var ResqLis = [];
             switch (EntitySearch) {
-                case 't':
-                    {
-                        ResqLis.push(DocSearchRequest);
-                        ResqLis.push(AuthSearchRequest);
-                        ResqLis.push(ColSearchRequest);
-                    }
-                    break;
-                case 'd':
+
+                case 'documentos':
                     {
                         ResqLis.push(DocSearchRequest);
                     }
                     break;
-                case 'a':
+                case 'autores':
                     {
                         ResqLis.push(AuthSearchRequest);
                         AppFilt = true;
                     }
                     break;
-                case 'c':
+                case 'colecciones':
                     {
                         ResqLis.push(ColSearchRequest);
                         AppFilt = true;
+                    }
+                    break;
+                default:
+                    {
+                        ResqLis.push(DocSearchRequest);
+                        ResqLis.push(AuthSearchRequest);
+                        ResqLis.push(ColSearchRequest);
                     }
                     break;
             }
@@ -120,12 +185,47 @@ this.SearchView = Backbone.View.extend({
             }
             Query += '} order by DESC(?Score)\n  ' + ResultLimit;
             var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
+            console.log(jsonRequest);
             Session.set('jsonRequest', jsonRequest);
-            App.SearchRun(0,1);
+            App.SearchRun(0, 1);
             //Session.set('Qmode', 1);
         });
+
+        if (term != "null") {
+            $(".textToSearch").val(term);
+
+            switch (type) {
+                case 'autores':
+                    $("#autores2").attr('checked', 'checked');
+                    break;
+                case 'documentos':
+                    $("#documentos2").attr('checked', 'checked');
+                    break;
+                case 'colecciones':
+                    $("#colecciones2").attr('checked', 'checked');
+                    break;
+            }
+
+            darclick(FromList);
+        }
+
     }
+
+
+
 });
+
+function darclick(FromList) {
+    console.log("Dar click");
+
+    var result2 = Meteor.call('findbase', function (error, result) {
+        // FromList.push({attributes:{"data-base": true , "data-endpoint": result.endpoint , "data-graphuri" : result.graphURI }}) ;
+        // alert("Hola");
+        FromList.push({attributes: {"data-base": {"value": true}, "data-endpoint": {"value": result.endpoint}, "data-graphuri": {"value": result.graphURI}, "data-name": {"value": result.name}}});
+        $('input.runSearch').click();
+    });
+}
+;
 
 function get_checkList_values(CheckName) {
     var inputs = document.getElementsByName(CheckName);
@@ -151,9 +251,11 @@ function get_radio_value(RadioName) {
 
 
 
+
+
 highfn = function () {
     //$('.contvarpro').empty();
-    var TextSearch = $("#textToSearch").val();
+    var TextSearch = $(".textToSearch").val();
     var res = TextSearch.split(" ");
     for (var i = 0; i < res.length; i++) {
         if (!(res[i].trim().length === 0)) {
@@ -309,13 +411,14 @@ actAHyper = function (e) {
         resp = resp[0];
         respp = 1;
     } else {
-        var EntitySearch = get_radio_value("resourceType");
-        if (EntitySearch != "d") {
+        var EntitySearch = get_radio_value("opciones");
+        if (EntitySearch != "documentos") {
             AppFilt = true;
         }
         respp = 2;
         resp = sq.match(new RegExp("\\((.*)\\)(.*)\\((.*)\\)", "g"))[0];
     }
+
     //var SearchVar = resp.split('(')[1].split(',')[0];
     var txtvar = '';
     var SearchVar = '';
@@ -332,7 +435,7 @@ actAHyper = function (e) {
     var TypeVar = resp[resp.length - 2];
     var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ", "g"), 'SELECT DISTINCT ' + txtvar + SearchVar + ' ');
     NewSQ = NewSQ.replace(new RegExp("FROM(.*)", "g"), '');
-    var TextSearch = $("#textToSearch").val();
+    var TextSearch = $(".textToSearch").val();
     if (respp == 2) {
         NewSQ = NewSQ.replace(new RegExp("'wildcard'", "g"), '(' + TextSearch + ')');
     } else {
@@ -377,9 +480,36 @@ actAHyper = function (e) {
     if (respp == 2) {
         Query += 'order by desc(?Score)\n';
     }
-    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''), "AppyFilter": AppFilt};
+
+    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''), "ApplyFilter": AppFilt};
     Session.set('jsonRequest', jsonRequest);
     //Session.set('Qmode', 2);
     App.SearchRun(0, 2);
 };
+
+function selec2(prev, val) {
+    if (prev == $('input:radio[id=' + val + '2]').val()) {
+        $(".recurso").text("Buscando por: Todo");
+        prev = "";
+        $('input:radio[id=' + val + '2]').attr('checked', false);
+    } else {
+        $(".recurso").text("Buscando por: " + val.charAt(0).toUpperCase() + val.slice(1));
+        prev = $('input:radio[id=' + val + '2]').val();
+
+    }
+    Session.set('auxAct', Session.get('auxAct') + 1);
+    return prev;
+}
+
+
+hide = function (e) {
+
+    if ($(".oculto").css("display") == "inline")
+    {
+        $(".oculto").css("display", "none");
+    } else {
+        $(".oculto").css("display", "inline");
+        //  alert ("Hola");
+    }
+}
 

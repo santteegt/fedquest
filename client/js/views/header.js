@@ -31,6 +31,7 @@ this.HeaderView = Backbone.View.extend({
   },
   render: function() {
     this.$el.html(this.template);
+    console.log('Render header');
     return this;
   }
 });

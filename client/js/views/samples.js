@@ -27,6 +27,7 @@ this.SamplesView = Backbone.View.extend({
   //////////////////////////
   render: function() {
     Blaze.render(Template.samples, $('#sparql-content')[0]);
+    console.log('Render Samples');
     return this;
   }
 });
