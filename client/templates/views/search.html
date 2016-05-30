@@ -1,146 +1,177 @@
 
 			<template name="search">
 
-				<div class="container-fluid" sytle="overflow: scroll">
-					
-						<div class="col-sm-3 sidebar sidebar-style" >
-							<!-- <div class="col-md-2 sidebar sidebar-style"> -->
-							<div class="panel panel-info">
-								<div class="panel-heading" style="text-align: left">Search</div>
-								<div class="panel-body">
+		<div class="search-section container-fluid" style="overflow: scroll"> 
+	    <div class="first-search"> 
+	    <div class="firstsection">
+		<div class="title-seach text-center">
+		<p class="recurso"> Buscando por: Todo  </p>
+	    </div>
+		<div class="search-area text-center">
+	    <div class="row">
+		<div class="col-md-10">
+		<div class="Search-bar input-group"> 
+		  <input type="text" value="" name="terms" onkeyup="Session.set('auxAct',Session.get('auxAct')+1); if(event.keyCode == 13){$('.runSearch').click();}" class="required form-control textToSearch" id="mce-text" placeholder="Terminos de búsqueda" required>
+                          <span class="input-group-btn">
+                            <input type="button" value="Buscar" name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearch" >                   
+						 </span>
+		</div>
+		</div>
+		<form class="result-options">
+		   <div class=col-md-2> 
+			  <div class="cc-selector"> 
+			  <input id="documentos2" type="radio" name="opciones" value="documentos" />
+			  <label class="opciones-cc documentos" for="documentos2" data-toggle="tooltip" title="Documentos"></label>
+              <input id="autores2" type="radio" name="opciones" value="autores" />
+			  <label class="opciones-cc autores" for="autores2" data-toggle="tooltip" title="Autores"></label>
 
-								 <div class="row">
-									<div style="padding: 0px 10px 0px 10px;" >
-										<div class="input-group">
-											<input type="text" id="textToSearch" class="form-control" onkeyup="Session.set('auxAct',Session.get('auxAct')+1); if(event.keyCode == 13){$('#id_of_button').click();}" placeholder="Search for...">
-											<span class="input-group-btn">
-												<button class="btn btn-default runSearch" type="button" id='id_of_button'>FT GO!</button>
-											</span>
-										</div><!-- /input-group -->
-										
-									</div>
-									</div>
-<div class="row">
-<!-- class="col-lg-6" -->
-<div  style="padding: 0px 10px 0px 10px;" >
-
-								<div class="input-group">
-
-									<br/>
-
-									<div style="float: left;"><input type="radio" name="resourceType" value="t" checked="checked" onclick="Session.set('auxAct',Session.get('auxAct')+1);" >All&nbsp;&nbsp;</div>
-
-									<div style="float: left;"><input type="radio" name="resourceType" value="d" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Documents&nbsp;&nbsp;</div>
-
-									<br/>
-									<div style="float: left;"><input type="radio" name="resourceType" value="a" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Persons&nbsp;&nbsp;</div>
-
-									<div style="float: left;"><input type="radio" name="resourceType" value="c" onclick="Session.set('auxAct',Session.get('auxAct')+1);">Collections&nbsp;&nbsp;</div>
-
-									</div><!-- /input-group -->
-
-								<label>From:</label>
-								<div class="input-group">
+			  <input id="colecciones2" type="radio" name="opciones" value="colecciones" />
+			  <label class="opciones-cc colecciones" for="colecciones2" data-toggle="tooltip" title="Colecciones"></label>
+		      </div>
+			  </div>
+			</form >
+		</div>
+		</div>
+		
+		<div class="title-seach row">
+		<div class="col-md-6">
+		<a href="#" class="avanzado" onclick="hide (event);"> Busqueda avanzada </a>
+		</div>
+		<div class="col-md-6" style="align: right">
+		<p> {{NresultFullQuery}}</p>
+		</div>
+        </div>
+     
+		<div class="oculto" > 
+		 <div class="input-group">
 <div style="float: left;"><input type="checkbox" class="optional" name="repositoriesListAll"   onclick="  if (document.getElementsByName('repositoriesListAll')[0].checked) {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].checked=true; inputs[i].disabled=true;} } else {var inputs = document.getElementsByName('repositoriesList'); for (var i = 0; i < inputs.length; i++){inputs[i].disabled=false;} }" ><i>All</i>&nbsp;&nbsp;</div>
 									{{#each endpointsAvailable}}
-									<!-- disabled="{{base}}"-->
+									
 									<div style="float: left;"><input type="checkbox" data-base="{{base}}" checked="{{base}}"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" >{{name}}&nbsp;&nbsp;</div>
 
 									{{/each}}
 
 								</div>
+		</div> 
+	  
+		</div>
+		</div>
 
-
-							</div>
-
-							</div>
-</div>
-						</div>
-
-						<div class="panel panel-info">
-							<div class="panel-heading" style="text-align: left">Suggested Queries</div>
-							<div class="panel-body">
-							<ul class="list-group">
-							  {{#each suggestedQueries}}
-							  	<li class="list-group-item"><a data-title ="{{title}}" href='#' onclick="actAHyper(event);" >{{description}}</a></li>
-							  {{/each}}
-							</ul>
-							</div>
-						</div>
-
-
-
+		<div class="second-area">
+	    <div class="row">
+			<div class="sugestion-area col-md-3"> 
+				<div class="sugestion-panel">
+					<span id="Title-suggestion" > <b>Sugerencias </b>  </span>
+					<div class="result-suggestion">
+					<UL type = "disk" id="Sugerencias">
+        			<!--<li> Buscar por autores con nombre "DIEGO" </li>
+        			<li> Buscar colecciones que contenga obras cuyo autor se llame "Diego" </li>
+        			<li> Buscar obras cuyo autor se llame "DIEGO" </li>
+        			<li>Perú </li> -->
+        			{{#each suggestedQueries}}
+        			  	<li class="suggestion-group"><a data-title ="{{title}}" href='#' onclick="actAHyper(event);" >{{description}}</a></li>
+					{{/each}}
+        			</UL>
 					</div>
-
-
-
-
-
-				
-
-
-
+				</div>
 			</div>
-
-
-
-			<div class="col-xs-9 col-sm-8 col-sm-offset-3 main">
-				<div class="main col-xs-9 col-sm-8 col-sm-offset-3 " style="overflow: scroll;">
-					<div>
-						<h4>{{NresultFullQuery}}</h4>
+			<div class="result-area col-md-9 ">
+	    	<div class="result-group">
+	    	 <!-- 	<div class="text-center  nresult col-md-9">
+						<p>{{NresultFullQuery}}</p>
 					</div>
+                	   
+             
+			<div class="result col-md-9">
+			<div class="fuente-area col-md-14 text-center"> 
+			<span class="glyphicon glyphicon-file"></span>
+			UCUENCA
+			</div>
+		<div class="result-text col-md-14">	
+		<span class="Title-result"> <u> Framework para soportar la Metodologia de Linked Open Data   </u> </span>
+		<p > <b> Abstract : </b> La generación de datos enlazados (LOD) actualmente se ha vuelto una actividad cada vez más común. Sin
+embargo, al tratarse de una tendencia relativamente nueva, el desarrollo de herramientas tanto teóricas,
+metodológicas como tecnológicas ha sido reducido. La mayoría de soluciones que busca brindar soporte para
+el proceso en la publicación de LOD. </p>
+		
+		<div class="opciones-area opt-result">
+		<div class="opt-fuente  col-md-4">
+		Ver Fuente
+		</div>
+		<div class="opt-elda col-md-4">
+		Ver RDF
+		</div>
+		<div class="opt-grafo col-md-4">
+		Ver Grafo
+	
+		</div>
+		</div>
+		</div>
+		</div>
+		 		   -->
 
-					<div class="list-group" >
-						{{#each resultFullQuery}}
-						<div class="list-group-item" data-spy="scroll">
-							<div align="left">
-								<table cellpadding="5px">
-									<tr>
-										<td style="padding: 5px;" >
-											<div>
-											
-<a href="#" class="btn btn-info btn-lg" data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg2(event);">
 
-													<span class="{{Icon}}"></span> {{Origin}}
-												</a>
-											</div> 
-										</td>
-										<td style="padding: 15px;">
-											<div>
-												<a href="{{URI}}" target="_blank" ><b>{{Label}}</b></a>
-												<br/>
-												{{#each MatchsProperty}}
+		 		{{#each resultFullQuery}}
+
+
+		<div class="result col-md-9">
+			<div class="fuente-area col-md-14 text-center"> 
+			<span class="{{Icon}}"></span>
+			{{Origin}}
+			</div>
+		
+		<div class="result-text col-md-14">	
+		<span class="Title-result"> <u> {{Label}}   </u> </span>
+		<br/>
+		{{#each MatchsProperty}}
 												<b>{{p}}</b> : 
 												<div class ="contvarpro" >
 													{{#if l}}
-													<span class= 'hglttxt'>{{s}}</span><a href='#' class='view_more_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').show();$(this).parent().find('.view_less_button').show();  ">...more</a><span class='rest_of_text hglttxt' style='display: none;'>{{c}}</span>
+													<span class= 'hglttxt'>{{{s}}}</span><a href='#' class='view_more_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').show();$(this).parent().find('.view_less_button').show();  ">...more</a><span class='rest_of_text hglttxt' style='display: none;'>{{{c}}}</span>
 													<a href='#' class='view_less_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').hide();$(this).parent().find('.view_more_button').show();" style='display: none;' >...less</a>
 													{{else}}
-													{{v}}
+													{{{v}}}
 													{{/if}}
 
 												</div>
 												{{/each}}
-												
-											</div>
-										</td>
-										<td style="padding: 5px;" >
-											<div>
-												<a href="#" class="btn btn-success btn-lg linkg" data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg(event);">
-													<img width="25" height="25" src="/images/tree.png"/>
-												</a>
-											</div>
-										</td>
-									</tr>
-								</table>
-							</div>
-						</div>
-						{{/each}}
-					</div>
-				</div>
-			</div>
+		
+		<div class="opciones-area opt-result">
+		<div class="col-md-4">
+		<a   class="opt-fuente" href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg2(event);" >Ver Fuente</a>
+		</div>
+		<div class="col-md-4 opt-eldadiv">
+		<a  class="opt-elda" href="{{URI}}" target="_blank" >Ver RDF</a>
+		</div>
+		<div class="col-md-4"  >
+		<a  class="opt-grafo"  href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg(event);" >Ver Grafo</a>
+		</div>
+		</div>
+		</div>
+		</div>
 
-			<div class="footer" >
+         	    {{/each}}
+		</div>
+		 <div >
+				<div class="row">
+					<div class="col-md-9 text-center pagination">
+					
+					{{#with paginationSettings}}
+					<div id="page-selection" ></div>
+					{{/with}}
+			</div>
+		</div>
+	</div>
+		</div>
+	    </div>
+
+	   
+
+	   </div>
+	   
+ </div> 
+
+ <!--	<div class="footer" >
 				<div class="row">
 					<div class="col-xs-12">
 					
@@ -149,6 +180,6 @@
 					{{/with}}
 			</div>
 		</div>
-	</div>
-
+	</div>  -->
+ 	 
 </template>

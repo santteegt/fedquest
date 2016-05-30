@@ -14,7 +14,7 @@ if (Meteor.isServer) {
             result[key] = obj2[key];
         return result;
     }
-
+ 
 
     String.prototype.hashCode = function () {
         var a = 0, b, c, d;
@@ -1107,6 +1107,13 @@ if (Meteor.isServer) {
                 var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
                 console.log("Resp" + endpoint.opt);
                 return endpoint.opt;
+
+            },
+            findbase: function () {
+               // console.log(endpointURI + defaultGraph);
+                var endpoint = Endpoints.findOne({base : true});
+               // console.log("Resp" + endpoint.opt);
+                return endpoint;
 
             }
         });

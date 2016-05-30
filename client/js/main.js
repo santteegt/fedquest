@@ -9,10 +9,6 @@ if (Meteor.isClient) {
     //Suscribe to Collections
     Tracker.autorun(function () {
         Meteor.subscribe("statsc");
-
-
-
-
         Meteor.subscribe("allproperties");
         Meteor.subscribe("endpoints");
         Meteor.subscribe("queries");
@@ -185,17 +181,17 @@ if (Meteor.isClient) {
                             switch (a.index) {
                                 case 0:
                                     {
-                                        window.open("/stats#p_4","_self");
+                                        window.open("/stats#p_4", "_self");
                                     }
                                     break;
                                 case 1:
                                     {
-                                        window.open("/stats#p_2","_self");
+                                        window.open("/stats#p_2", "_self");
                                     }
                                     break;
                                 case 2:
                                     {
-                                        window.open("/stats#p_3","_self");
+                                        window.open("/stats#p_3", "_self");
                                     }
                                     break;
 
@@ -580,30 +576,32 @@ if (Meteor.isClient) {
 
                 } else
                 {
-                    if (strUser == 'language' || strUser == 'type'){
-                        
-                        var max =3;
-                        if (strUser == 'type'){
-                           max=5; 
+                    if (strUser == 'language' || strUser == 'type') {
+
+                        var max = 3;
+                        if (strUser == 'type') {
+                            max = 5;
                         }
-                        
-                        
-                        str.sort(function(a,b) {return (a.value > b.value) ? -1 : ((b.value > a.value) ? 1 : 0);} ); 
-                        
-                        
-                        var str2=[];
-                        for (var i=0;i<str.length;i++){
-                            if (i<=max){
+
+
+                        str.sort(function (a, b) {
+                            return (a.value > b.value) ? -1 : ((b.value > a.value) ? 1 : 0);
+                        });
+
+
+                        var str2 = [];
+                        for (var i = 0; i < str.length; i++) {
+                            if (i <= max) {
                                 str2.push(str[i]);
-                            }else{
+                            } else {
                                 str2[max].label = 'Others';
                                 str2[max].value += str[i].value;
                             }
-                            
+
                         }
                         str = str2;
                     }
-                    
+
                     var pie2 = new d3pie("DocumentsChart", {
                         "header": {
                             "title": {
@@ -1279,6 +1277,20 @@ if (Meteor.isClient) {
         }
     });
 //*
+
+
+    Template.graph.helpers({
+        Numresultgraph: function () {
+            return Session.get("numresultgraph");
+        }
+    });
+
+    Session.set('auxAct', 0);
+
+
+
+
+
     Template.search.helpers({
         endpointsAvailable: function () {
             return Endpoints.find({status: 'A'}).fetch();
@@ -1331,7 +1343,8 @@ if (Meteor.isClient) {
             var n = Session.get("NResult");
             n = n ? n : 0;
             if (n == 0) {
-                n = 1;
+                //n = 1;
+                $(".pagination").css("display", "none");
             }
             var pagcon = {};
             pagcon.total = Math.ceil(n / 10);
@@ -1430,6 +1443,10 @@ if (Meteor.isClient) {
         var toShow = [];
         if (response) {
             //var NumMode = Session.get('Qmode');
+
+
+            console.log(response.content);
+
             var NumMode = Qmode;
             //alert(NumMode + "");
             if (NumMode == 2) {
@@ -1441,10 +1458,11 @@ if (Meteor.isClient) {
             }
             var resp = response ? JSON.parse(response.content).results.bindings : [];
             var MaxLength = 160;
-
+            var titledoc = "";
             //graphURI
             for (var k = 0; k < resp.length; k++) {
-
+                console.log("Respuesta" + k);
+                console.log(resp[k]);
                 var OneResult = {};
                 if (NumMode == 1) {
                     OneResult = toShow.filter(function (val) {
@@ -1460,13 +1478,16 @@ if (Meteor.isClient) {
 
                 if (OneResult.length == 0) {
                     //New
+
                     var OneResult = {};
                     OneResult.Weight = 1;
                     if (NumMode == 1) {
                         OneResult.Type = resp[k].EntityClass.value;
+                        //    titledoc =  resp[k].EntityLabel.value;
                     }
                     if (NumMode == 2) {
                         OneResult.Type = resp[k][TypeVar].value;
+                        //  titledoc =  resp[k][TitleVar].value;
                     }
 
                     var Org = {};
@@ -1516,24 +1537,97 @@ if (Meteor.isClient) {
                     toShow.push(OneResult);
                 } else {
                     //Add
+                    // console.log ("Resultado");
+                    // console.log (OneResult);
+                    console.log("Resultado 1");
+                    console.log(OneResult);
+
                     OneResult = OneResult[0];
                     OneResult.Weight += 1;
                     if (NumMode == 1) {
                         var ln = OneResult.MatchsProperty.filter(function (e) {
                             return e.p == resp[k].PropertyLabel.value && e.v == resp[k].PropertyValue.value;
                         }).length;
+
+                        if (OneResult.Label != resp[k].EntityLabel.value)
+                        {
+                            ln = 1;
+                            // console.log (resp[k].EntityLabel.value);
+                            //console.log (resp[k].PropertyLabel.value +" + "+ resp[k].PropertyValue.value );
+                        }
                         if (ln == 0) {
-                            OneResult.MatchsProperty.push({p: resp[k].PropertyLabel.value, v: resp[k].PropertyValue.value, l: resp[k].PropertyValue.value.length > MaxLength, s: resp[k].PropertyValue.value.substr(0, MaxLength), c: resp[k].PropertyValue.value.substr(MaxLength)});
+                            console.log("Agrupar");
+
+                            var actual = OneResult.MatchsProperty.find(function (val) {
+                                return val["p"] == resp[k].PropertyLabel.value;
+                            });
+                            console.log(actual);
+                            console.log(resp[k].PropertyLabel.value);
+                            // console.log (OneResult.MatchsProperty[resp[k].PropertyLabel.value]);
+                            if (actual == undefined) {
+                                console.log("No Agrupa");
+                                //console.log (resp[k].PropertyLabel.value);
+                                OneResult.MatchsProperty.push({p: resp[k].PropertyLabel.value, v: resp[k].PropertyValue.value, l: resp[k].PropertyValue.value.length > MaxLength, s: resp[k].PropertyValue.value.substr(0, MaxLength), c: resp[k].PropertyValue.value.substr(MaxLength)});
+
+                            } else {
+
+                                console.log("Agrupa");
+                                var separador = '';
+                                if (resp[k].PropertyLabel.value == "Subject") {
+
+                                    separador = " , ";
+                                } else {
+                                    separador = "<br>";
+                                }
+                                var concatval = actual ["v"] + separador + resp[k].PropertyValue.value;
+                                console.log(concatval);
+                                var valor = OneResult.MatchsProperty.indexOf(actual);
+                                console.log(valor);
+                                OneResult.MatchsProperty[valor] = {p: resp[k].PropertyLabel.value, v: concatval, l: concatval.length > MaxLength, s: concatval.substr(0, MaxLength), c: concatval.substr(MaxLength)};
+
+                            }
                         }
                     }
                     if (NumMode == 2) {
 
                         var ln = OneResult.MatchsProperty.filter(function (e) {
-                            return e.p == SearchVar_ && e.v == resp[k][SearchVar].value;
+                            return e.p == SearchVar_ && e.v == resp[k][SearchVar].value && titledoc == resp[k][TitleVar].value;
                         }).length;
                         if (ln == 0)
                         {
-                            OneResult.MatchsProperty.push({p: SearchVar_, v: resp[k][SearchVar].value, l: resp[k][SearchVar].value.length > MaxLength, s: resp[k][SearchVar].value.substr(0, MaxLength), c: resp[k][SearchVar].value.substr(MaxLength)});
+
+                            console.log("Agrupar");
+
+                            var actual = OneResult.MatchsProperty.find(function (val) {
+                                return val["p"] == SearchVar_;
+                            });
+                            console.log(actual);
+                            console.log(SearchVar_);
+                            // console.log (OneResult.MatchsProperty[resp[k].PropertyLabel.value]);
+                            if (actual == undefined) {
+                                console.log("No Agrupa");
+                                //console.log (resp[k].PropertyLabel.value);
+                                OneResult.MatchsProperty.push({p: SearchVar_, v: resp[k][SearchVar].value, l: resp[k][SearchVar].value.length > MaxLength, s: resp[k][SearchVar].value.substr(0, MaxLength), c: resp[k][SearchVar].value.substr(MaxLength)});
+
+                            } else {
+
+                                console.log("Agrupa");
+                                var separador = '';
+                                if (SearchVar_ == "Subject") {
+
+                                    separador = " , ";
+                                } else {
+                                    separador = "<br>";
+                                }
+                                var concatval = actual ["v"] + separador + resp[k][SearchVar].value;
+                                console.log(concatval);
+                                var valor = OneResult.MatchsProperty.indexOf(actual);
+                                console.log(valor);
+                                OneResult.MatchsProperty[valor] = {p: SearchVar_, v: concatval, l: concatval.length > MaxLength, s: concatval.substr(0, MaxLength), c: concatval.substr(MaxLength)};
+
+
+                            }
+                            // OneResult.MatchsProperty.push({p: SearchVar_, v: resp[k][SearchVar].value, l: resp[k][SearchVar].value.length > MaxLength, s: resp[k][SearchVar].value.substr(0, MaxLength), c: resp[k][SearchVar].value.substr(MaxLength)});
                         }
                     }
                     OneResult.MatchsProperty.sort(compare2);

@@ -1,4 +1,3 @@
-//import { CodeMirror } from 'codemirror';
 /*
  View logic for the dashboard component
  */
@@ -140,6 +139,7 @@ this.DashboardView = Backbone.View.extend({
                 joint.dia.ElementView.prototype.render.apply(this, arguments);
                 //this.paper.$el.prepend(this.$box);
                 this.updateBox();
+                console.log('render Dash');
                 return this;
             },
             updateBox: function () {

@@ -12,10 +12,12 @@ this.Router = Backbone.Router.extend({
     '': 'index',
     'dashboard': 'dashboard',
     'samples': 'samples',
-    'search': 'search',
+    //'search': 'search',
     'stats': 'stats',
     'dashboard/:id': 'dashboardParam',
-    'graph/:uri/:endpoint/:graphuri':'graph'
+    'graph/:uri/:endpoint/:graphuri':'graph',
+    'search/:term/:type/:endpoint':'search',
+    'search':'search'
   },
 
   index: function () {
@@ -47,10 +49,10 @@ this.Router = Backbone.Router.extend({
     console.log('entra a samples');
     new SamplesView().render();        
   },
-  search: function() {
+  search: function(s1, s2 ,s3 ) {
     $('div.navbar .collapse li a#options').css('pointer-events','none');
     console.log('entra a search');
-    new SearchView().render();        
+    new SearchView(decodeURIComponent(s1),decodeURIComponent(s2), decodeURIComponent(s3)).render();        
   },
   stats: function() {
     $('div.navbar .collapse li a#options').css('pointer-events','none');
