@@ -1,20 +1,20 @@
 /*
  View logic for the query samples list component
  */
- var jsonld = require("jsonld");
- 
+var jsonld = require("jsonld");
+
 this.SearchView = Backbone.View.extend({
     tagName: "div",
     id: "search",
     /////////////////////////
     // View Initialization //
     /////////////////////////
-    initialize: function ( s1 ,s2 ,s3) {
+    initialize: function (s1, s2, s3) {
         var me;
         me = this;
-    Session.set('s1', s1);
-    Session.set('s2', s2);
-    Session.set('s3', s3);
+        Session.set('s1', s1);
+        Session.set('s2', s2);
+        Session.set('s3', s3);
 
     },
     //////////////////////////
@@ -23,70 +23,71 @@ this.SearchView = Backbone.View.extend({
     render: function () {
         Blaze.render(Template.search, $('#sparql-content')[0]);
         this.setEvents($('#sparql-content'));
-        
-       
+
+
         console.log('render search');
         //Session.get('v1');
-        
+
 
         return this;
     },
-   // setEvents: function (divNode) {
-     setEvents: function (divNode) {
+    // setEvents: function (divNode) {
+    setEvents: function (divNode) {
         var FromList = [];
 
-       var term = Session.get('s1');
-       var type = Session.get('s2');
-       var  base = Session.get ('s3') 
- //      alert (term);
-    //$('input:radio[data-name='+base+']').prop("checked", "checked");
-  //alert($('input:radio[data-name='+base+']'));
-  //console.log($('input:radio[data-name='+base+']'));
-  //  $('input:radio[data-name='+base+']').prop("checked", "checked");
-   // var FromList = get_checkList_values("repositoriesList");
-              //console.log($('input[data-name='+base+']'));
-    //console.log (FromList);
-       var prev;
-       $("#documentos2").click(function () {    
-        var val = 'documentos';
-       prev = selec2 (prev , val) ;
+        var term = Session.get('s1');
+        var type = Session.get('s2');
+        var base = Session.get('s3')
+        //      alert (term);
+        //$('input:radio[data-name='+base+']').prop("checked", "checked");
+        //alert($('input:radio[data-name='+base+']'));
+        //console.log($('input:radio[data-name='+base+']'));
+        //  $('input:radio[data-name='+base+']').prop("checked", "checked");
+        // var FromList = get_checkList_values("repositoriesList");
+        //console.log($('input[data-name='+base+']'));
+        //console.log (FromList);
+        var prev;
+        $("#documentos2").click(function () {
+            var val = 'documentos';
+            prev = selec2(prev, val);
 
-    });
-    
-    $("#autores2").click(function () {   
+        });
 
-       var val = 'autores';
-       prev = selec2 (prev , val) ;console.log($('input[data-name='+base+']'));
-    });
-    
-    $("#colecciones2").click(function () {   
-          var val = 'colecciones';
-          prev = selec2 (prev , val) ;
-    });
+        $("#autores2").click(function () {
+
+            var val = 'autores';
+            prev = selec2(prev, val);
+            console.log($('input[data-name=' + base + ']'));
+        });
+
+        $("#colecciones2").click(function () {
+            var val = 'colecciones';
+            prev = selec2(prev, val);
+        });
 
         $('input.runSearch').on('click', function (ev) {
-            
+
             //Session.set("auxAct", Session.get("auxAct") + 1);
             //App.resultCollection2.remove({});
             //var EntitySearch = get_radio_value("resourceType");
             var EntitySearch = get_radio_value("opciones");
-            
+
             var FromListaux = get_checkList_values("repositoriesList");
-            if (FromListaux.length >0){
-               
-               FromList= FromListaux;
+            if (FromListaux.length > 0) {
+
+                FromList = FromListaux;
 
             }
-            
+
             var TextSearch = $("input.textToSearch").val();
-          // alert(FromList);
-           // console.log($('input[data-name='+base+']'));
-            console.log ("Radio");
-            console.log (EntitySearch);
-            console.log ("check");
-            console.log (FromList);
-            console.log ("text");
-            console.log (TextSearch);
+            // alert(FromList);
+            // console.log($('input[data-name='+base+']'));
+            console.log("Radio");
+            console.log(EntitySearch);
+            console.log("check");
+            console.log(FromList);
+            console.log("text");
+            console.log(TextSearch);
 
 
 
@@ -117,7 +118,7 @@ this.SearchView = Backbone.View.extend({
 
             var ResqLis = [];
             switch (EntitySearch) {
-             
+
                 case 'documentos':
                     {
                         ResqLis.push(DocSearchRequest);
@@ -135,7 +136,7 @@ this.SearchView = Backbone.View.extend({
                         AppFilt = true;
                     }
                     break;
-                    default:    
+                default:
                     {
                         ResqLis.push(DocSearchRequest);
                         ResqLis.push(AuthSearchRequest);
@@ -184,29 +185,29 @@ this.SearchView = Backbone.View.extend({
             }
             Query += '} order by DESC(?Score)\n  ' + ResultLimit;
             var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
-            console.log (jsonRequest);
+            console.log(jsonRequest);
             Session.set('jsonRequest', jsonRequest);
-            App.SearchRun(0,1);
+            App.SearchRun(0, 1);
             //Session.set('Qmode', 1);
         });
-    
-  if (term != "null" ){
-      $(".textToSearch").val(term);
-         
-          switch (type) {
-                        case 'autores':
-                              $("#autores2").attr('checked', 'checked');
-                              break;
-                        case 'documentos':
-                               $("#documentos2").attr('checked', 'checked');
-                               break;
-                        case 'colecciones':
-                               $("#colecciones2").attr('checked', 'checked');
-                               break;
-                    }
 
-        darclick  (FromList);     
-       }
+        if (term != "null") {
+            $(".textToSearch").val(term);
+
+            switch (type) {
+                case 'autores':
+                    $("#autores2").attr('checked', 'checked');
+                    break;
+                case 'documentos':
+                    $("#documentos2").attr('checked', 'checked');
+                    break;
+                case 'colecciones':
+                    $("#colecciones2").attr('checked', 'checked');
+                    break;
+            }
+
+            darclick(FromList);
+        }
 
     }
 
@@ -214,16 +215,17 @@ this.SearchView = Backbone.View.extend({
 
 });
 
-function darclick (FromList) { 
-    console.log ("Dar click");
-   
-    var result2 = Meteor.call('findbase', function(error, result) {
-      // FromList.push({attributes:{"data-base": true , "data-endpoint": result.endpoint , "data-graphuri" : result.graphURI }}) ;
-      // alert("Hola");
-      FromList.push({attributes:{"data-base": {"value":true} , "data-endpoint": {"value":result.endpoint} , "data-graphuri" : {"value":result.graphURI} ,  "data-name" : {"value": result.name} }});
-      $('input.runSearch').click();
-    } );   
-};
+function darclick(FromList) {
+    console.log("Dar click");
+
+    var result2 = Meteor.call('findbase', function (error, result) {
+        // FromList.push({attributes:{"data-base": true , "data-endpoint": result.endpoint , "data-graphuri" : result.graphURI }}) ;
+        // alert("Hola");
+        FromList.push({attributes: {"data-base": {"value": true}, "data-endpoint": {"value": result.endpoint}, "data-graphuri": {"value": result.graphURI}, "data-name": {"value": result.name}}});
+        $('input.runSearch').click();
+    });
+}
+;
 
 function get_checkList_values(CheckName) {
     var inputs = document.getElementsByName(CheckName);
@@ -478,37 +480,36 @@ actAHyper = function (e) {
     if (respp == 2) {
         Query += 'order by desc(?Score)\n';
     }
-   
+
     var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''), "ApplyFilter": AppFilt};
     Session.set('jsonRequest', jsonRequest);
     //Session.set('Qmode', 2);
     App.SearchRun(0, 2);
 };
 
- function selec2 ( prev , val) {
-    if  ( prev == $('input:radio[id='+val+'2]').val () ) {
-     $(".recurso").text ("Buscando por: Todo");
-     prev = "";
-     $('input:radio[id='+val+'2]').attr('checked',false);
-     }
-     else {
-        $(".recurso").text ("Buscando por: "+val.charAt(0).toUpperCase() + val.slice(1));
-        prev = $('input:radio[id='+val+'2]').val ();
-       
-        }
-         Session.set('auxAct',Session.get('auxAct')+1);
+function selec2(prev, val) {
+    if (prev == $('input:radio[id=' + val + '2]').val()) {
+        $(".recurso").text("Buscando por: Todo");
+        prev = "";
+        $('input:radio[id=' + val + '2]').attr('checked', false);
+    } else {
+        $(".recurso").text("Buscando por: " + val.charAt(0).toUpperCase() + val.slice(1));
+        prev = $('input:radio[id=' + val + '2]').val();
+
+    }
+    Session.set('auxAct', Session.get('auxAct') + 1);
     return prev;
- }
+}
 
 
-    hide = function (e) {
- 
-  if ( $(".oculto").css("display") == "inline")
-  {
-  $(".oculto").css ( "display" ,"none");
-  } else {
-  $(".oculto").css ( "display" ,"inline");
-  //  alert ("Hola");
-  }
-  }
+hide = function (e) {
+
+    if ($(".oculto").css("display") == "inline")
+    {
+        $(".oculto").css("display", "none");
+    } else {
+        $(".oculto").css("display", "inline");
+        //  alert ("Hola");
+    }
+}
 

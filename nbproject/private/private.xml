@@ -3,7 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/cedia/Desktop/PruebasGitHubNuevaVersion/sparql-fedquest/server/server.js</file>
+            <file>file:/home/cedia/Desktop/PruebasGitHubNuevaVersion/sparql-fedquest/client/templates/views/search.html</file>
+            <file>file:/home/cedia/Desktop/PruebasGitHubNuevaVersion/sparql-fedquest/client/templates/views/header.html</file>
+            <file>file:/home/cedia/Desktop/PruebasGitHubNuevaVersion/sparql-fedquest/client/templates/views/dashboard.html</file>
         </group>
     </open-files>
 </project-private>
