@@ -1310,25 +1310,25 @@ if (Meteor.isClient) {
         },
         suggestedQueries: function () {
 
-            var EntitySearch = get_radio_value("resourceType");
+            var EntitySearch = get_radio_value("opciones");
             var w = [];
-
+         //    alert ("Adiios");
             switch (EntitySearch) {
-                case 't':
-                    w = Queries.find().fetch();
-                    break;
-                case 'a':
+                case 'autores':
                     w = loadQueryFirstNode('http://xmlns.com/foaf/0.1/Person');
                     break;
-                case 'd':
+                case 'documentos':
                     w = loadQueryFirstNode('http://purl.org/ontology/bibo/Document');
                     break;
-                case 'c':
+                case 'colecciones':
                     w = loadQueryFirstNode('http://purl.org/ontology/bibo/Collection');
+                    break;
+                default :
+                  //  w = Queries.find().fetch();
                     break;
             }
             var aux = Session.get("auxAct");
-            var TextSearch = $("#textToSearch").val();
+            var TextSearch = $(".textToSearch").val();
             for (var q = 0; q < w.length; q++) {
                 if (TextSearch.trim() != "") {
                     w[q].description = w[q].description.replace("?", TextSearch);
@@ -1549,14 +1549,14 @@ if (Meteor.isClient) {
                             return e.p == resp[k].PropertyLabel.value && e.v == resp[k].PropertyValue.value;
                         }).length;
 
-                        if (OneResult.Label != resp[k].EntityLabel.value)
+                        if (OneResult.Label!= resp[k].EntityLabel.value)
                         {
                             ln = 1;
                             // console.log (resp[k].EntityLabel.value);
                             //console.log (resp[k].PropertyLabel.value +" + "+ resp[k].PropertyValue.value );
                         }
                         if (ln == 0) {
-                            console.log("Agrupar");
+                            console.log("Agrupar Normal");
 
                             var actual = OneResult.MatchsProperty.find(function (val) {
                                 return val["p"] == resp[k].PropertyLabel.value;
@@ -1589,14 +1589,26 @@ if (Meteor.isClient) {
                         }
                     }
                     if (NumMode == 2) {
+                        console.log ("One sug");
+                             console.log (OneResult);
 
                         var ln = OneResult.MatchsProperty.filter(function (e) {
-                            return e.p == SearchVar_ && e.v == resp[k][SearchVar].value && titledoc == resp[k][TitleVar].value;
+                            return e.p == SearchVar_ && e.v == resp[k][SearchVar].value ;
+                           // return e.p == SearchVar_ && e.v == resp[k][SearchVar].value && titledoc == resp[k][TitleVar].value;
                         }).length;
+                             
+                         if ( (OneResult.Type != resp[k][TypeVar].value) || (OneResult.Label!= resp[k][TitleVar].value ))
+                        {
+                            ln = 1;
+                            //console.log ("Titulo igual");
+                            //console.log (resp[k][TitleVar].value);
+                            //console.log (resp[k].PropertyLabel.value +" + "+ resp[k].PropertyValue.value );
+                        }
+
                         if (ln == 0)
                         {
 
-                            console.log("Agrupar");
+                            console.log("Agrupar Sug");
 
                             var actual = OneResult.MatchsProperty.find(function (val) {
                                 return val["p"] == SearchVar_;
@@ -1684,6 +1696,7 @@ if (Meteor.isClient) {
         "Name":"Name",
         "Title":"Title",
         "Subject": "Subject",
+        "subject": "Subject",
         "Language": "Language",
         "Description":"Description",
         "Type":"Type",
@@ -1786,6 +1799,7 @@ if (Meteor.isClient) {
         "Last Name":"Apellidos",
         "Title":"Título",
         "Subject": "Tema",
+        "subject": "Tema",
         "Language": "Idioma",
         "Description":"Descripción",
         "Type":"Tipo",
