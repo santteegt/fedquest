@@ -1520,14 +1520,14 @@ var d3tip = require('d3-tip')(d3);
                       id = node.publication["@id"];
                       entity = node.publication.data ;
                         model = {"dcterms:title": {label: "Title", containerType: "div"},
-                        "bibo:uri": {label: "URL", containerType: "div"},
                         "bibo:abstract": {label: "Abstract", containerType: "div"},
                         "dcterms:language": {label: "Language", containerType: "div"},
                         "dcterms:subject": {label: "Subject", containerType: "div"},
                         "@type": {label: "Type", containerType: "div"},
+                        "bibo:uri": {label: "URL", containerType: "div"},
                         "bibo:handle": {label: "More Info", containerType: "a"},
                         "dcterms:publisher": {label: "Publisher", containerType: "div"},
-                        "bibo:numPages": {label: "Pages", containerType: "div"},
+                        "bibo:numPages": {label: "Pages", containerType: "div"}
                          };
                   //      "bibo:Quote": {label: "Keywords", containerType: "div"}
                          
@@ -1573,7 +1573,7 @@ var d3tip = require('d3-tip')(d3);
                                 var values =  entity[key]; //entity[key].length ?
                                        // _.pluck(entity[key], '@id') : [entity[key]["@id"]];
                                 var div = $('<div>');
-                                var label = $('<span class="label label-primary">').text(model[key].label);
+                                var label = $('<span class="label label-primary">').text(lang.lang(model[key].label));
                                 div.append(label);
                                 div.append("</br>");
                                 
@@ -1586,7 +1586,7 @@ var d3tip = require('d3-tip')(d3);
                              //   });
                             } else { //append into a div container
                                 var div = $('<div>');
-                                var label = $('<span class="label label-primary">').text(model[key].label)
+                                var label = $('<span class="label label-primary">').text(lang.lang(model[key].label));
                                 div.append(label);
                                 div.append("</br>");
                                 pubInfo.append(div);

@@ -9,7 +9,8 @@ this.Router = Backbone.Router.extend({
 
   // key: route - value: router method to call
   routes: { 
-    '': 'index',
+  //  '': 'indexv',
+  //  ':lan': 'index',
     'dashboard': 'dashboard',
     'samples': 'samples',
     //'search': 'search',
@@ -17,12 +18,22 @@ this.Router = Backbone.Router.extend({
     'dashboard/:id': 'dashboardParam',
     'graph/:uri/:endpoint/:graphuri':'graph',
     'search/:term/:type/:endpoint':'search',
-    'search':'search'
-  },
+    'search':'search',
+ //   'search/:lan':'search2',
+    '': 'index',
+   // ':lan': 'index',
+  }, indexv : function (){
+    window.open('/en','_self');
+  } ,
 
-  index: function () {
-    $('div.navbar .collapse li a#options').hide();
-    new IndexView().render();
+  index: function (lan) {
+   // alert (lan);
+ //  lang.init("SESSION",lan);
+$('div.navbar .collapse li a#options').hide();
+//new IndexView(lan).render();
+new IndexView().render();
+  
+   // new IndexView(lan).render();
     console.log('Inicio Router index');
     $("div.main-ops").onepage_scroll({
       sectionContainer: "section",
@@ -48,7 +59,12 @@ this.Router = Backbone.Router.extend({
     $('div.navbar .collapse li a#options').css('pointer-events','none');
     console.log('entra a samples');
     new SamplesView().render();        
-  },
+  }/*, search2 : function (lan){
+     lang.init("USER_PROFILE", lan );
+    $('div.navbar .collapse li a#options').css('pointer-events','none');
+    console.log('entra a search');
+    new SearchView().render(); }*/
+  ,
   search: function(s1, s2 ,s3 ) {
     $('div.navbar .collapse li a#options').css('pointer-events','none');
     console.log('entra a search');

@@ -9,7 +9,7 @@
 
 
           <!-- Main Title start -->
-          <h1 class="lu-title">Buscador de Recursos Bibliográficos.</h1>
+          <h1 class="lu-title">{{lang "welcome-title"}}</h1>
           <!-- Main title end -->
 
        
@@ -17,7 +17,7 @@
           <div class="lu-newletter">
            <!--  <h2>Subscribe our newsletter and get update when we back.</h2> -->
          <div class="col-md-7 col-md-offset-2 ">
-        <p class="recurso"> Buscando por: Todo  </p>
+        <p class="recurso"> {{lang "resources-search"}} </p>
          </div>
         <div class="row">
                 <div class="col-md-7 col-md-offset-2">
@@ -25,10 +25,10 @@
                    <!-- <form  id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" >-->
                       <div id="mc_embed_signup_scroll">
                         <div class="mc-field-group input-group input-group-lg">
-              <input type="text" value="" name="terms" class="required form-control" id="mce-text" placeholder="Terminos de búsqueda" required
+              <input type="text" value="" name="terms" class="required form-control" id="mce-text" placeholder={{lang "placeholder-search"}} required
               onkeyup="if(event.keyCode == 13){$('#mc-embedded-subscribe').click();}" >
                           <span class="input-group-btn">
-                            <input type="button" value="Buscar" name="subscribe" id="mc-embedded-subscribe" class="btn btn-default" onclick="search_query(event)">                   
+                            <input type="button" value={{lang "search"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default" onclick="search_query(event)">                   
              </span>
               
                         </div>
@@ -47,12 +47,12 @@
        <div class=col-md-6 col-md-offset-2> 
         <div class="cc-selector"> 
         <input id="documentos" type="radio" name="opciones" value="documentos" />
-        <label class="opciones-cc documentos" for="documentos" data-toggle="tooltip" title="Documentos"></label>
+        <label class="opciones-cc documentos" for="documentos" data-toggle="tooltip" title={{lang "tip-document"}}></label>
               <input id="autores" type="radio" name="opciones" value="autores" />
-        <label class="opciones-cc autores" for="autores" data-toggle="tooltip" title="Autores"></label>
+        <label class="opciones-cc autores" for="autores" data-toggle="tooltip" title={{lang "tip-author"}}></label>
 
         <input id="colecciones" type="radio" name="opciones" value="colecciones" />
-        <label class="opciones-cc colecciones" for="colecciones" data-toggle="tooltip" title="Colecciones"></label>
+        <label class="opciones-cc colecciones" for="colecciones" data-toggle="tooltip" title={{lang "tip-collection"}}></label>
           </div>
         </div>
 
@@ -72,7 +72,7 @@
         
         </div>
 	      <div class="page_container">
-          <h1>Making the Semantic Web more Webby</h1>
+          <h1>Making the Semantic Web more {{lang "bonjour"}}</h1>
           <h2><em>"Our idea there is to make the Semantic Web scale by relying on more simple servers, and more complex and intelligent clients."</em> - Ruben Verborgh</h2>
           
          

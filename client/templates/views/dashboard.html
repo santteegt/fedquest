@@ -4,24 +4,24 @@
         <div class="col-sm-2 sidebar sidebar-style" >
         <!-- <div class="col-md-2 sidebar sidebar-style"> -->
           <div class="panel panel-primary">
-            <div class="panel-heading" style="text-align: left">Graph Query</div>
+            <div class="panel-heading" style="text-align: left">{{lang "graph-query"}}</div>
             <div class="panel-body">
               <form role="form">
                 <div class="form-group" style="text-align: left">
-                  <label for="graph-title">Title</label>
-                  <input required type="text" class="form-control" id="graph-title" placeholder="(*)Query Title" >
+                  <label for="graph-title">{{lang "Title"}}</label>
+                  <input required type="text" class="form-control" id="graph-title" placeholder={{lang "query-title"}} >
                 </div>
                 <div class="form-group" style="text-align: left">
-                  <label for="graph-description">Description</label>
-                  <textarea required class="form-control" rows="3" id="graph-description" placeholder="Query Description"></textarea>
+                  <label for="graph-description">{{lang "Description"}}</label>
+                  <textarea required class="form-control" rows="3" id="graph-description" placeholder={{lang "query-des"}}></textarea>
                 </div>
-                <button type="button" class="btn btn-default btn-xs runQuery" data-placement="down" title="Run Query">
+                <button type="button" class="btn btn-default btn-xs runQuery" data-placement="down" title={{lang "run-query"}}>
                   <span class="glyphicon glyphicon-play"></span>
                 </button>
-                <button type="button" class="btn btn-default btn-xs" title="Save Query" id="saveQuery">
+                <button type="button" class="btn btn-default btn-xs" title={{lang "save-query"}} id="saveQuery">
                   <span class="glyphicon glyphicon-floppy-disk"></span>
                 </button>
-				<button type="button" class="btn btn-default btn-xs" title="Delete Query" id="deleteQuery">
+				<button type="button" class="btn btn-default btn-xs" title={{lang "delete-query"}} id="deleteQuery">
                   <span class="glyphicon glyphicon glyphicon-trash"></span>
                 </button>
 
@@ -95,20 +95,20 @@
           <div class="modal-content">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-              <h4 class="modal-title" id="myModalLabel">Available Endpoints</h4>
+              <h4 class="modal-title" id="myModalLabel">{{lang "disp-endpoints"}}</h4>
             </div>
             
               <div class="modal-body">
                 <table class="table table-striped ">
                   <thead>
                       <tr>
-                          <th>Name</th>
-                          <th>Description</th>
-                          <th>Graph</th>
-                          <th>Color</th>
-                          <th>Status</th>
-                          <th>Base</th>
-                          <th>Optional</th>
+                          <th>{{ lang "First Name" }}</th>
+                          <th>{{ lang "Description"}}</th>
+                          <th>{{ lang "Graph" }}</th>
+                          <th>{{ lang "Color"}}</th>
+                          <th>{{ lang "Status"}}</th>
+                          <th>{{ lang "Base" }}</th>
+                          <th>{{ lang "Optional" }}</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -130,7 +130,7 @@
               </div>
             
             <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">{{ lang "close"}}</button>
             </div>
           </div>
         </div>
@@ -141,8 +141,8 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-              <h4 class="modal-title" id="myModalLabel">New Endpoint</h4>
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
+              <h4 class="modal-title" id="myModalLabel"> {{ lang "New"}} Endpoint</h4>
             </div>
             
               <div class="modal-body">
@@ -150,7 +150,7 @@
                   <div class="form-group">
                   	<div class="input-group input-group-sm">
       					     <span class="input-group-addon">@</span>
-      					     <input type="text" required pattern="[a-zA-Z0-9]+" class="form-control" placeholder="Identifier (Required)" id="new-endpoint-identifier" oninvalid="setCustomValidity('Alphanumeric and no spaces required')" onchange="try{setCustomValidity('')}catch(e){}" />
+      					     <input type="text" required pattern="[a-zA-Z0-9]+" class="form-control" placeholder={{lang "identifier"}} id="new-endpoint-identifier" oninvalid="setCustomValidity('Alphanumeric and no spaces required')" onchange="try{setCustomValidity('')}catch(e){}" />
       				      </div>
                   </div>
                   <div class="form-group">
@@ -162,18 +162,18 @@
                   <div class="form-group">
                     <div class="input-group input-group-sm">
                       <span class="input-group-addon">http://</span>
-                      <input type="url" required class="form-control" placeholder="Graph URL (Required)" id="new-endpoint-graph" />
+                      <input type="url" required class="form-control" placeholder={{lang "graph-url"}} id="new-endpoint-graph" />
                     </div>
                   </div>
                   <div class="form-group">
                     <div class="input-group input-group-sm">
                       <span class="input-group-addon">Color:</span>
-                      <input type="color" id="new-endpoint-color" value="#ff0000" class="form-control" placeholder="Graph Color" />
+                      <input type="color" id="new-endpoint-color" value="#ff0000" class="form-control" placeholder={{lang "graph-color"}} />
                     </div>
                   </div>
                   <div class="form-group">
-                    <label class="sr-only" for="new-endpoint-desc">Description</label>
-                    <textarea class="form-control" rows="3" id="new-endpoint-desc" placeholder="Description"></textarea>
+                    <label class="sr-only" for="new-endpoint-desc">{{ lang "Description"}}</label>
+                    <textarea class="form-control" rows="3" id="new-endpoint-desc" placeholder={{ lang "Description"}}></textarea>
                   </div>
                   <div class="radio">
                     <label>
@@ -182,7 +182,7 @@
                     </label> 
                     <label>
                     <input type="checkbox" name="new-endpoint-optional" id="new-endpoint-optional" />
-                      Optional 
+                      {{ lang "Optional"}} 
                     </label> 
                     <!-- <label>
                     <input type="radio"  name="new-endpoint-base"  id="new-endpoint-base" >
@@ -192,10 +192,10 @@
                     </label>-->
                     <label>
                       <input type="checkbox" id="loadschema">
-                      Load Schema (It should take a while depending on Graph size)
+                      {{ lang "load-schema"}}
                     </label>
                   </div>
-                  <button type="submit" class="btn btn-sm btn-primary">Register</button>
+                  <button type="submit" class="btn btn-sm btn-primary">{{ lang "Register"}}</button>
                 </form>
               </div>
               <div id="loadingEndpoint" style="float: right; height: 19px; padding-right: 15px;">
@@ -214,8 +214,8 @@
         <div class="modal-dialog modal-sm">
           <div class="modal-content">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-              <h4 class="modal-title" id="myModalLabel">Node Value</h4>
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
+              <h4 class="modal-title" id="myModalLabel">{{ lang "val-node"}}</h4>
             </div>
             
               <div class="modal-body">
@@ -226,9 +226,9 @@
                     </div>
                     <div class="checkbox">
 			<!-- JO -->
-                      <label><input id="checkRegex" type="radio" name="matchTy" value="" checked >Simple match</label>
-                      <label><input id="checkRegex2" type="radio" name="matchTy" value="">Regex</label>
-                      <label><input id="checkRegex3" type="radio" name="matchTy" value="">Full-text</label>
+                      <label><input id="checkRegex" type="radio" name="matchTy" value="" checked >{{lang "simple-match"}}</label>
+                      <label><input id="checkRegex2" type="radio" name="matchTy" value="">{{ lang "Regex"}}</label>
+                      <label><input id="checkRegex3" type="radio" name="matchTy" value="">{{ lang "Full-text"}}</label>
 			<!-- JO -->
                     </div>
                   </div>
@@ -238,7 +238,7 @@
             <div class="modal-footer">
               <!-- <div role="alert" class="alert alert-warning">Something happend</div> -->
              <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Close</button> -->
-            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Save</button>
+            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">{{ lang "save"}}</button>
             </div>
           </div>
         </div>
@@ -249,8 +249,8 @@
         <div class="modal-dialog modal-sm">
           <div class="modal-content">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-              <h4 class="modal-title" id="myModalLabel">Raw Node Value</h4>
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "Close"}}</span></button>
+              <h4 class="modal-title" id="myModalLabel">{{ lang "raw-node-value"}}</h4>
             </div>
             
             <div class="modal-body">
@@ -278,12 +278,12 @@
                 </div>
                 <div class="checkbox">
 		<!--JO-->
-                  <label><input id="rawnode-checkRegex" type="radio" name="MatchT" value="" checked >Simple match</label>
-		  <label><input id="rawnode-checkRegex2" type="radio" name="MatchT" value="">Regex</label>
-		  <label><input id="rawnode-checkRegex3" type="radio" name="MatchT" value="">Full-fext</label>
+                  <label><input id="rawnode-checkRegex" type="radio" name="MatchT" value="" checked >{{lang "simple-match"}}</label>
+		  <label><input id="rawnode-checkRegex2" type="radio" name="MatchT" value="">{{ lang "Regex"}}</label>
+		  <label><input id="rawnode-checkRegex3" type="radio" name="MatchT" value="">{{ lang "Full-text"}}</label>
 		<!--JO-->
                 </div>
-                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                <button type="submit" class="btn btn-sm btn-primary">{{ lang "save"}}</button>
               </form>
                 <!-- <button class="btn btn-primary" data-dismiss="modal">Register</button> -->
             </div>
@@ -307,7 +307,7 @@
               <h3>SPARQL Editor</h3>
               <div style="position:absolute; top:33px">
                 <button type="button" class="btn btn-danger btn-sm" id="consoleError" data-toggle="modal" data-target="#modalLog" style="display:none">
-                  <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>Console Error
+                  <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span> {{ lang "console-error"}}
                 </button>
               </div>
             </div>
@@ -324,11 +324,11 @@
                   <!-- <button type="button" class="btn btn-primary btn-sm runQuery" data-toggle="modal" data-target="#resultQuery" data-placement="down" id="sparqlbtnEditor">Ejecutar</button> -->
                   <div class="checkbox" style="float:left">
                     <label>
-                      <input type="checkbox" id="avoidErrors"> Avoid SPARQL Validation on Client
+                      <input type="checkbox" id="avoidErrors"> {{lang "avoid-sparql"}}
                     </label>
                   </div>
-                  <button type="button" class="btn btn-primary btn-sm runQuery" id="sparqlbtnEditor">Ejecutar</button>
-                  <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary btn-sm runQuery" id="sparqlbtnEditor">{{lang "run-query"}}</button>
+                  <button type="button" class="btn btn-default btn-sm" data-dismiss="modal">{{lang "close"}}</button>
               </div>
           </div>  
         </div>
@@ -339,7 +339,7 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
               <h4 class="modal-title" id="myModalLabel">Console Log</h4>
             </div>
             <div class="modal-body">
@@ -360,8 +360,8 @@
         <div class="modal-dialog  modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-              <h4 class="modal-title" id="myModalLabel">Result Query</h4>
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{lang "close"}}</span></button>
+              <h4 class="modal-title" id="myModalLabel">{{lang "result-query"}}</h4>
             </div>
             
               <div class="modal-body" style="overflow-x:scroll">
@@ -369,7 +369,7 @@
               </div>
             
             <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">{{ lang "close"}}</button>
             </div>
           </div>
         </div>
@@ -381,14 +381,14 @@
           <div class="modal-content">
             <div class="modal-header">
               <!--<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button> -->
-              <h4 class="modal-title" id="myModalLabel">Delete</h4>
+              <h4 class="modal-title" id="myModalLabel">{{ lang "delete"}}</h4>
             </div>
             <div class="modal-body">
-              <div class="alert alert-warning">Are you sure you want to delete the Endpoint?</div>
+              <div class="alert alert-warning">{{ lang "msg-delete"}}</div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
-              <button id= "okDelete" type="button" class="btn btn-primary" onclick="confirmEndpointDelete(event)" data-dismiss="modal">Yes</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">{{ lang "No"}}</button>
+              <button id= "okDelete" type="button" class="btn btn-primary" onclick="confirmEndpointDelete(event)" data-dismiss="modal">{{lang "afirmative"}}</button>
             </div>
           </div>
         </div>

@@ -22,7 +22,7 @@
                 <div id="RepositoriesChart" class="statDiv" style="float: left; height: 300px; width: 25%; background-color: white;"></div>
                 <div id="SubjectsChart" class="statDiv" style="float: left; height: 300px; width: 25%;">
                     <div style="float: left; height: 10px; width: 100%;"></div>
-                    <p style="font-size: 22px; font-family: verdana;margin-top=32;" fill="#333333" text-anchor="middle"   class="p3_title" id="p3_title">Top topics</p>
+                    <p style="font-size: 22px; font-family: verdana;margin-top=32;" fill="#333333" text-anchor="middle"   class="p3_title" id="p3_title">{{lang "top-topics"}}</p>
 
 
                     <canvas width="300px" height="250px" id="myCanvas">
@@ -43,16 +43,16 @@
                 <div id="DocumentsChart" class="statDiv" style="align:'center'; float: left; height: 300px; width: 30%; background-color: white;"></div>				
                 <div id="DocumentsChart_Ctrl" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
 
-                    <label >Group by:</label>
+                    <label >{{ lang "group-by"}}</label>
                     <select id ="groupby_doc" onchange="Session.set('auxAct', Session.get('auxAct') + 1)">
-                        <option value="type">Type</option>
-                        <option value="language">Language</option>
-                        <option value="year">Year</option>
+                        <option value="type">{{ lang "Type"}}</option>
+                        <option value="language">{{ lang "Language"}}</option>
+                        <option value="year">{{ lang "Year"}}</option>
                     </select>
 
-                    <label >Repository:</label>
+                    <label >{{ lang "Repository"}}:</label>
                     <select id ="repositories_doc" onchange="Session.set('auxAct', Session.get('auxAct') + 1)">
-                        <option value="All">All</option>
+                        <option value="All">{{ lang "All"}}</option>
                         {{#each endpointsAvailable}}
                         <option value="{{name}}">{{name}}</option>
                         {{/each}}
@@ -65,9 +65,9 @@
             <div id="ContainerCC_PER" style="display: flex; align-items: center;  justify-content: center; height: 100%; width: 100%;">
 
                 <div id="PersonsChart_Ctrl" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
-                    <label >Repository:</label>
+                    <label >{{ lang "Repository"}}:</label>
                     <select id ="repositories_per" onchange="Session.set('auxAct', Session.get('auxAct') + 1)">
-                        <option value="All">All</option>
+                        <option value="All">{{ lang "All" }}</option>
                         {{#each endpointsAvailable}}
                         <option value="{{name}}">{{name}}</option>
                         {{/each}}
@@ -77,7 +77,7 @@
                 <div id="PersonsChart" class="statDiv PersonsChartx" style="float: left; height: 300px; width: 30%; background-color: white;"></div>
                 <div id="TPersonsChart" class="statDiv" style="float: left; height: 300px; width: 25%;  background-color: white;">
                     <div style="float: left; height: 10px; width: 100%;"></div>
-                    <p style="font-size: 22px; font-family: verdana;margin-top=32;" fill="#333333" text-anchor="middle"   class="p3_title" id="p3_title">Top Persons</p>
+                    <p style="font-size: 22px; font-family: verdana;margin-top=32;" fill="#333333" text-anchor="middle"   class="p3_title" id="p3_title">{{ lang "top-persons"}}</p>
                     <canvas width="300px" height="250px" id="myCanvas2">
                         <p>Anything in here will be replaced on browsers that support the canvas element</p>
                     </canvas>
@@ -92,9 +92,9 @@
             <div id="ContainerCC_COL" style="display: flex; align-items: center;  justify-content: center; height: 100%; width: 100%;">
 
                 <div id="CollectionsChart_Ctrl" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
-                    <label >Repository:</label>
+                    <label >{{ lang "Repository"}}:</label>
                     <select id ="repositories_col" onchange="Session.set('auxAct', Session.get('auxAct') + 1)">
-                        <option value="All">All</option>
+                        <option value="All">{{lang "All"}}</option>
                         {{#each endpointsAvailable}}
                         <option value="{{name}}">{{name}}</option>
                         {{/each}}
@@ -117,11 +117,11 @@
 <template name='menuStats'>
 
     <div id="menuStats">
-        <h3>Stats:</h3>
-        <a href="#p_1">Global</a>
-        <a href="#p_2">Documents</a>
-        <a href="#p_3">Persons</a>
-        <a href="#p_4">Collections</a>
+        <h3>{{ lang "Stats"}}:</h3>
+        <a href="#p_1">{{ lang "Global"}}</a>
+        <a href="#p_2">{{ lang "Documents"}}</a>
+        <a href="#p_3">{{ lang "Persons"}}</a>
+        <a href="#p_4">{{ lang "Collections"}}</a>
 
     </div>
 

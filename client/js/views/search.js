@@ -26,6 +26,8 @@ this.SearchView = Backbone.View.extend({
 
 
         console.log('render search');
+      //  console.log (Session.get ('welcome'));
+        console.log ("fin");
         //Session.get('v1');
 
 

@@ -3,7 +3,7 @@
 	    <div class="panel" style="border-color: {{colorid}}">
 	        <div class="panel-heading" style="background-color:#428bca; color:white;">
 	          <h4 class="panel-title">
-	            <a data-toggle="collapse" href="#rawnodes">Raw Node </a>
+	            <a data-toggle="collapse" href="#rawnodes"> {{lang "raw-node"}}</a>
 	          </h4>
 	        </div>
 	        <div id="rawnodes" class="panel-collapse collapse in" style="padding-right: 0.5em">
@@ -11,13 +11,13 @@
 		          <div class="row" style="margin: 0 0 0 0">
 		          		<div class="col-xs-6 col-sm-4 col-md-3">
 			              <div id= "raw" class="entity raw" style="border-color: #428bca" onclick="colornode(this);" onselectstart="return false;" draggable="true" ondragstart="App.fedQueryUtils.dragNode(event)" data-toggle="popover" data-placement="bottom" tabindex="0" data-trigger="focus" title="Descripción" data-content="Entity . Descrición: datos obtenidos a partir del rdfs:label" data-endpoint="" data-graphURI="" data-colorid="#428bca" data-entity="" data-label="s" data-raw="true">
-			                <p>Entity</p>
+			                <p>{{lang "entity"}}</p>
 			              </div>
 			            </div>
 
 			            <div class="col-xs-6 col-sm-4 col-md-3">
 			              <div  id= "raw" class="property raw" style="border-color: #428bca" onclick="openpopover(event)" onselectstart="return false;" draggable="true" ondragstart="App.fedQueryUtils.dragNode(event)" data-toggle="popover" data-placement="bottom" tabindex="0" data-trigger="focus" title="Descripción" data-content="Property 1. Descrición: datos obtenidos a partir del rdfs:label" data-endpoint="" data-graphURI="" data-colorid="#428bca" data-property="" data-prefix="" data-label="o" data-raw="true">
-			                <p>property</p>
+			                <p>{{lang "property"}}</p>
 			              </div>
 			            </div>
 		          </div>
@@ -36,7 +36,7 @@
 
 		          <div class="row" style="margin: 0 0 0 0" >
                     
-		          	<h5>Entities:</h5>
+		          	<h5>{{lang "entities"}}:</h5>
 		          	{{#each endpointEntities}}
 		           	<div class="{{dim}}"  >
 			              <div class="entity"  style="border-color: {{../colorid}}; margin: 0.5em auto;"   onclick="colornode(this);"  onselectstart="return false;" onmouseover="focusbutton(this);"  onmouseleave = "Nofocusbutton(this);" draggable="true" ondragstart="App.fedQueryUtils.dragNode(event)" data-toggle="popover" data-placement="bottom" tabindex="0" data-trigger="focus" title="Descripción" data-content="Entity 1. Descrición: datos obtenidos a partir del rdfs:label" data-endpoint="{{../endpoint}}" data-graphURI="{{../graphURI}}" data-colorid="{{../colorid}}" data-entity="{{fullName}}" data-label="{{name}}"  propertyrel = "{{ent}}">
@@ -48,7 +48,7 @@
 		          </div>
 
 		          <div class="row" style="margin: 0 0 0 0">
-		          	<h5>Properties:</h5>
+		          	<h5>{{  lang "properties"}}:</h5>
 		          	{{#each endpointProperties}}
 			          	<div class="{{dim}}"  >
 			              <div class="property"  style="border-color: {{../colorid}};  margin: 0.5em auto;" onclick="colornode(this);" onselectstart="return false;" onmouseover="focusbutton(this);" onmouseleave = "Nofocusbutton(this);" draggable="true" ondragstart="App.fedQueryUtils.dragNode(event)" data-toggle="popover" data-placement="bottom" tabindex="0" data-trigger="focus" title="Descripción" data-content="Property 1. Descrición: datos obtenidos a partir del rdfs:label" data-endpoint="{{endpoint}}" data-graphURI="{{graphURI}}" data-colorid="{{../colorid}}" data-property="{{fullName}}" data-prefix="{{prefix}}" data-label="{{name}}"  >

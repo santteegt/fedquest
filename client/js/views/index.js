@@ -6,9 +6,10 @@ this.IndexView = Backbone.View.extend({
   template: null,
   tagName: "div",
   id: "index",
-  initialize: function() {
+  initialize: function(lan) {
     var me;
     me = this;
+    //lang.init("SESSION",lan);
   },
   render: function() {
     Blaze.render(Template.welcomePage, $('div.main-ops')[0]);
@@ -37,7 +38,19 @@ this.IndexView = Backbone.View.extend({
  
   });
 
+ $("#lang-esp").click(function () {   
+  //language ();
+     lang.init("SESSION","es");
+  //   change_language("es");
+  
+  });
 
+$("#lang-en").click(function () {   
+  
+    lang.init("SESSION","en");
+  // change_language("en");
+  
+  });
   
 
 
@@ -63,12 +76,12 @@ this.IndexView = Backbone.View.extend({
 
  function selec ( prev , val) {
     if  ( prev == $('input:radio[id='+val+']').val () ) {
-   $(".recurso").text ("Buscando por: Todo");
+   $(".recurso").text (lang.lang ("resources-search"));
    prev = "";
    $('input:radio[id='+val+']').attr('checked',false);
    }
    else {
-    $(".recurso").text ("Buscando por: "+val.charAt(0).toUpperCase() + val.slice(1));
+    $(".recurso").text (lang.lang( "search-option") + lang.lang (val.charAt(0).toUpperCase()+val.slice(1)));
     prev = $('input:radio[id='+val+']').val ();
     }
     return prev;

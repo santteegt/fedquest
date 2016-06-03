@@ -97,7 +97,7 @@ if (Meteor.isClient) {
                     D += Number(data[i].D.value);
                     P += Number(data[i].P.value);
                 }
-                str = [{value: C, label: "Collections"}, {value: D, label: "Documents"}, {value: P, label: "Persons"}];
+                str = [{value: C, label: lang.lang("Collections")}, {value: D, label: lang.lang("Documents")}, {value: P, label: lang.lang("Persons")}];
             } else {
                 str = [{value: 100, label: "Something"}];
             }
@@ -110,12 +110,12 @@ if (Meteor.isClient) {
                 var pie = new d3pie("ResourcesChart", {
                     "header": {
                         "title": {
-                            "text": "Resources",
+                            "text": lang.lang("title-g1"),
                             "fontSize": 22,
                             "font": "verdana"
                         },
                         "subtitle": {
-                            "text": "Total amount of resources within the registered repositories",
+                            "text": lang.lang("sub-title-g1"),
                             "color": "#999999",
                             "fontSize": 10,
                             "font": "verdana"
@@ -233,12 +233,12 @@ if (Meteor.isClient) {
                 var pie = new d3pie("RepositoriesChart", {
                     "header": {
                         "title": {
-                            "text": "Repositories",
+                            "text": lang.lang("title-g2"),
                             "fontSize": 22,
                             "font": "verdana"
                         },
                         "subtitle": {
-                            "text": "Registered repositories",
+                            "text": lang.lang ("sub-title-g2") ,
                             "color": "#999999",
                             "fontSize": 10,
                             "font": "verdana"
@@ -553,7 +553,7 @@ if (Meteor.isClient) {
                                 div.transition()
                                         .duration(200)
                                         .style("opacity", .9);
-                                div.html(d.label + "<br/>" + d.value)
+                                div.html(d.label + "<br/>" + "("+d.value+")")
                                         .style("left", (d3.event.pageX) + "px")
                                         .style("top", (d3.event.pageY - 28) + "px");
                             })
@@ -605,7 +605,7 @@ if (Meteor.isClient) {
                     var pie2 = new d3pie("DocumentsChart", {
                         "header": {
                             "title": {
-                                "text": "Documents",
+                                "text": lang.lang("Documents"),
                                 "fontSize": 22,
                                 "font": "verdana"
                             },
@@ -782,7 +782,7 @@ if (Meteor.isClient) {
                 var pie2 = new d3pie("PersonsChart", {
                     "header": {
                         "title": {
-                            "text": "Persons",
+                            "text": lang.lang("Persons"),
                             "fontSize": 22,
                             "font": "verdana"
                         },
@@ -927,12 +927,12 @@ if (Meteor.isClient) {
                 var pie = new d3pie("CollectionsChart", {
                     "header": {
                         "title": {
-                            "text": "Collections",
+                            "text": lang.lang("Collections"),
                             "fontSize": 22,
                             "font": "verdana"
                         },
                         "subtitle": {
-                            "text": "Top collections",
+                            "text": lang.lang("top-collections"),
                             "color": "#999999",
                             "fontSize": 10,
                             "font": "verdana"
@@ -1021,13 +1021,13 @@ if (Meteor.isClient) {
                         [
                             {
                                 key: 'title',
-                                label: 'Title',
+                                label: lang.lang("Title"),
                                 fn: function (title, object) {
                                     var html = '<a href="/dashboard/' + object._id + '">' + title + '</a>';
                                     return new Spacebars.SafeString(html);
                                 }
                             },
-                            {key: 'description', label: 'Description'}
+                            {key: 'description', label: lang.lang("Description")}
                         ]
             };
         }
@@ -1303,9 +1303,9 @@ if (Meteor.isClient) {
         NresultFullQuery: function () {
             var n = Session.get("NResult");
             if (n && n > 0) {
-                return n + ' results';
+                return n + lang.lang ('results');
             } else {
-                return 'No results';
+                return  lang.lang ('No-results');
             }
         },
         suggestedQueries: function () {
@@ -1660,6 +1660,219 @@ if (Meteor.isClient) {
         return str.indexOf(prefix) === 0;
     }
 
+      function language (){
+
+            var idiomEng = {
+        "welcome-title":"Bibliographic Resources  Searcher",
+        "resources-search":"Search by: All",
+        "placeholder-search":"Terms of search",
+        "search":"GO",
+        "Autores" : "Authors" ,
+        "Documentos" : "Documents",
+        "Colecciones": "Collections" ,  
+        "tip-author":"Authors",
+        "tip-document":"Documents",
+        "tip-collection":"Collections",
+        "search-option": "Search by : " ,
+        "advance-search": "Advance Search",
+        "sug":"Suggestions",
+        "text-more":"more",
+        "text-less":"less",
+        "view-source":"View Source",
+        "view-rdf":"View RDF",
+        "view-graph":"View Graph",
+        "Name":"Name",
+        "Title":"Title",
+        "Subject": "Subject",
+        "Language": "Language",
+        "Description":"Description",
+        "Type":"Type",
+        "Abstract":"Abstract",
+        "results": " results",
+        "No-results": "No results",
+        "panel-info":"Panel Info",
+        "warning":"Warning",
+        "warning-data": "The selected item contains a lot of resources, so it could slow down the exploration. Do you want to display all data ?.",
+        "afirmative" : "Yes ",
+        "sample": "Sample ",
+        "More Info":"More Info",
+        "dashboard":"DASHBOARD",
+        "clean-dash" :"Clear dashboard",
+        "load-json": "Load JSON",
+        "zoom-out": "Zoom out",
+        "zoom-in" : "Zoom in",
+        "query-editor":"Query Editor",
+        "graph-query":"Graph Query",
+        "query-title" : "(*)Query Title",
+        "query-des":"Query Description",
+        "run-query": "Run Query",
+        "save-query":"Save Query",
+        "delete-query" : "Delete Query",
+        "raw-node": "Raw Node",
+        "raw-node-value":"Raw Node Value",
+        "entity":"Entity",
+        "property":"Property",
+        "entities": "Entities",
+        "properties": "Properties",
+         "disp-endpoints":"Available Endpoints",
+         "Graph": "Graph" ,
+         "Status": "Status" ,
+         "Optional": "Optional",
+         "close": "close",
+         "New":"New" ,
+         "graph-url":"Graph URL (Required)",
+         "identifier":"Identifier (Required)",
+         "graph-color": "Graph Color",
+         "load-schema":"Load Schema (It should take a while depending on Graph size)",
+         "Register":"Register" ,
+         "val-node" : "Node Value",
+         "simple-match" : "Simple match",
+         "save":"Save",
+         "console-error":"Console Error",
+         "avoid-sparql":"Avoid SPARQL Validation on Client",
+         "result-query":"Result Query" ,
+         "delete" : "Delete",
+         "msg-delete": "Are you sure you want to delete the Endpoint?",
+          "template-title":"Template Queries",
+          "Home": "Home" ,
+          "Search": "Search",
+          "Statistics":"Statistics" ,
+          "query-temp":"Query Templates",
+          "query-builder":"Query Builder" ,
+          "ava-endpoints":"Available Endpoints",
+          "new-endpoint":"New SPARQL endpoint",
+          "Help":"Help",
+          "Options": "Options",
+          "Collections":"Collections" ,
+          "Documents": "Documents" ,
+          "Persons": "Persons" ,
+          "title-g1" : "Resources" ,
+          "sub-title-g1":"Total amount of resources within the registered repositories",
+          "title-g2": "Repositories",
+           "sub-title-g2":"Registered repositories" ,
+            "top-topics": "Top Topics" ,
+            "group-by": "Group by:" ,
+            "Year": "Year",
+            "All":"All" ,
+            "top-collections":"Top Collections",
+           "Repository":"Repository",
+           "top-persons": "Top Persons",
+           "Global":"Global" ,
+           "Stats": "Stats",
+        "it":"italien"
+    };
+
+    var idiomEsp = {
+        "welcome-title":"Buscador de Recursos Bibliográficos.",
+        "resources-search":"Buscando por: Todo",
+        "placeholder-search":"Terminos de búsqueda",
+        "search":"Buscar",
+        "Autores" : "Autores" ,
+        "Documentos" : "Documentos",
+        "Colecciones": "Colecciones" , 
+        "tip-author":"Autores",
+        "tip-document":"Documentos",
+        "tip-collection":"Colecciones",
+        "search-option": "Buscando por : ",
+        "advance-search": "Búsqueda Avanzada",
+        "sug":"Sugerencias",
+        "text-more":"Más",
+        "text-less":"Menos",
+        "view-source":"Ver Fuente",
+        "view-rdf":"Ver RDF",
+        "view-graph":"Ver Grafo",
+        "Name":"Nombre Completo",
+        "First Name":"Nombres",
+        "Last Name":"Apellidos",
+        "Title":"Título",
+        "Subject": "Tema",
+        "Language": "Idioma",
+        "Description":"Descripción",
+        "Type":"Tipo",
+        "Abstract":"Resumen",
+         "results": " resultados",
+        "No-results": "Sin resultados",
+        "panel-info":"Información",
+        "warning":"Atención",
+        "warning-data": "El elemento seleccionado contiene una gran cantidad de recursos, por lo que podria relantizar la exploración. ¿Desea desplegar todos los datos?." ,
+        "afirmative" : "Sí " ,
+        "sample": "Muestra ",
+        "More Info":"Más Información",
+        "dashboard":"TABLERO",
+        "clean-dash" :"Limpiar Área",
+        "load-json": "Cargar JSON",
+        "zoom-out": "Alejar",
+        "zoom-in" : "Acercar",
+        "query-editor":"Editor",
+        "graph-query":"Consulta",
+        "query-title" : "(*)Título de la consulta",
+        "query-des":"Descripción de la consulta",
+        "run-query": "Ejecutar Consulta",
+        "save-query":"Guardar Consulta",
+        "delete-query" : "Borrar Consulta",
+        "raw-node": "Nodo Genérico",
+        "raw-node-value":"Valor del Nodo Genérico",
+        "entity":"Entidad",
+        "property":"Propiedad",
+         "entities": "Entidades",
+         "properties": "Propiedades",
+         "disp-endpoints":"Endpoints Disponibles",
+        "Graph": "Grafo" ,
+        "Status": "Estado" ,
+        "Optional": "Opcional",
+        "close": "Cerrar",
+         "New" : "Nuevo",
+        "graph-url":"URL del Esquema (Requerido)",
+        "identifier":"Identificador (Requirido)",
+        "graph-color" :"Color del Grafo",
+        "load-schema":"Cargar Esquema (Podría tardar un tiempo, dependiendo del tamaño del esquema)",
+        "Register":"Registrar" ,
+        "val-node" :  "Valor del Nodo",
+        "simple-match" : "Coincidencia Simple",
+        "save":"Guardar",
+        "console-error":"Consola de Error",
+        "avoid-sparql":"Evitar validación del cliente SPARQL",
+        "result-query":"Resultado de la consulta" ,
+        "delete" : "Borrar",
+         "msg-delete": "¿Esta seguro que quiere borrar el endpoint?",
+         "template-title":"Plantilla de Consultas",
+          "Home": "Inicio" ,
+          "Search": "Buscador",
+          "Statistics":"Estadísticas" ,
+          "query-temp":"Plantilla de Consultas",
+          "query-builder":"Constructor de Consultas" ,
+          "ava-endpoints":"Endpoints Disponibles",
+          "new-endpoint":"Nuevo SPARQL endpoint",
+          "Help":"Ayuda",
+          "Options": "Opciones",
+         "Collections":"Colecciones" ,
+          "Documents": "Documentos" ,
+          "Persons": "Personas" ,
+          "title-g1" : "Recursos" ,
+          "sub-title-g1":"Monto total de recursos dentro de los repositorios registrados",
+          "title-g2": "Repositorios",
+            "sub-title-g2":"Repositorios Registrados" ,
+            "top-topics": "Temas Destacados" ,
+            "group-by": "Agrupado por:" ,
+            "Year": "Año" ,
+            "All":"Todos" ,
+            "top-collections":"Colecciones Destacadas",
+            "Repository":"Repositorios",
+            "top-persons": "Personas Destacadas",
+            "Global":"Globales" ,
+            "Stats": "Estadísticas",
+         "it":"italian"
+    };
+
+  
+    lang.init("USER_PROFILE","es");
+  //  lang.init("SESSION","en");
+    lang.setDictionnary("es",idiomEsp);
+    lang.setDictionnary("en",idiomEng);
+    //lang.setDictionnary("it",dicoIt);
+
+         };
+
 //*
     Template.hello.events({
         'click button': function () {
@@ -1667,8 +1880,60 @@ if (Meteor.isClient) {
         }
     });
 
+/*
+     Template.header.events({
+
+        setEvents: function (divNode) {
+            $("#lang-esp").click(function () {   
+        alert ("Hola");
+       lang.init("SESSION","es");
+  //   change_language("es");
+       
+           });
+
+       $("#lang-en").click(function () {   
+  
+    // lang.init("SESSION","en");
+     // change_language("en");
+  
+        });
+
+
+        }
+         
+        
+        
+    });
+
+
+     Template.header.helpers({
+         setEvents: function (divNode) {
+            $("#lang-esp").click(function () {   
+        alert ("Hola");
+       lang.init("SESSION","es");
+  //   change_language("es");
+       
+           });
+
+       $("#lang-en").click(function () {   
+  
+    // lang.init("SESSION","en");
+     // change_language("en");
+  
+        });
+
+
+        }
+        
+    });
+*/
+
+        
+
+
     Meteor.startup(function () {
         console.log('inicializacion');
+        language ();
         return $(function () {
             App.router = new Router();
             console.log('inicializacion OK');
@@ -1678,6 +1943,10 @@ if (Meteor.isClient) {
         });
     });
 
+
+   
+       
+  
 //--------------------------------------
     function Query(endpoint, graph, query) {
         var aux = undefined;
@@ -1705,6 +1974,8 @@ if (Meteor.isClient) {
 
         }
     }
+
+      
 
 
 

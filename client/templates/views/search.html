@@ -5,15 +5,15 @@
 	    <div class="first-search"> 
 	    <div class="firstsection">
 		<div class="title-seach text-center">
-		<p class="recurso"> Buscando por: Todo  </p>
+		<p class="recurso"> {{lang "resources-search"}} </p>
 	    </div>
 		<div class="search-area text-center">
 	    <div class="row">
 		<div class="col-md-10">
 		<div class="Search-bar input-group"> 
-		  <input type="text" value="" name="terms" onkeyup="Session.set('auxAct',Session.get('auxAct')+1); if(event.keyCode == 13){$('.runSearch').click();}" class="required form-control textToSearch" id="mce-text" placeholder="Terminos de búsqueda" required>
+		  <input type="text" value="" name="terms" onkeyup="Session.set('auxAct',Session.get('auxAct')+1); if(event.keyCode == 13){$('.runSearch').click();}" class="required form-control textToSearch" id="mce-text" placeholder={{lang "placeholder-search"}} required>
                           <span class="input-group-btn">
-                            <input type="button" value="Buscar" name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearch" >                   
+                            <input type="button" value={{lang "search"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearch" >                   
 						 </span>
 		</div>
 		</div>
@@ -21,12 +21,12 @@
 		   <div class=col-md-2> 
 			  <div class="cc-selector"> 
 			  <input id="documentos2" type="radio" name="opciones" value="documentos" />
-			  <label class="opciones-cc documentos" for="documentos2" data-toggle="tooltip" title="Documentos"></label>
+			  <label class="opciones-cc documentos" for="documentos2" data-toggle="tooltip" title={{lang "tip-document"}}></label>
               <input id="autores2" type="radio" name="opciones" value="autores" />
-			  <label class="opciones-cc autores" for="autores2" data-toggle="tooltip" title="Autores"></label>
+			  <label class="opciones-cc autores" for="autores2" data-toggle="tooltip" title={{lang "tip-author"}}></label>
 
 			  <input id="colecciones2" type="radio" name="opciones" value="colecciones" />
-			  <label class="opciones-cc colecciones" for="colecciones2" data-toggle="tooltip" title="Colecciones"></label>
+			  <label class="opciones-cc colecciones" for="colecciones2" data-toggle="tooltip" title={{lang "tip-collection"}}></label>
 		      </div>
 			  </div>
 			</form >
@@ -35,7 +35,7 @@
 		
 		<div class="title-seach row">
 		<div class="col-md-6">
-		<a href="#" class="avanzado" onclick="hide (event);"> Busqueda avanzada </a>
+		<a href="#" class="avanzado" onclick="hide (event);"> {{lang "advance-search"}} </a>
 		</div>
 		<div class="col-md-6" style="align: right">
 		<p> {{NresultFullQuery}}</p>
@@ -61,7 +61,7 @@
 	    <div class="row">
 			<div class="sugestion-area col-md-3"> 
 				<div class="sugestion-panel">
-					<span id="Title-suggestion" > <b>Sugerencias </b>  </span>
+					<span id="Title-suggestion" > <b>{{lang "sug"}} </b>  </span>
 					<div class="result-suggestion">
 					<UL type = "disk" id="Sugerencias">
         			<!--<li> Buscar por autores con nombre "DIEGO" </li>
@@ -124,11 +124,11 @@ el proceso en la publicación de LOD. </p>
 		<span class="Title-result"> <u> {{Label}}   </u> </span>
 		<br/>
 		{{#each MatchsProperty}}
-												<b>{{p}}</b> : 
+												<b> {{ lang p }}</b> : 
 												<div class ="contvarpro" >
 													{{#if l}}
-													<span class= 'hglttxt'>{{{s}}}</span><a href='#' class='view_more_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').show();$(this).parent().find('.view_less_button').show();  ">...more</a><span class='rest_of_text hglttxt' style='display: none;'>{{{c}}}</span>
-													<a href='#' class='view_less_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').hide();$(this).parent().find('.view_more_button').show();" style='display: none;' >...less</a>
+													<span class= 'hglttxt'>{{{s}}}</span><a href='#' class='view_more_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').show();$(this).parent().find('.view_less_button').show();  ">...{{lang "text-more"}}</a><span class='rest_of_text hglttxt' style='display: none;'>{{{c}}}</span>
+													<a href='#' class='view_less_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').hide();$(this).parent().find('.view_more_button').show();" style='display: none;' >...{{lang "text-less"}}</a>
 													{{else}}
 													{{{v}}}
 													{{/if}}
@@ -138,13 +138,13 @@ el proceso en la publicación de LOD. </p>
 		
 		<div class="opciones-area opt-result">
 		<div class="col-md-4">
-		<a   class="opt-fuente" href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg2(event);" >Ver Fuente</a>
+		<a   class="opt-fuente" href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg2(event);" >{{ lang "view-source"}}</a>
 		</div>
 		<div class="col-md-4 opt-eldadiv">
-		<a  class="opt-elda" href="{{URI}}" target="_blank" >Ver RDF</a>
+		<a  class="opt-elda" href="{{URI}}" target="_blank" >{{ lang "view-rdf"}}</a>
 		</div>
 		<div class="col-md-4"  >
-		<a  class="opt-grafo"  href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg(event);" >Ver Grafo</a>
+		<a  class="opt-grafo"  href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg(event);" >{{ lang "view-graph"}}</a>
 		</div>
 		</div>
 		</div>

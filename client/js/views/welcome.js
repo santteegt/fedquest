@@ -5,10 +5,10 @@ this.WelcomeView = Backbone.View.extend({
   template: null,
   tagName: "div",
   id: "welcome",
-  initialize: function() {
+  initialize: function(lan) {
     var me;
     me = this;
-   
+    lang.init("SESSION",lan);
     /*
     Template.header.events = {
       "click a": function(e) {
@@ -43,6 +43,21 @@ this.WelcomeView = Backbone.View.extend({
     return this;
   } , 
   setEvents: function (divNode) {
+/*
+    ("#lang-esp").click(function () {   
+  language ();
+     //lang.init("SESSION","es");
+  //   change_language("es");
+  
+  });
+
+$("#lang-en").click(function () {   
+  language ();
+   // lang.init("SESSION","en");
+  // change_language("en");
+  
+  });*/
+
  /*   alert($("#documentos"));
    $("radio#documentos").on('click', function (ev) {  
     //alert($('input:radio[id=documentos]:checked').val());
@@ -62,7 +77,8 @@ this.WelcomeView = Backbone.View.extend({
 });
 
 search_query = function (e) {
-   
+
+    Session.set('welcome', "Hola");
     var obj = e.target;
    // alert(obj);
     /*var obj = e.target;
