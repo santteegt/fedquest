@@ -30,3 +30,8 @@ perak:codemirror
 mfpierre:chartist-js
 fameteor:lang
 accounts-password
+accounts-ui
+aldeed:template-extension
+email
+benjaminrh:event-hooks
+aldeed:simple-schema

@@ -1,4 +1,27 @@
 if (Meteor.isClient) {
+ 
+  var _logout = Meteor.logout;
+  Meteor.logout = function customLogout() {
+    // Do your thing here
+   // window.open('/',"_self" );
+  // alert ("Salio");
+    _logout.apply(Meteor, arguments);
+    window.open('/',"_self" );
+  }
+
+  /* Accounts.onLogin  = function customhello () {
+    alert ("Hola");
+  }*/
+  /*
+  Meteor.login = function customLogin() {
+    // Do your thing here
+   // window.open('/',"_self" );
+   alert ("Salio");
+   // _logout.apply(Meteor, arguments);
+    //window.open('/',"_self" );
+  }*/
+  
+
 
     window.d3 = require("d3");
     window.d3pie = require("d3pie");
@@ -13,6 +36,7 @@ if (Meteor.isClient) {
         Meteor.subscribe("endpoints");
         Meteor.subscribe("queries");
         Meteor.subscribe("prefixes");
+        Meteor.subscribe("profile");
         // Meteor.subscribe("cache");
 
     });
@@ -24,6 +48,7 @@ if (Meteor.isClient) {
     this.Prefixes = new Meteor.Collection("prefixes");
     this.Endpoints = new Meteor.Collection("endpoints");
     this.Queries = new Meteor.Collection("queries");
+    this.Profile = new Meteor.Collection("profile");
     this.App.resultCollection = new Meteor.Collection(null);
     this.App.resultCollection2 = new Meteor.Collection(null);
     this.App.resultCollection3 = new Meteor.Collection(null);
@@ -1033,6 +1058,106 @@ if (Meteor.isClient) {
         }
     });
 
+       Template.adminpanel.helpers({
+        usersAvailable: function () {
+
+            return Profile.find().fetch();
+        },
+        settings: function () {
+            return {
+                //   rowsPerPage: 10,
+                rowsPerPage: 10,
+                showFilter: true,
+                //showNavigation: 'auto',
+                //showColumnToggles: true,
+                fields:
+                        [
+                            {
+                              key: 'nameUser',
+                                label: lang.lang("Names")
+                            },
+                            {  key: 'accessLevel', 
+                             label: lang.lang("User"),
+                             fn: function (value, object) { 
+                            
+                                 var check ;
+                               // alert (countrow);
+                                if (value == 0)
+                                { 
+                                    check =  'checked' ;
+                                }else {
+                                    check =  '' ;
+                                }
+                                //$(this).attr('checked','checked');
+                               // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                               return new Spacebars.SafeString("<input value="+0+" name=user"+object.idProfile+" "+check+" type='radio' onClick='ChangeAccess(this)' />"); }
+                            },
+                             {  key: 'accessLevel', 
+                             label: lang.lang("Advanced_User"),
+                             fn: function (value, object) { 
+                                var check ;
+                              
+                             
+                                if (value == 1)
+                                { 
+                                    check =  'checked' ;
+                                } else {
+                                    check =  '' ;
+                                }
+                                //$(this).attr('checked','checked');
+                               // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                               //return new Spacebars.SafeString("<input name=user"+object.idProfile+" checked="+check+" type='radio' />"); }
+                                return new Spacebars.SafeString("<input value="+1+" name=user"+object.idProfile+" "+check+"  type='radio' onClick='ChangeAccess(this)' />"); }
+                            } , {  key: 'accessLevel', 
+                             label: lang.lang("Admin"),
+                             fn: function (value, object) { 
+                                var check ;
+                              //  alert (object);
+                                if (value == 2)
+                                { 
+                                    check =  'checked' ;
+                                } else {
+                                    check =  '' ;
+                                }
+                                //$(this).attr('checked','checked');
+                               // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                               return new Spacebars.SafeString("<input value="+2+" name=user"+object.idProfile+" "+check+" type='radio'  onClick='ChangeAccess(this)' />"); }
+                            } ,
+                            {  key: 'levelAcademic', 
+                             label: lang.lang("Occupation") ,
+                             fn: function (value, object) { 
+                                var text;
+                                 if (value == 0)
+                                { 
+                                    text = "Estudiante";
+                                } else if (value == 1) {
+                                    text = "Profesor";
+                                }else  if  (value == 2) {
+                                    text = "Investigador";
+                                }else {
+
+                                    text = "Otros";
+                                }
+                                 
+                                 return new Spacebars.SafeString("<p>"+text+"</p>"); }
+                            },
+                            {  key: 'secMail', 
+                             label: lang.lang("Email")
+                            } ,
+                            {
+                                key: 'idProfile' ,
+                                label: lang.lang("Delete") ,
+                                fn: function (value ,object){
+                                  return new Spacebars.SafeString( "<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deleteUser(this)' userId="+value+"  ><span class='glyphicon glyphicon-remove'></span></button></td>");     
+                                }
+
+                            }
+                        ]
+            };
+        }
+    });
+
+
 //JO
 //zero padding function
     function pad(n, width, z) {
@@ -1287,9 +1412,25 @@ if (Meteor.isClient) {
 
     Session.set('auxAct', 0);
 
+/*
+   Template.header.helpers({
+  access_level: function() {
+   // if  (Meteor.user().profile[1].access > 1) {
+      //  var obj = Meteor.user().profile;
+       // var valaccess =  obj[Object.keys(obj)[0]];
+       console.log ("Usuario segundo");
+      // var usr = Meteor.users.find(Meteor.userId()).fetch();
+     var usr =  Meteor.users.find(Meteor.userId()).fetch()[0].profile[1].access;
+         console.log (usr);
+         return true;
+   //  } else {
+ //       return false;
+   //  }
 
-
-
+   
+  }
+});*/
+  
 
     Template.search.helpers({
         endpointsAvailable: function () {
@@ -1772,6 +1913,42 @@ if (Meteor.isClient) {
            "top-persons": "Top Persons",
            "Global":"Global" ,
            "Stats": "Stats",
+           "Profile": "Profile",
+           "Close":"Close" ,
+           "Change_password":"Change password" ,
+           "Sign_out":"Sign out" ,
+           "Sign_in":"Sign in" ,
+           "Create_account":"Create account" ,
+           "Forgot_password":"Forgot password",
+            "Change_password":"Change password" ,
+            "New_password":"New password",
+            "Set_password":"Set password" ,
+            "Current_password":"Current password" ,
+            "New_password":"New password",
+            "My_Profile":"My Profile" ,
+            "Names":"Names" ,
+            "Direction":"Direction",
+            "Occupation":"Occupation",
+            "Student":"Student",
+            "Teacher":"Teacher",
+            "Researcher":"Researcher",
+            "Other" :"Other" ,
+            "Interest_Areas":"Interest Areas",
+            "Sciences":"Sciencies",
+            "Mathematics":"Mathematics" ,
+            "Literature":"Literature",
+            "chemistry":"Chemistry" ,
+            "Email":"Email Address",
+            "Spanish":"Spanish" ,
+            "English" : "English" ,
+            "Access_Level":"Access Level" ,
+            "User":"Normal User",
+            "Advanced_User":"Advanced User" ,
+            "Admin":"Administrator",
+             "Send" :"Save" ,
+             "Manage":"Manage",
+             "Accounts":"Accounts" ,
+             "Users_List":"Users List" ,
         "it":"italien"
     };
 
@@ -1875,6 +2052,42 @@ if (Meteor.isClient) {
             "top-persons": "Personas Destacadas",
             "Global":"Globales" ,
             "Stats": "Estadísticas",
+            "Profile": "Mi Perfil",
+            "Close":"Cerrar" ,
+            "Change_password":"Cambiar Contraseña" ,
+            "Sign_out":"Cerrar Sesión",
+            "Sign_in":"Registrarse" ,
+            "Create_account":"Crear Cuenta" ,
+            "Forgot_password":"Contraseña Olvidada",
+            "Change_password":"Cambiar Contraseña" ,
+            "New_password":"Nueva Contraseña" ,
+            "Set_password":"Colocar Contraseña" ,
+            "Current_password":"Password Actual" ,
+            "New_password":"Nuevo password",
+            "My_Profile":"Mi Perfil" ,
+            "Names":"Nombres" ,
+            "Direction":"Dirección",
+            "Occupation":"Cargo",
+             "Student":"Estudiante",
+            "Teacher":"Profesor",
+            "Researcher":"Investigador",
+            "Other" :"Otro" ,
+            "Interest_Areas":"Areas de Interes",
+            "Sciences":"Ciencias",
+            "Mathematics":"Matemáticas",
+            "Literature":"Literatura" ,
+            "chemistry":"Química" ,
+             "Email":"Correo Electrónico",
+             "Spanish":"Español",
+             "English" : "Ingles" ,
+             "Access_Level":"Nivel de Acceso" ,
+             "User":"Usuario Básico",
+             "Advanced_User":"Usuario Avanzado" ,
+              "Admin":"Administrador",
+              "Send" :"Guardar" ,
+              "Manage":"Administrar" ,
+              "Accounts":"Cuentas" ,
+              "Users_List":"Lista de Usuarios" ,
          "it":"italian"
     };
 
@@ -1941,13 +2154,17 @@ if (Meteor.isClient) {
         
     });
 */
-
+    function deleteUser(e) {
+              alert("borrado");
+              console.log ("Borradpo");
+      }
         
 
 
     Meteor.startup(function () {
         console.log('inicializacion');
         language ();
+        Hooks.init() ;
         return $(function () {
             App.router = new Router();
             console.log('inicializacion OK');
@@ -1989,9 +2206,10 @@ if (Meteor.isClient) {
         }
     }
 
-      
+     
 
 
 
 }
 
+ 

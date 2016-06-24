@@ -8,7 +8,7 @@ this.WelcomeView = Backbone.View.extend({
   initialize: function(lan) {
     var me;
     me = this;
-    lang.init("SESSION",lan);
+    //lang.init("SESSION",lan);
     /*
     Template.header.events = {
       "click a": function(e) {
@@ -44,7 +44,7 @@ this.WelcomeView = Backbone.View.extend({
   } , 
   setEvents: function (divNode) {
 /*
-    ("#lang-esp").click(function () {   
+    $("#lang-esp").click(function () {   
   language ();
      //lang.init("SESSION","es");
   //   change_language("es");

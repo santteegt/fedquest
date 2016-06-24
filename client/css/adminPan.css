@@ -1,0 +1,11 @@
+.adminPan  {
+
+	margin-top: 50px;
+    overflow: scroll;
+    top: 0px;
+    bottom: 0px;
+    position: absolute;
+    width: 100%;
+    overflow: scroll;
+
+}

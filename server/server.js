@@ -5,6 +5,130 @@ from
 'meteor/meteor';
 if (Meteor.isServer) {
 
+ProfileSchema = new SimpleSchema({
+idProfile: {
+    type: String,
+    label: "idProfile"
+  //  max: 200
+  } ,
+nameUser : {
+    type:String ,
+    label: "NameUser" ,
+    max: 200
+},
+direction: {
+    type:String ,
+    label: "Direction" ,
+    max: 200
+},
+levelAcademic : {
+    type:Number ,
+    label: "LevelAcademic" ,
+    min: 0,
+    max:2
+} ,
+areasInterest :{
+    type:[Number] ,
+    label: "InteresArea" ,
+} , 
+ language:{
+    type:String ,
+    label: "Language" ,
+    regEx: /^es|en$/
+ },  password : {
+    type:String ,
+    label: "Pass" ,
+    optional: true
+ },
+ secMail : {
+    type:  String,
+   // RegEx: Email
+} 
+  , accessLevel:{
+    type:Number ,
+    label:"Nivel de Acceso",
+    max:1
+  }
+ });
+
+UpdateProfileSchema =  new SimpleSchema({ 
+accessLevel:{
+    type:Number ,
+    label:"Nivel de Acceso",
+    max:2 ,
+    min:0 
+} ,  idProfile: {
+    type: String,
+    label: "idProfile"
+  //  max: 200
+  }
+
+
+});
+
+
+/*
+AccountsTemplates.configure({
+    SignUpHook: function () {
+      console.log ("Creado") ; }
+    
+});*/
+
+Hooks.onCreateUser = function (userId) { 
+ //alert ("Login");
+ var usr = Meteor.users.findOne({'_id':userId});
+
+  Profile.insert({idProfile: userId , nameUser: "", direction: "" , levelAcademic: "0", areasInterest: "", language: "es", password: "", secMail:  usr.emails[0].address , accessLevel: "0"});
+ console.log ("Usuario Creado");
+ console.log (usr.emails[0].address);
+
+
+ }; 
+
+Accounts.emailTemplates.resetPassword = {
+    from (user){
+     return "cedia@gmx.com";
+    },
+  subject(user) {
+    //console.log (user);
+    if (user.profile.lang ==  "en"){
+    return "You request change the password on Fedquest search account"; 
+    } else {
+    return " Tu has realizado una petición de cambio de contraseña sobre una cuenta del buscador Fedquest";   
+    }
+  },
+  text(user, url) {
+    if (user.profile.lang ==  "en"){
+    return `Hello!
+Click the link below to reset your password.
+${url}
+If you did not request this email, please ignore it.
+Thanks,
+Fedquest Administrator
+`} else {
+return `Hola!
+Sigue el enlace a continuación  para continuar el proceso de cambio de password.
+${url}
+Si no solicitaste este email, por favor ignoralo.
+Gracias,
+Administrador del sitio Fedquest.
+`
+}
+  },
+  html(user, url) {
+    // This is where HTML email content would go.
+    // See the section about html emails below.
+  }
+};
+     function valAccess (id , n){
+      var usuario = Meteor.users.findOne({'_id' : id});
+      if (usuario.profile.access >= n){
+        return true;
+      } else {
+        return false;
+      }
+     }
+
 
     function merge_(obj1, obj2) {
         var result = {};
@@ -29,6 +153,16 @@ if (Meteor.isServer) {
     };
 
     Meteor.startup(function () {
+    //   process.env.MAIL_URL = 'smtp://postmaster@sandboxee5ed2bda25d49ec855b09c230fdbf1f.mailgun.org:c2489aa5122a827541a4a412eea7ee83@smtp.mailgun.org:587';
+     //  process.env.MAIL_URL = 'smtp://postmaster@mg.fedquest.cedia.org.ec:6a3bb4be5642a51f37c6234b7626bd9e@smtp.mailgun.org:587';
+
+      //process.env.MAIL_URL = 'smtp://jortizvivar%40yahoo.es:cedia1123@smtp-pulse.com:465/';
+      //process.env.MAIL_URL="smtp://joesega7%40gmail.com:xxxxx@smtp.gmail.com:465/";
+    //  process.env.MAIL_URL="smtp://joesega97%40hotmail.com:xxxxxx@smtp.live.com:465/";
+
+
+        process.env.MAIL_URL = 'smtp://cedia%40gmx.com:cedia1123@smtp.gmx.com:465/';
+
 
         Properties._ensureIndex({'endpoint': 1, 'graphURI': 1});
         // code to run on server at startup
@@ -39,14 +173,17 @@ if (Meteor.isServer) {
         var parserInstance = new SparqlParser();
 
         Meteor.methods({
+           eventsOnHooksInit : function(){} ,
             updateStats: function () {
-                Statsc.remove({});
+               
+                var __mongo_stats = [];
+
                 var endp = Endpoints.find().fetch();
                 //Numero totales
                 var sparql_p = "select (count(*) AS ?P) ('__' AS ?EP) {?x a <http://xmlns.com/foaf/0.1/Person>}";
                 var sparql_d = "select (count(*) AS ?D) ('__' AS ?EP) {?x a <http://purl.org/ontology/bibo/Document>}";
                 var sparql_c = "select (count(*) AS ?C) ('__' AS ?EP) {?x a <http://purl.org/ontology/bibo/Collection>}";
-                //Consulta	
+                //Consulta  
                 var sparql_ = 'select * {\n';
                 for (var i = 0; i < endp.length; i++) {
                     var endpoint = endp[i];
@@ -64,7 +201,7 @@ if (Meteor.isServer) {
                     }
                 }
                 sparql_ += '}';
-                //Preprocesamiento	
+                //Preprocesamiento  
                 var r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
                 var Obj = JSON.parse(r).results.bindings;
                 var Stats1 = [];
@@ -78,7 +215,9 @@ if (Meteor.isServer) {
                     result = merge_(result1, ls[2]);
                     Stats1.push(result);
                 }
-                Statsc.insert({cod: 1, val: Stats1});
+                //Statsc.insert({cod: 1, val: Stats1});
+                __mongo_stats.push({cod: 1, val: Stats1});
+
                 var Stats__ = Stats1;
                 //console.log(Stats1);
                 //Numero recursos totales
@@ -101,7 +240,8 @@ if (Meteor.isServer) {
 
                     lsKW.push({EP: endpoint.name, Data: Obj1_});
                 }
-                Statsc.insert({cod: 2, val: lsKW});
+                //Statsc.insert();
+                __mongo_stats.push({cod: 2, val: lsKW});
                 //Palabras clave
                 //Por tipo de documento
 
@@ -130,11 +270,13 @@ if (Meteor.isServer) {
 
                     Stats1.push({EP: endp[i].name, val: ls});
                 }
-                Statsc.insert({cod: 3, val: Stats1});
+                //Statsc.insert();
+                __mongo_stats.push({cod: 3, val: Stats1});
 //Por tipo de documento
 //
 //Autores por tipo de contribucion
-                sparql_td = "select ?p (count (*) as ?c) ('__' AS ?EP) {  select distinct ?a ?p {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a ?p ?v.    ?v a <http://purl.org/ontology/bibo/Document>  } } group by ?p ";
+                //sparql_td = "select ?p (count (*) as ?c) ('__' AS ?EP) {  select distinct ?a ?p {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a ?p ?v.    ?v a <http://purl.org/ontology/bibo/Document>  } } group by ?p ";
+                sparql_td = "select ?p ?c ('__' AS ?EP) { {select (count(*) as ?c) (IRI('http://rdaregistry.info/Elements/a/P50161') as ?p) {  select distinct ?a {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a <http://rdaregistry.info/Elements/a/P50161> [].  } }} union { select (count(*) as ?c) (IRI('http://rdaregistry.info/Elements/a/P50195') as ?p) {  select distinct ?a {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a <http://rdaregistry.info/Elements/a/P50195> [].  } }} }";
                 sparql_ = 'select * {\n';
                 for (var i = 0; i < endp.length; i++) {
                     var endpoint = endp[i];
@@ -160,11 +302,12 @@ if (Meteor.isServer) {
                     }) [0];
                     Stats1.push({EP: endp[i].name, val: {total: Number(TotDoc.P.value), val: ls}});
                 }
-                Statsc.insert({cod: 4, val: Stats1});
+                //Statsc.insert();
+                __mongo_stats.push({cod: 4, val: Stats1});
 //Autores por tipo de contribucion
 //Top Autores
                 var topKA = 20;
-                sparql_td = "select ?a (max (?n) as ?name) (max (?coun) as ?counter) ('__' AS ?EP) {   ?a <http://xmlns.com/foaf/0.1/name> ?n.   {      select ?a (count(*) as ?coun)      {         ?a a <http://xmlns.com/foaf/0.1/Person> .            ?a ?p ?v.             ?v a <http://purl.org/ontology/bibo/Document> .      } group by (?a) order by desc (?coun) limit " + topKA + "    } } group by (?a) order by desc(?co)";
+                sparql_td = "select ?a (max (?n) as ?name) (max (?coun) as ?counter) ('__' AS ?EP) {   ?a <http://xmlns.com/foaf/0.1/name> ?n.   {      select ?a (count(*) as ?coun)      {         { ?a <http://rdaregistry.info/Elements/a/P50195> [] }union{ ?a <http://rdaregistry.info/Elements/a/P50161> []}     } group by (?a) order by desc (?coun) limit " + topKA + "    } } group by (?a) order by desc(?co)";
                 sparql_ = 'select * {\n';
                 for (var i = 0; i < endp.length; i++) {
                     var endpoint = endp[i];
@@ -180,13 +323,14 @@ if (Meteor.isServer) {
                 r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
                 Obj = JSON.parse(r).results.bindings;
                 Stats1 = Obj;
-                Statsc.insert({cod: 5, val: Stats1});
+                //Statsc.insert();
+                __mongo_stats.push({cod: 5, val: Stats1});
 //Top Autores
 
 
 //Colecciones
                 var topKC = 20000;
-                sparql_td = "select ?c (max(?n) as ?name) (count(*) as ?counter) ('__' AS ?EP) {    ?c a <http://purl.org/ontology/bibo/Collection>.    ?c <http://purl.org/dc/terms/description> ?n.   ?d <http://purl.org/dc/terms/isPartOf> ?c. } group by ?c order by desc (?co) limit "+topKC;
+                sparql_td = "select ?c (max(?n) as ?name) (count(*) as ?counter) ('__' AS ?EP) {    ?c a <http://purl.org/ontology/bibo/Collection>.    ?c <http://purl.org/dc/terms/description> ?n.   ?d <http://purl.org/dc/terms/isPartOf> ?c. } group by ?c order by desc (?co) limit " + topKC;
                 sparql_ = 'select * {\n';
                 for (var i = 0; i < endp.length; i++) {
                     var endpoint = endp[i];
@@ -212,27 +356,32 @@ if (Meteor.isServer) {
                 }
 
                 /*
-                var result = [];
-                Obj.reduce(function (res, value) {
-                    if (!res[value.name.value]) {
-                        res[value.name.value] = {
-                            counter: 0,
-                            name: value.name.value,
-                            c: value.c.value,
-                            EP: value.EP.value
-                        };
-                        result.push(res[value.name.value])
-                    }
-                    res[value.name.value].qty += Number(value.counter.value);
-                    return res;
-                }, {});
-                */
+                 var result = [];
+                 Obj.reduce(function (res, value) {
+                 if (!res[value.name.value]) {
+                 res[value.name.value] = {
+                 counter: 0,
+                 name: value.name.value,
+                 c: value.c.value,
+                 EP: value.EP.value
+                 };
+                 result.push(res[value.name.value])
+                 }
+                 res[value.name.value].qty += Number(value.counter.value);
+                 return res;
+                 }, {});
+                 */
                 Stats1 = Obj;
-                Statsc.insert({cod: 6, val: Stats1});
+
+                __mongo_stats.push({cod: 6, val: Stats1});
 //Colecciones
 
 
 
+                Statsc.remove({});
+                for (var i = 0; i < __mongo_stats.length; i++) {
+                    Statsc.insert(__mongo_stats[i]);
+                }
 
 
 
@@ -368,7 +517,7 @@ if (Meteor.isServer) {
                             var s = 0;
                             for (var t = 0; t < q; t++) {
                                 var v = m.results.bindings[t]["" + d].value;
-                                if (r["" + v]) {
+                                if (r["" + v]!= undefined) {
                                 } else {
                                     r["" + v] = s;
                                     s += 1;
@@ -504,6 +653,7 @@ if (Meteor.isServer) {
 
             },
             saveQuery: function (request) {
+                if (valAccess (this.userId , 1)) {
                 result = {};
                 result.statusCode = 200;
                 result.msg = 'OK';
@@ -529,6 +679,9 @@ if (Meteor.isServer) {
                     result.msg = e
                 }
                 return result;
+                } else {
+                    return null;
+                }
             },
             updatePrefixes: function () {
                 HTTP.get('http://prefix.cc/context', function (error, result) {
@@ -1115,7 +1268,111 @@ if (Meteor.isServer) {
                // console.log("Resp" + endpoint.opt);
                 return endpoint;
 
-            }
+            } ,  findProfile: function (id) {
+               // console.log(endpointURI + defaultGraph);
+                var profile = Profile.findOne({idProfile : id});
+               // console.log("Resp" + endpoint.opt);
+              //   console.log ("Perfil");
+             //   console.log (profile);
+               
+         /*
+
+                 if (!_.isUndefined(profile)) {
+                     return profile;
+                 }else {
+
+                     return profile;var profilenull;
+
+                 }*/
+                 return profile;
+
+            } ,  SaveProfile :function (id , name , dir , level , area , lan , pass, mail , access ){
+             var  profile = Profile.findOne({idProfile : id});
+            /* console.log ("Perfil");
+             console.log (profile);*/
+               var obj = {idProfile: id, nameUser: name, direction: dir , levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail , accessLevel: access};
+           //   console.log (check(obj, ProfileSchema));
+              var isValid = Match.test(obj, ProfileSchema);
+           //   console.log ("Validado");
+          //    console.log (isValid);
+             // check({admin: true}, mySchema);
+
+             if ( this.userId == id && isValid ){
+             if (!_.isUndefined(profile)) {
+                
+             /*   console.log ("Almacenando");
+                console.log (Meteor.users.findOne({_id:id}));
+                console.log (access);*/
+                Meteor.users.update({_id:id}, {$set:{"profile":{ lang: lan ,  'access':access }}});
+                //Meteor.users.update({_id:id}, {$set:{"profile": {lang: lan} , "accessLevel": {"access":access}}});
+                console.log (Meteor.users.findOne({_id:id}));
+                Profile.update({idProfile: id}, {$set: {nameUser: name, direction: dir , levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail , accessLevel: access }});
+                  return "Actualizado";
+              } else {
+                //Meteor.users.update({_id:id}, {$set:{"profile": {lang: lan} , "accessLevel": {"access":access}}});
+                 Meteor.users.update({_id:id}, {$set:{"profile":{ lang: lan ,  'access':access }}});
+                Profile.insert({idProfile: id, nameUser: name, direction: dir , levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail , accessLevel: access});
+                return "Almacenado";
+              }
+               }else {
+                return "No es posible realizar cambios";
+               }
+              
+             } , actAccess: function (usercode , val){
+                 
+                  
+                     var obj = { idProfile: usercode , accessLevel: val };
+                     var isValid = Match.test(obj, UpdateProfileSchema);
+                 //    console.log ("Val Access");
+                 //    console.log (isValid);
+                //     console.log (check(obj, UpdateProfileSchema));
+                  //   console.log (valAccess (this.userId, 2));
+
+                  if (valAccess (this.userId, 2) && isValid) {
+
+                 var usuario = Meteor.users.findOne({'_id' : usercode});
+                 var profile = Profile.findOne({ 'idProfile' : usercode});
+                //  console.log ("Profile");  
+                //  console.log (profile);
+               //   console.log (usuario);                    {$set:{"profile": {lang: usuario.profile.lang } , "accessLevel": {"access":val}}});
+               //   Meteor.users.update ({'_id' : usercode}, {$set: { "profile" :[  { lang: usuario.profile.lang } , { access: val } ]   }});
+                  Meteor.users.update ({'_id' : usercode}, {$set: { "profile" :  { lang: profile.language ,  access: val }   }});
+                //  Meteor.users.update ({'_id' : usercode}, {$set:{"profile": {lang: usuario.profile.lang } , "accessLevel": {"access":val}}});
+                  Profile.update({idProfile: usercode}, {$set: { accessLevel: val }});
+  
+                  return "Actualizado" ;
+                 }else {
+                  return "No se puede Actualizar";
+                } 
+             } ,  validar: function (opt) {
+                   var usr = Meteor.users.findOne({'_id':this.userId});
+              
+              //   console.log ("Usuario");
+                 
+             //if (!_.isUndefined(usr) && usr.profile[1].access > 1 ){
+                if (!_.isUndefined(usr) && ((usr.profile.access > 1 && opt== 1) || (usr.profile.access > 0 && opt== 0) ))
+                {
+                 return true;
+                 } else {
+                return false ;
+                 } 
+
+          
+             
+             } , deleteuser : function (id){
+                //  console.log ("delete"+id);
+                if (valAccess (this.userId,2) ){
+                Profile.remove ({'idProfile':id});
+                Meteor.users.remove ({'_id':id});
+                return "Usuario Borrado";
+                }else {
+                    return "Usuario no puede ser borrado";
+                }
+
+             }
+             
+
+             
         });
 
         //Update Prefixes schema on every server startup

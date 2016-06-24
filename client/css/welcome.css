@@ -404,3 +404,61 @@ margin-top: 10px;
 /*	-webkit-box-shadow:0px 0px 25px 5px #000;-moz-box-shadow:0px 0px 25px 5px #000;box-shadow:0px 0px 25px 5px #000;*/
 
 }
+
+.accounts-dialog {
+
+	margin: -10px 0px 0px -190px;
+}
+
+#login-buttons .login-close-text {
+
+	float: right
+}
+
+#login-dropdown-list {
+    position: absolute;
+    top: -5px;
+    left: -1px;
+
+}
+
+#login-buttons .login-link-and-dropdown-list {
+   /* position: relative; */
+    top: 15px;
+    left: -10px;
+    float: right;
+  /*  position: relative;
+    top: 10px;
+    float: right;*/
+}
+
+.navbar-nav.navbar-right:last-child {
+  /*  margin-right: 0px;*/
+}
+
+ #login-name-link {
+
+    color: #747b81;
+}
+
+#login-name-link:hover , #login-name-link:focus  {
+    color: #e6eaed;
+    text-decoration: underline;
+}
+
+#login-sign-in-link {
+	color: #747b81;
+}
+
+#login-sign-in-link:hover , #login-sign-in-link:focus  {
+    color: #e6eaed;
+    text-decoration: underline;
+}
+
+.mensaje {
+    margin-top: 20%;
+}
+/*
+#login-buttons .login-link-and-dropdown-list {
+    position: absolute;
+}*/
