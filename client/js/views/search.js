@@ -151,7 +151,10 @@ this.SearchView = Backbone.View.extend({
             var Query = "prefix text:<http://jena.apache.org/text#>\n";
 
             Query += 'select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score{\n';
-
+            if (!AppFilt) {
+                TextSearch = TextSearch.trim().replace(/\s+/g, ' ');
+                TextSearch = TextSearch.replace(/\s/g, " AND ");
+            }
 
             var SubQN = 0;
             for (var oneQuery = 0; oneQuery < FromList.length; oneQuery++) {
@@ -439,6 +442,10 @@ actAHyper = function (e) {
     NewSQ = NewSQ.replace(new RegExp("FROM(.*)", "g"), '');
     var TextSearch = $(".textToSearch").val();
     if (respp == 2) {
+        if (!AppFilt) {
+            TextSearch = TextSearch.trim().replace(/\s+/g, ' ');
+            TextSearch = TextSearch.replace(/\s/g, " AND ");
+        }
         NewSQ = NewSQ.replace(new RegExp("'wildcard'", "g"), '(' + TextSearch + ')');
     } else {
         NewSQ = NewSQ.replace(new RegExp("'wildcard'", "g"), TextSearch);
