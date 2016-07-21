@@ -1,7 +1,6 @@
 /*
  View logic for the query samples list component
  */
-var jsonld = require("jsonld");
 
 this.SearchView = Backbone.View.extend({
     tagName: "div",
@@ -503,6 +502,94 @@ function selec2(prev, val) {
     return prev;
 }
 
+   qrmodalshow = function (e , base , type){
+    console.log (e);
+ 
+    var direccion = e;
+    console.log (direccion);
+    $("#qrarea1").empty();
+    $("#qrarea2").empty();
+    /* var qrcode = new QRCode( $(".qrarea") , {
+    width : 100,
+    height : 100
+    });*/
+     // qrcode.makeCode("http://localhost:3000");
+    /*var area = $(".qrarea");*/
+  //  $(".qrarea").qrcode ( {width: 100 ,height: 100,text: direccion });
+    
+    if (type.includes("file")){
+        $(".optionalqr").css("display","");
+     fuente (e , base);
+       
+    }else {
+   // $("#qrarea2").css("display","none");
+    $(".optionalqr").css("display","none");
+    $( "#qrarea1" ).attr( "class", "tab-pane fade   in active" );
+    $( "#qrarea2" ).attr( "class", "tab-pane fade" );
+    }
+
+    
+    $("#qrarea1").qrcode ( {width: 125 ,height: 125,text: direccion });
+    
+  //  $("#qrarea2").qrcode ( {width: 125 ,height: 125,text: "http://localhost" });
+    $( "#myqrmodal").modal();
+  }
+
+  download = function (URI) {
+    $("#mydwmodal").modal();
+    $("#mydwmodal").attr("URI", URI);
+
+
+  }
+
+  downloadaction = function (e) {
+    var formatcod =  $("select[id=format]").val();
+    var uri = $("#mydwmodal").attr("URI");
+    var formatext="";
+   
+    switch (formatcod)
+    {
+        case '0': formatext = "xml" ; break;
+        case '1': formatext = "text"  ; break;
+        case '2': formatext = "json" ;break; 
+        case '3': formatext = "rdf"; break;
+
+    }
+
+    // alert (uri+"."+formatext);
+  //  console.log (format+ uri);
+    /*
+    $.get("file:///home/joe/EJemplo.html", function(response) { 
+    alert(response) ;
+     });*/
+
+    var request = new XMLHttpRequest();
+    request.open("GET",  uri+"."+formatext);
+   // request.open("GET", 'http://localhost:3000/stats');
+    
+    request.onreadystatechange = function() { 
+   if (request.readyState === 4 && request.status === 200) {
+     console.log (request.response);
+     
+    
+     var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(request.response));
+    element.setAttribute('download', "file"+"."+formatext);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+     element.click();
+
+      document.body.removeChild(element);
+
+
+      }else {
+        console.log (request);
+      }
+     };
+    request.send(null); // Send the request now*/
+  }
 
 hide = function (e) {
 
@@ -515,3 +602,28 @@ hide = function (e) {
     }
 }
 
+
+function fuente (uri , base) {
+
+    var en = Endpoints.find({name: base } ).fetch()[0];
+    var v1 = uri;
+    var v2 = en.endpoint;
+    var v3 = en.graphURI;
+   // var redirectWindow = window.open('', '_blank');
+    Meteor.call('runQuery', v2, v3, 'select ?a {<' + v1 + '> <http://purl.org/ontology/bibo/handle> ?a} limit 1', function (error, result) {
+        if (result) {
+            var r = JSON.parse(result.content).results.bindings;
+            if (r.length == 0) {
+               // redirectWindow.location = v1;
+               //$("#qrarea2").qrcode ( {width: 125 ,height: 125,text:  r[0].a.value });
+
+            } else {
+                 $("#qrarea2").qrcode ( {width: 125 ,height: 125,text:  r[0].a.value });
+                //redirectWindow.location = r[0].a.value;
+            }
+        } else {
+         ///   redirectWindow.location = v1;
+        }
+    }
+    );
+};

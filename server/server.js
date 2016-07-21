@@ -46,8 +46,8 @@ areasInterest :{
 } 
   , accessLevel:{
     type:Number ,
-    label:"Nivel de Acceso",
-    max:1
+    label:"Nivel de Acceso"
+  // , max:1
   }
  });
 

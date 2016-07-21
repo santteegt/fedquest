@@ -119,10 +119,15 @@ el proceso en la publicación de LOD. </p>
 			<div class="fuente-area col-md-14 text-center"> 
 			<span class="{{Icon}}"></span>
 			{{Origin}}
+			 <a href="#" title="QR Code" class="qricon" datauri ="{{URI}}"  onclick="qrmodalshow('{{URI}}','{{Origin}}','{{Icon}}');"   ><img src="/images/qr.png" width=14px ></a> 
+			 <span id="dwnload" class="glyphicon glyphicon-save" onclick="download('{{URI}}')"> </span>
+			<!--<a href="#" class="qricon" onclick="alert ('hola');"  >o</a>  -->
+			  <!-- <button type="button"  class="qricon" data-toggle="modal"  onclick="qrmodalshow(event);" data-target="#myqrmodal"> </button>-->
 			</div>
 		
 		<div class="result-text col-md-14">	
-		<span class="Title-result"> <u> {{Label}}   </u> </span>
+		<span class="Title-result"> <u> {{Label}}   </u>  </span>
+
 		<br/>
 		{{#each MatchsProperty}}
 												<b> {{ lang p }}</b> : 
@@ -171,6 +176,69 @@ el proceso en la publicación de LOD. </p>
 	   </div>
 	   
  </div> 
+
+ <div class="modal   fade" id="myqrmodal" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content ">
+        <div class="modal-header modal-show">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"> Código QR </h4>
+        </div>
+        <div class="modal-body text-center">
+          <ul class="nav navqr nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#qrarea1"> RDF </a></li>
+        <li class="optionalqr"><a data-toggle="tab" href="#qrarea2"> FUENTE </a></li>
+          
+          </ul>
+        <div class="tab-content">
+        <div id="qrarea1" class="tab-pane fade in active">
+        
+        </div>
+        <div id="qrarea2" class="tab-pane fade">
+        
+        </div>
+        </div>
+         <!-- <div  class="qrarea" > -->
+          </div>
+      
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+ <div class="modal   fade" id="mydwmodal" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content ">
+        <div class="modal-header modal-show">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"> Descargar </h4>
+        </div>
+        <div class="modal-body text-center">
+        <div class="form-group dwnoptions">
+        <label for="formatdwn" class="control-label col-sm-3"> Formato:</label>
+        <div class=" col-xs-5 col-sm-5 selectContainer">
+        <select class="form-control" id="format">
+        <option value= 0 > XML </option>
+        <option value= 1 > Text</option>
+        <option value= 2 > JSON </option>
+        <option value= 3 > RDF/XML</option>
+     </select>
+   </div>
+  </div>
+          </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" id="dwnbuton" onclick= "downloadaction()"> Descargar </button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
  <!--	<div class="footer" >
 				<div class="row">
