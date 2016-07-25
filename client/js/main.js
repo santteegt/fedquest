@@ -126,6 +126,7 @@ if (Meteor.isClient) {
             } else {
                 str = [{value: 100, label: "Something"}];
             }
+            $('#ResourcesChart').empty();
             try {
                 // if ($('#ResourcesChart').length == 0) {
                 //     return str;
@@ -250,6 +251,7 @@ if (Meteor.isClient) {
             } else {
                 str = [{value: 100, label: "Something"}];
             }
+            $('#RepositoriesChart').empty();
             try {
                 if ($('#RepositoriesChart').length == 0) {
                     return str;
@@ -549,11 +551,19 @@ if (Meteor.isClient) {
                                     "translate(" + margin.left + "," + margin.top + ")");
 
 
-
-                    // Scale the range of the data
-                    x.domain([since, d3.max(data, function (d) {
+                     var mmax = d3.max(data, function (d) {
                             return d.label;
-                        })]);
+                        });
+                    
+                    var __d = new Date();
+                    var __n = __d.getFullYear();
+                    
+                   mmax = (mmax > __n )? __n+1: mmax;
+                    // Scale the range of the data
+                    x.domain([since, mmax]);
+                   /* x.domain([since, d3.max(data, function (d) {
+                            return d.label;
+                        })]);*/
                     y.domain([1, d3.max(data, function (d) {
                             return d.value;
                         })]);
@@ -1485,7 +1495,10 @@ if (Meteor.isClient) {
             n = n ? n : 0;
             if (n == 0) {
                 //n = 1;
-                $(".pagination").css("display", "none");
+                  $(".pagination").css("display" ,"none");
+              //  $(".pagination").css("display", "none");
+            } else {
+                 $(".pagination").css("display" ,"block");
             }
             var pagcon = {};
             pagcon.total = Math.ceil(n / 10);
