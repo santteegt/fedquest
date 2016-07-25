@@ -551,18 +551,19 @@ if (Meteor.isClient) {
                                     "translate(" + margin.left + "," + margin.top + ")");
 
 
-                    var mmax = d3.max(data, function (d) {
+                     var mmax = d3.max(data, function (d) {
                             return d.label;
                         });
                     
                     var __d = new Date();
                     var __n = __d.getFullYear();
                     
-                    mmax = (mmax > __n )? __n+1: mmax;
-
-
+                   mmax = (mmax > __n )? __n+1: mmax;
                     // Scale the range of the data
                     x.domain([since, mmax]);
+                   /* x.domain([since, d3.max(data, function (d) {
+                            return d.label;
+                        })]);*/
                     y.domain([1, d3.max(data, function (d) {
                             return d.value;
                         })]);
@@ -1492,11 +1493,12 @@ if (Meteor.isClient) {
         paginationSettings: function () {
             var n = Session.get("NResult");
             n = n ? n : 0;
-            if(n==0){
-                $(".pagination").css("display" ,"none");
-            }else {
-                $(".pagination").css("display" ,"block");
-
+            if (n == 0) {
+                //n = 1;
+                  $(".pagination").css("display" ,"none");
+              //  $(".pagination").css("display", "none");
+            } else {
+                 $(".pagination").css("display" ,"block");
             }
             var pagcon = {};
             pagcon.total = Math.ceil(n / 10);

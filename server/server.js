@@ -46,8 +46,8 @@ areasInterest :{
 } 
   , accessLevel:{
     type:Number ,
-    label:"Nivel de Acceso",
-    max:1
+    label:"Nivel de Acceso"
+  // , max:1
   }
  });
 
@@ -350,9 +350,9 @@ Administrador del sitio Fedquest.
                 for (var i = 0; i < Obj.length; i++) {
                     for (var j = 0; j < StopWords2.length; j++) {
                         if (!Obj[i].name){
-				Obj[i].name={value: "No collections"};
-				Obj[i].counter.value=1;
-			}
+                        Obj[i].name={value: "No collections"};
+                        Obj[i].counter.value=1;
+                        }
                         Obj[i].name.value = Obj[i].name.value.replace(new RegExp(StopWords2[j], "g"), '');
 
                     }
@@ -715,7 +715,8 @@ Administrador del sitio Fedquest.
             runQuery: function (endpointURI, defaultGraph, query, format, timeout) {
                 format = _.isUndefined(format) ? 'application/sparql-results+json' : format;
                 timeout = _.isUndefined(timeout) ? '0' : timeout;
-                return HTTP.post(endpointURI,
+                //return HTTP.get(endpointURI,
+                    return HTTP.post(endpointURI,
                         {
                             'params':
                                     {
@@ -731,6 +732,7 @@ Administrador del sitio Fedquest.
                 format = _.isUndefined(format) ? 'application/rdf+json' : format;
                 timeout = _.isUndefined(timeout) ? '0' : timeout;
                 console.log('Consulta' + endpointURI + '+' + query + '+' + format);
+               // return HTTP.get(endpointURI,
                 return HTTP.post(endpointURI,
                         {
                             'params':

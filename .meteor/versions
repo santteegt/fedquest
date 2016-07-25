@@ -93,6 +93,7 @@ spacebars-compiler@1.0.11
 srp@1.0.8
 standard-minifier-css@1.0.6
 standard-minifier-js@1.0.6
+steeve:jquery-qrcode@0.2.2
 stevezhu:lodash@1.0.2
 templating@1.1.9
 templating-tools@1.0.4
