@@ -42,7 +42,7 @@ this.WelcomeView = Backbone.View.extend({
 
     return this;
   } , 
-  setEvents: function (divNode) {
+  setEvents: function (divNode) {  
 /*
     $("#lang-esp").click(function () {   
   language ();

@@ -36,3 +36,6 @@ email
 benjaminrh:event-hooks
 aldeed:simple-schema
 steeve:jquery-qrcode
+mrt:jquery-ui
+robvgroenewoud:awesomplete
+percolate:synced-cron
