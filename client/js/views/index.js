@@ -17,9 +17,73 @@ this.IndexView = Backbone.View.extend({
     return this;
   } , setEvents: function (divNode) {
 
+        var cache = {};
+        var actu = {};
+       
+        
+        //try{
+        $("#mce-text").autocomplete({
+            minLength: 3,
+            source: function (request, response) {
+                var term = request.term;
+                if (term in cache) {
+                    if (cache[ term ].length > 0) {
+                        response(cache[ term ]);
+                    }
+                    if (term in actu) {
+
+                        actu[term] = undefined;
+                        cache[term] = undefined;
+                    } else {
+                        return;
+                    }
+                }
+
+                var t__ = "T";
+                var EntitySearch = $('input:radio[name=opciones]:checked').val();
+                switch (EntitySearch) {
+                    case 'autores':
+                        t__ = "P";
+                        break;
+                    case 'documentos':
+                        t__ = "D";
+                        break;
+                    case 'colecciones':
+                        t__ = "C";
+                        break;
+                }
+                if (term != null && term.trim().length > 3) {
+                    
+                    Meteor.call('getSuggestions', term, t__, false, null, function (error, result) {
+                    });
+                    Meteor.call('getSuggestions', term, t__, true, null, function (error, result) {
+                        //console.log(result);
+                        try {
+                            cache[ term ] = result.data;
+                            if (!result.cacheable) {
+                                actu[ term ] = true;
+                            }
+                            if (result.data.length > 0) {
+                                response(result.data);
+                            }
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    });
+                }
+
+
+            }
+        });
+
+
+
+
+
   var prev;
   $("#documentos").click(function () {   
-  
+        cache = {};
+                    actu = {};
     var val = 'documentos';
     prev = selec (prev , val) ;
   
@@ -27,12 +91,15 @@ this.IndexView = Backbone.View.extend({
   
   $("#autores").click(function () {  
     
-   
+   cache = {};
+                    actu = {};
     var val = 'autores';
     prev = selec (prev , val) ;
   });
   
   $("#colecciones").click(function () {
+      cache = {};
+                    actu = {};
     var val = 'colecciones';
     prev = selec (prev , val) ;
  

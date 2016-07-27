@@ -982,7 +982,7 @@ String.prototype.keyword = function () {
             },
             getSuggestions: function (text,clas_, mode_, lsend){
                 this.unblock();
-                if (text==null || lsend.length ==0 ){
+                if (text==null || lsend!=null && lsend.length ==0 ){
                     return {data:[], cacheable:true};
                 }
                 var text2 = text.removeDiacritics().keyword().trim().toLowerCase().replace(/[\.\+\/\\\|\*`\~,!@\#$%:^&\(\)\[\]\{\}\?\<\>\;=\'\"´-]+/g, " ");
@@ -990,10 +990,16 @@ String.prototype.keyword = function () {
                     return {data:[], cacheable:true};
                 }
                 var strend ='';
-                for (var g=0; g<lsend.length; g++){
-                    strend+=lsend[g]+"__";
+                var endp = Endpoints.find().fetch();
+                if(lsend !=null){
+                    for (var g=0; g<lsend.length; g++){
+                        strend+=lsend[g]+"__";
+                    }
+                }else{
+                    for (var i = 0; i < endp.length; i++) {
+                        strend+=i+"__";
+                    }
                 }
-                
                 var words = text2.split(" ").filter(function(d){return d!=="";});
                 for (var i=0; i< words.length; i++){
                     if (i == words.length-1){
@@ -1042,10 +1048,10 @@ String.prototype.keyword = function () {
                 
                 var resp=[];
                 var cn=0;
-                var endp = Endpoints.find().fetch();
+                
                 var cach=true;
                 for (var i = 0; i < endp.length; i++) {
-                    if (lsend.indexOf(i) == -1){
+                    if (lsend!=null && lsend.indexOf(i) == -1){
                         continue;
                     }
                     var endpoint = endp[i];
@@ -1552,7 +1558,15 @@ String.prototype.keyword = function () {
                // console.log("Resp" + endpoint.opt);
                 return endpoint;
 
-            } ,  findProfile: function (id) {
+            },
+            findAllEndpoints: function () {
+               // console.log(endpointURI + defaultGraph);
+                var endpoint = Endpoints.find().fetch();
+               // console.log("Resp" + endpoint.opt);
+                return endpoint;
+
+            }
+            ,  findProfile: function (id) {
                // console.log(endpointURI + defaultGraph);
                 var profile = Profile.findOne({idProfile : id});
                // console.log("Resp" + endpoint.opt);

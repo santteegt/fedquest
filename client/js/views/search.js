@@ -215,7 +215,7 @@ this.SearchView = Backbone.View.extend({
             }
         }
 
-        function get_checkList_values(CheckName) {
+        function get_checkList_values2(CheckName) {
             var inputs = document.getElementsByName(CheckName);
             var values = [];
             for (var i = 0; i < inputs.length; i++) {
@@ -232,13 +232,13 @@ this.SearchView = Backbone.View.extend({
         var strend ='';
         
         
-        try{
+        //try{
         $("#mce-text").autocomplete({
             minLength: 3,
             source: function (request, response) {
                 
                 var strend2 ='';
-                var lsend = get_checkList_values('repositoriesList');
+                var lsend = get_checkList_values2('repositoriesList');
                 for (var g=0; g<lsend.length; g++){
                     strend2+=lsend[g]+"__";
                 }
@@ -279,9 +279,9 @@ this.SearchView = Backbone.View.extend({
                 }
                 if (term != null && term.trim().length > 3) {
                     
-                    Meteor.call('getSuggestions', term, t__, false, get_checkList_values('repositoriesList'), function (error, result) {
+                    Meteor.call('getSuggestions', term, t__, false, get_checkList_values2('repositoriesList'), function (error, result) {
                     });
-                    Meteor.call('getSuggestions', term, t__, true, get_checkList_values('repositoriesList'), function (error, result) {
+                    Meteor.call('getSuggestions', term, t__, true, get_checkList_values2('repositoriesList'), function (error, result) {
                         //console.log(result);
                         try {
                             cache[ term ] = result.data;
@@ -300,10 +300,10 @@ this.SearchView = Backbone.View.extend({
 
             }
         });
-        }catch(e){
-            console.log(e);
+        //}catch(e){
+        //    console.log(e);
             
-        }
+      //  }
 
         //$('#ui-id-1').css('text-align: center;');
 
@@ -314,22 +314,43 @@ this.SearchView = Backbone.View.extend({
 
         var prev;
         $("#documentos2").click(function () {
+            cache = {};
+                    actu = {};
             var val = 'documentos';
             prev = selec2(prev, val);
 
         });
 
         $("#autores2").click(function () {
-
+cache = {};
+                    actu = {};
             var val = 'autores';
             prev = selec2(prev, val);
             console.log($('input[data-name=' + base + ']'));
         });
 
         $("#colecciones2").click(function () {
+            cache = {};
+                    actu = {};
             var val = 'colecciones';
             prev = selec2(prev, val);
         });
+        
+        $('#AllRepo').on('click', function (ev) {
+            if (document.getElementsByName('repositoriesListAll')[0].checked) {
+                var inputs = document.getElementsByName('repositoriesList'); 
+                for (var i = 0; i < inputs.length; i++){
+                    inputs[i].checked=true; inputs[i].disabled=true;
+                } 
+            } else {
+                var inputs = document.getElementsByName('repositoriesList'); 
+                for (var i = 0; i < inputs.length; i++){
+                    inputs[i].disabled=false;
+                } 
+            }
+            
+        });
+        
 
         $('input.runSearch').on('click', function (ev) {
 
@@ -459,10 +480,12 @@ this.SearchView = Backbone.View.extend({
             App.SearchRun(0, 1);
             //Session.set('Qmode', 1);
         });
-
+        
+        
         if (term != "null") {
             $(".textToSearch").val(term);
-
+            
+            
             switch (type) {
                 case 'autores':
                     $("#autores2").attr('checked', 'checked');
@@ -485,12 +508,16 @@ this.SearchView = Backbone.View.extend({
 });
 
 function darclick(FromList) {
-    console.log("Dar click");
+   // console.log("Dar click");
 
-    var result2 = Meteor.call('findbase', function (error, result) {
+    var result2 = Meteor.call('findAllEndpoints', function (error, en) {
         // FromList.push({attributes:{"data-base": true , "data-endpoint": result.endpoint , "data-graphuri" : result.graphURI }}) ;
         // alert("Hola");
-        FromList.push({attributes: {"data-base": {"value": true}, "data-endpoint": {"value": result.endpoint}, "data-graphuri": {"value": result.graphURI}, "data-name": {"value": result.name}}});
+        for (var i=0; i< en.length; i++){
+            var result = en[i];
+            FromList.push({attributes: {"data-base": {"value": result.base}, "data-endpoint": {"value": result.endpoint}, "data-graphuri": {"value": result.graphURI}, "data-name": {"value": result.name}}});    
+            //FromList.push({attributes: {"data-base": {"value": true}, "data-endpoint": {"value": result.endpoint}, "data-graphuri": {"value": result.graphURI}, "data-name": {"value": result.name}}});    
+        }
         $('input.runSearch').click();
     });
 }
