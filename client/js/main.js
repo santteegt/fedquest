@@ -1964,6 +1964,7 @@ if (Meteor.isClient) {
              "Manage":"Manage",
              "Accounts":"Accounts" ,
              "Users_List":"Users List" ,
+             "wildcard":"suggestion node",
         "it":"italien"
     };
 
@@ -2103,6 +2104,7 @@ if (Meteor.isClient) {
               "Manage":"Administrar" ,
               "Accounts":"Cuentas" ,
               "Users_List":"Lista de Usuarios" ,
+              "wildcard":"nodo de sugerencia",
          "it":"italian"
     };
 

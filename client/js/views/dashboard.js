@@ -1537,6 +1537,21 @@ this.DashboardView = Backbone.View.extend({
                 }
             });
 
+        }; 
+
+        checkwildcard = function (ev){
+          
+
+           if ( $("#wildcardoption").is(':checked') ){
+               $("#node-value").val("'wildcard'");
+                $("#node-value").attr ("disabled","disabled");
+           } else {
+                $("#node-value").removeAttr("disabled");
+                $("#node-value").val("");
+           }
+          
+
+
         };
     }
 
