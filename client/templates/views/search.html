@@ -11,7 +11,7 @@
 	    <div class="row">
 		<div class="col-md-10">
 		<div class="Search-bar input-group"> 
-		  <input type="text" value="" name="terms" onkeyup="Session.set('auxAct',Session.get('auxAct')+1); if(event.keyCode == 13){$('.runSearch').click();}" class="required form-control textToSearch" id="mce-text" placeholder={{lang "placeholder-search"}} required>
+		  <input type="text" value="" name="terms" onclick="Session.set('auxAct',Session.get('auxAct')+1);" oninput="Session.set('auxAct',Session.get('auxAct')+1); if(event.keyCode == 13){$('.runSearch').click();}" class="required form-control textToSearch" id="mce-text" placeholder={{lang "placeholder-search"}} required>
                           <span class="input-group-btn">
                             <input type="button" value={{lang "search"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearch" >                   
 						 </span>

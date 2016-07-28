@@ -37,6 +37,7 @@ if (Meteor.isClient) {
         Meteor.subscribe("queries");
         Meteor.subscribe("prefixes");
         Meteor.subscribe("profile");
+        Meteor.subscribe("searchs");
         // Meteor.subscribe("cache");
 
     });
@@ -49,6 +50,7 @@ if (Meteor.isClient) {
     this.Endpoints = new Meteor.Collection("endpoints");
     this.Queries = new Meteor.Collection("queries");
     this.Profile = new Meteor.Collection("profile");
+    this.searchs = new Meteor.Collection ("searchs");
     this.App.resultCollection = new Meteor.Collection(null);
     this.App.resultCollection2 = new Meteor.Collection(null);
     this.App.resultCollection3 = new Meteor.Collection(null);

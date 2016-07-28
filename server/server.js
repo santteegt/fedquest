@@ -1667,7 +1667,15 @@ String.prototype.keyword = function () {
                     return "Usuario no puede ser borrado";
                 }
 
-             }
+             } , savesearch : function ( iduser , searchw , filters  ) {
+                  var time = "00:00";
+                 Search.insert({idUser: iduser, searchword : searchw , searchfilters : filters , timeaction: time });
+             } , 
+                 savefavresource: function (iduser , uriresource) {
+                  var time = "00:00";
+                 Resources.insert({idUser: iduser, urifav : uriresource  , timeaction: time });
+             } 
+
              
 
              
