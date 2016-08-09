@@ -239,6 +239,12 @@ margin-bottom: 15px;
 }
 
 
+.imgfav {
+
+	margin-top: -4px;
+}
+
+
 /*
 .qricon {
 left: 40%;
@@ -251,3 +257,12 @@ background-repeat: no-repeat;
 border: none;
 border-radius: 5px;
 }*/
+
+.histandfav {
+	overflow: scroll;
+	top: 0px;
+    bottom: 0px;
+    position: absolute;
+    width: 100%;
+
+}

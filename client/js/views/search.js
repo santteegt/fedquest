@@ -197,6 +197,14 @@ this.SearchView = Backbone.View.extend({
         var term = Session.get('s1');
         var type = Session.get('s2');
         var base = Session.get('s3')
+/*
+        $(".imgfav").click(function (){ 
+        //$(".change").removeClass("selected");
+        alert ("click");
+       $(this).attr ("src","/images/starblue.png");
+      });*/
+
+
         //      alert (term);
         //$('input:radio[data-name='+base+']').prop("checked", "checked");
         //alert($('input:radio[data-name='+base+']'));
@@ -357,6 +365,8 @@ cache = {};
             //Session.set("auxAct", Session.get("auxAct") + 1);
             //App.resultCollection2.remove({});
             //var EntitySearch = get_radio_value("resourceType");
+               
+
             var EntitySearch = get_radio_value("opciones");
 
             var FromListaux = get_checkList_values("repositoriesList");
@@ -367,6 +377,7 @@ cache = {};
             }
 
             var TextSearch = $("input.textToSearch").val().clearWords();
+            var  originTextSearch  = $("input.textToSearch").val();
             // alert(FromList);
             // console.log($('input[data-name='+base+']'));
             //console.log("Radio");
@@ -375,7 +386,6 @@ cache = {};
             // console.log(FromList);
             // console.log("text");
             //  console.log(TextSearch);
-
 
 
             var ResultLimit = ''; //limit 100
@@ -435,13 +445,15 @@ cache = {};
             var Query = "prefix text:<http://jena.apache.org/text#>\n";
 
             Query += 'select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score{\n';
-
+                
             if (!AppFilt) {
                 TextSearch = TextSearch.trim().replace(/\s+/g, ' ');
+          
                 TextSearch = TextSearch.replace(/\s/g, " AND ");
             }
             var ResultLimitSubQ = (AppFilt) ? '15' : '1000';
             var SubQN = 0;
+            var sources = [];
             for (var oneQuery = 0; oneQuery < FromList.length; oneQuery++) {
                 var EndpointLocal = FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
                 var Service = FromList[oneQuery].attributes['data-endpoint'].value;
@@ -472,7 +484,19 @@ cache = {};
                         Query += '}\n';
                     }
                 }
+                var source = {};
+                source.Name = ServiceName; 
+                source.Endpoint = Service;
+                sources.push (source);
+
             }
+            console.log ("Hasta aqui");
+            console.log (sources);
+            var rest = Meteor.call('savesearch' , originTextSearch ,  sources , EntitySearch ,function (error, result) { 
+                console.log (result); 
+            });
+
+
             Query += '} order by DESC(?Score)\n  ' + ResultLimit;
             var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
             console.log(jsonRequest);
@@ -909,7 +933,19 @@ hide = function (e) {
         $(".oculto").css("display", "inline");
         //  alert ("Hola");
     }
-}
+} 
+
+
+    favaction = function ( uri , label) 
+   {
+   Meteor.call('savefavresource', uri , label , function (error, result) { 
+    console.log (result);
+   // alert (result);
+   });
+       
+
+   }
+  
 
 
 function fuente(uri, base) {

@@ -29,5 +29,5 @@ Searchs.allow({
 
 
 Meteor.startup(function (){
-
+//Searchs.remove({});
 });

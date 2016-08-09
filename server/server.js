@@ -1667,14 +1667,32 @@ String.prototype.keyword = function () {
                     return "Usuario no puede ser borrado";
                 }
 
-             } , savesearch : function ( iduser , searchw , filters  ) {
-                  var time = "00:00";
-                 Search.insert({idUser: iduser, searchword : searchw , searchfilters : filters , timeaction: time });
+             } , savesearch : function (  searchw , source , filters  ) {
+                  var d = new Date();
+                 // var dateactual = d.toLocaleString();
+                 Searchs.insert({idUser: this.userId , searchword : searchw , sources : source , searchfilters : filters , timeaction: d });
+                 return "Almacenado";
              } , 
-                 savefavresource: function (iduser , uriresource) {
-                  var time = "00:00";
-                 Resources.insert({idUser: iduser, urifav : uriresource  , timeaction: time });
-             } 
+                 savefavresource: function (  uriresource , label) {
+                  var time =  Date();
+
+                   var Fav = Favresources.findOne({ 'idUser': this.userId , 'urifav' : uriresource });
+                  if (  _.isUndefined(Fav)){
+                 Favresources.insert({idUser: this.userId , urifav : uriresource  , labelres: label , timeaction: time });
+                 } else {
+                 Favresources.remove ({ 'idUser': this.userId , 'urifav' : uriresource });
+                 }
+                 return "Almacenado";
+             }  , DeleteHist : function (idsearch ){
+                  Searchs.remove ({ 'idUser': this.userId , '_id' : idsearch });
+                  console.log (idsearch);
+                  return "Eliminado";
+
+             }  , Deletefav : function (idfav) {
+                 Favresources.remove ({ 'idUser': this.userId , '_id' : idfav });
+                 return "Eliminado";
+
+             }
 
              
 

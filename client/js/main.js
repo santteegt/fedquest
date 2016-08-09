@@ -38,6 +38,7 @@ if (Meteor.isClient) {
         Meteor.subscribe("prefixes");
         Meteor.subscribe("profile");
         Meteor.subscribe("searchs");
+        Meteor.subscribe("favresources");
         // Meteor.subscribe("cache");
 
     });
@@ -50,7 +51,8 @@ if (Meteor.isClient) {
     this.Endpoints = new Meteor.Collection("endpoints");
     this.Queries = new Meteor.Collection("queries");
     this.Profile = new Meteor.Collection("profile");
-    this.searchs = new Meteor.Collection ("searchs");
+    this.Searchs = new Meteor.Collection ("searchs");
+    this.Favresources = new Meteor.Collection ("favresources");
     this.App.resultCollection = new Meteor.Collection(null);
     this.App.resultCollection2 = new Meteor.Collection(null);
     this.App.resultCollection3 = new Meteor.Collection(null);
@@ -1068,6 +1070,133 @@ if (Meteor.isClient) {
                         ]
             };
         }
+    });   
+    // JS
+      Template.favsearch.helpers({
+
+        histsearch: function () {
+            return Searchs.find({ idUser: Meteor.userId()}).fetch();
+        },
+        settingshist: function () {
+            return {
+                //   rowsPerPage: 10,
+                rowsPerPage: 5,
+                showFilter: false,
+                //showNavigation: 'auto',
+                //showColumnToggles: true,
+                fields:
+                        [
+                            {
+                                key: 'searchword',
+                                label:  lang.lang ("Search_action") ,
+                                headerClass: 'col-md-4' ,
+                                fn: function (searchword, object) {
+                                    var html = '<a  href="/search/'+searchword+'/'+object.searchfilters+'/UCUE">' + searchword + '</a>';
+                                    return new Spacebars.SafeString(html);
+                                }
+
+                            },
+                           
+                             { 
+                                     key : 'searchfilters' ,
+                                     label:  lang.lang ("Filters") ,
+                                  
+
+                             } ,
+                             {   key: 'sources' ,
+                                label : lang.lang ("Sources") ,
+                                fn: function (sources, object) {
+                                    var listsources = "";
+                                   _.each (  object.sources , function  (el , idx){
+                                   
+                                      listsources = el.Name + ', '+listsources;
+                                    
+                                    }) ;
+                                    //console.log (object);
+                                    //object.sources 
+                                   // console.log (sources);
+                                    return listsources;
+                                }
+
+                             },  {key: 'timeaction', 
+                                  label:  lang.lang ("Date") , headerClass: 'col-md-3' ,
+                                     sortOrder: 0 ,
+                                     sortDirection: 'descending' ,
+                                     sortByValue: true ,
+                                     fn: function (timeact , object){
+                                     console.log (object.timeaction);
+                                      var d =  new Date (object.timeaction);
+                                      return    d.toLocaleString();
+                                     }
+                            
+                             }  ,    {
+                                key: '_id' ,
+                                label: lang.lang ("delete") ,
+                                fn: function (value ,object){
+                                  return new Spacebars.SafeString( "<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deletehist(this)' Idsearch="+value+"  ><span class='glyphicon glyphicon-remove'></span></button></td>");     
+                                }
+
+                            }
+                        ]
+            };
+        }
+        , 
+          favres : function  () {
+            return   Favresources.find({ idUser: Meteor.userId()}).fetch();
+          } , settingsfav :function  (){
+            return {
+                rowsPerPage: 5,
+                showFilter: false,
+                //showNavigation: 'auto',
+                //showColumnToggles: true,
+                fields:
+                        [
+                        
+                            {   key: 'urifav', 
+                                label: lang.lang ("Resource") , 
+                                fn: function (urifav  , object){
+                                var html = '<a target="_blank" href="'+ urifav +'">' + urifav + '</a>';
+                                    return new Spacebars.SafeString(html);
+                                }
+                                 
+                            
+                             } , {
+                                  key: 'labelres' ,
+                                  label: lang.lang ("Name") ,
+                                  headerClass: 'col-md-6' 
+
+
+                             } ,
+                             { 
+                                key : 'timeaction' ,
+                                label:   lang.lang ("Date") ,
+                                sortOrder: 0 ,
+                                sortDirection: 'descending' ,
+                                sortByValue: true ,
+                                fn: function (timeact , object){
+                                console.log (object.timeaction);
+                                var d =  new Date (object.timeaction);
+                                return    d.toLocaleString();
+                                }
+                            
+                                  
+
+                             } ,
+
+                            {
+                                key: '_id' ,
+                                label: lang.lang("delete") ,
+                                fn: function (value ,object){
+                                  return new Spacebars.SafeString( "<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deletefav(this)' Idres="+value+"  ><span class='glyphicon glyphicon-remove'></span></button></td>");     
+                                }
+
+                            }
+                           
+                        ]
+
+
+            }
+          }
     });
 
        Template.adminpanel.helpers({
@@ -1158,7 +1287,7 @@ if (Meteor.isClient) {
                             } ,
                             {
                                 key: 'idProfile' ,
-                                label: lang.lang("Delete") ,
+                                label: lang.lang("delete") ,
                                 fn: function (value ,object){
                                   return new Spacebars.SafeString( "<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deleteUser(this)' userId="+value+"  ><span class='glyphicon glyphicon-remove'></span></button></td>");     
                                 }
@@ -1688,7 +1817,23 @@ if (Meteor.isClient) {
                             OneResult.Icon = 'glyphicon glyphicon-file';
                             break;
                     }
+                           var Resourcesfav =  Favresources.find ({idUser: Meteor.userId() }).fetch();
 
+                            var  favorite  =  Resourcesfav.find(function (val) {
+                                return  val.urifav == OneResult.URI;
+                            }); 
+                              if (favorite){
+                         
+                          OneResult.Fav = "/images/starblue.png"; 
+
+                              }else {
+                          
+                          OneResult.Fav = "/images/stargray.png"; 
+
+                              }
+
+                              
+                            // OneResult.Fav = '/images/stargray.png'; 
 
                     toShow.push(OneResult);
                 } else {
@@ -1805,7 +1950,7 @@ if (Meteor.isClient) {
             }
         }
 //toShow.sort(compare);
-
+     
         return toShow;
     }
 
@@ -1965,7 +2110,15 @@ if (Meteor.isClient) {
              "Accounts":"Accounts" ,
              "Users_List":"Users List" ,
              "wildcard":"suggestion node",
-        "it":"italien"
+             "Search_History":"Search History",
+             "Favorite_Resources" : "Favorite Resources" ,
+             "My_Searches" : "My Searches" ,
+             "Resource" : " Resource" , 
+             "Sources" : "Sources" ,
+             "Date" : "Date" ,
+             "Filters" : "Filters",
+             "Search_action":"Search" ,
+             "it":"italien"
     };
 
     var idiomEsp = {
@@ -2105,6 +2258,14 @@ if (Meteor.isClient) {
               "Accounts":"Cuentas" ,
               "Users_List":"Lista de Usuarios" ,
               "wildcard":"nodo de sugerencia",
+              "Search_History":"Historial de Búsqueda",
+              "Favorite_Resources" : "Recursos Favoritos" ,
+              "My_Searches" : "Mis Consultas" ,
+              "Resource" : " Recurso" , 
+              "Sources" : "Fuentes" ,
+              "Date" : "Fecha" ,
+              "Filters" : "Filtros",
+              "Search_action" : "Búsqueda" ,
          "it":"italian"
     };
 
