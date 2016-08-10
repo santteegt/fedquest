@@ -62,10 +62,11 @@
 			<div class="sugestion-area col-md-3"> 
 				<div class="sugestion-panel">
 					<span id="Title-suggestion" > <b>{{lang "sug"}} </b>  </span>
-					<div class="result-suggestion">
+					<span class = "{{DespSug}}" id= "expandsugg"  onclick = "desplegar (this)"  > </span>
+					<div class="result-suggestion collapse" id = "sug">
 						
 					<UL type = "disk" id="Sugerencias">
-        			<!--<li> Buscar por autores con nombre "DIEGO" </li>
+        			<!--<li> Buscar por autores con nombre "DIEGO" </li> onclick = "desplegar (this)" data-toggle="collapse" data-target="#sug"
         			<li> Buscar colecciones que contenga obras cuyo autor se llame "Diego" </li>
         			<li> Buscar obras cuyo autor se llame "DIEGO" </li>
         			<li>Perú </li> -->

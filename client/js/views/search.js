@@ -193,6 +193,8 @@ this.SearchView = Backbone.View.extend({
     // setEvents: function (divNode) {
     setEvents: function (divNode) {
         var FromList = [];
+        Session.set('DespSug', true);
+        $("#sug").collapse('show');
 
         var term = Session.get('s1');
         var type = Session.get('s2');
@@ -971,5 +973,22 @@ function fuente(uri, base) {
         }
     }
     );
-}
-;
+};
+
+    desplegar = function (e) {
+       // $("#sug").collapse('toggle');
+
+     if ( Session.get ('DespSug')) {
+        $(".sugestion-panel").css ("min-height", "40px");
+        $("#sug").collapse('hide');
+        Session.set('DespSug', false);
+       // $(".sugestion-panel").css ("min-height", "400px");
+        
+    } else {
+        $("#sug").collapse('show');
+        Session.set('DespSug', true);
+        //$(".sugestion-panel").css ("min-height", "400px");
+     //   $("#sug").collapse();
+    }
+      //alert ("Desplegar");
+    }
