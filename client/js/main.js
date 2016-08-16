@@ -98,8 +98,30 @@ if (Meteor.isClient) {
                 if (result.resultSet) {
                     if (qm > 0) {
                         pa = -1;
-                        Qmode = qm;
                         Session.set("NResult", result.resultCount);
+                        if (qm !=3){
+                            //$("#fac").empty();;
+                            
+                            
+                            Session.set("BResult", true);
+                            Session.set("facetedTotals", null);
+                            Session.set("facetedTotalsN", null);
+                            
+                            Qmode = qm;
+
+                            Meteor.call('findbase', function (errorddd, resultdd) {    
+                                Session.set("BResult", result.resultCount>0);
+                                Session.set("facetedTotals", result.facetedTotals);    
+                                
+                            });
+                                
+                            
+                        }else{
+                            Session.set("facetedTotalsN", result.facetedTotalsN);
+                            Meteor.call('findbase', function (errorddd, resultdd) {    
+                                facetedRange();
+                            });
+                        }
                     }
                     App.resultCollection2.remove({});
                     App.resultCollection2.insert(result.resultSet);
@@ -107,6 +129,7 @@ if (Meteor.isClient) {
             }
             //alert('f');
             waitingDialog.hide();
+            
         });
         return "";
     });
@@ -1572,8 +1595,103 @@ if (Meteor.isClient) {
   }
 });*/
   
+  this.facetedRange = (function () {
+
+        try{
+            var ss= $("#slider-range")[0].attributes['data-inf'].value;
+        }catch(s){
+            return 0;
+        }
+   
+            
+            var mm = Number($("#slider-range")[0].attributes['data-min'].value);
+            var mx = Number($("#slider-range")[0].attributes['data-max'].value);
+            var mm_ = Number($("#slider-range")[0].attributes['data-min'].value);
+            var mx_ = Number($("#slider-range")[0].attributes['data-max'].value);
+            
+            
+            
+            console.log(mm);
+            console.log(mx);
+            console.log(mm_);
+            console.log(mx_);
+            try{
+                mm_ = $("#slider-range").slider("values", 0)
+                mx_ = $("#slider-range").slider("values", 1)
+            }catch(e){}
+            var d = JSON.parse($("#slider-range")[0].attributes['data-inf'].value);
+
+            $("#slider-range").empty();
+            Array.prototype.sum = function (prop) {
+                var total = 0
+                for (var i = 0, _len = this.length; i < _len; i++) {
+                    total += this[i][prop]
+                }
+                return total
+            }
+
+            var data = d;
+            $("#slider-range").slider({
+                range: true,
+                min: mm,
+                max: mx,
+                values: [mm_, mx_],
+                slide: function (event, ui) {
+                    var n = data.filter(function (d) {
+                        return d.key == null || d.key >= ui.values[ 0 ] && d.key <= ui.values[ 1 ];
+                    }).sum("count");
+                    $("#amount").val("" + ui.values[ 0 ] + " - " + ui.values[ 1 ] + " (" + n + ")");
+                }
+            });
+            var n = data.filter(function (d) {
+                return d.key == null || d.key >= $("#slider-range").slider("values", 0) && d.key <= $("#slider-range").slider("values", 1);
+            }).sum("count");
+            $("#amount").val("" + $("#slider-range").slider("values", 0) +
+                    " - " + $("#slider-range").slider("values", 1) + " (" + n + ")");
+
+            
+           return 0;
+        });
+  
+  
 
     Template.search.helpers({
+        
+        facetedOptions: function () {
+            //$("#fac").empty();
+            var n = Session.get("facetedTotals");
+            var nn = Session.get("facetedTotalsN");
+            if (n == null || n == null && nn==null){
+                return [];
+            }
+            if(nn!=undefined && nn!=null){
+                n.Years=n.Years.map(function (d) { var r=nn.Years.filter(function (q){return q.key==d.key;}); if(r.length>0){d.count=r[0].count;}else{d.count=0;}  return d; });
+                n.Types=n.Types.map(function (d) { var r=nn.Types.filter(function (q){return q.key==d.key;}); if(r.length>0){d.count=r[0].count;}else{d.count=0;}  return d; });
+                n.Langs=n.Langs.map(function (d) { var r=nn.Langs.filter(function (q){return q.key==d.key;}); if(r.length>0){d.count=r[0].count;}else{d.count=0;}  return d; });
+                n.Endpoints=n.Endpoints.map(function (d) { var r=nn.Endpoints.filter(function (q){return q.key==d.key;}); if(r.length>0){d.count=r[0].count;}else{d.count=0;}  return d; });
+            }
+            n.Years2 = n.Years.filter(function (d){ return d.key!=null; });
+            n.Types = n.Types.map(function (d){ d.key2=d.key;  if (d.key ==null){d.key2='None'; return d;} d.key2=d.key.substr(d.key.lastIndexOf('/') + 1);d.key2=d.key2.substr(d.key2.lastIndexOf('#') + 1);  return d;  });
+            n.Langs = n.Langs.map(function (d){ d.key2=d.key; if (d.key ==null){d.key2='None';}; return d;  });
+            n.Endpoints = n.Endpoints.map(function (d){ d.key2=d.key; if (d.key ==null){d.key2='None';}; return d;  });
+            
+            n.Types = n.Types.map(function (d){ d.Title='Types';  return d; });
+            n.Langs = n.Langs.map(function (d){ d.Title='Langs';  return d; });
+            n.Endpoints = n.Endpoints.map(function (d){ d.Title='Endpoints';  return d; });
+            
+            
+            
+            
+            
+            var facetes=[{Title:'Years', Range:true, Values:n.Years, Values2:JSON.stringify(n.Years), Exists: n.Years2.length>0, Min:n.Years2.length>0 ?n.Years2[0].key:0, Max:n.Years2.length>0 ?n.Years2[n.Years2.length-1].key:0 },
+                {Title:'Types', Range:false, Exists: n.Types.length>0,Values:n.Types},
+                {Title:'Languages', Range:false, Exists: n.Langs.length>0,Values:n.Langs},
+                {Title:'Endpoints', Range:false, Exists: n.Endpoints.length>0,Values:n.Endpoints}];
+            
+                
+            
+            return facetes;
+        },
         endpointsAvailable: function () {
             return Endpoints.find({status: 'A'}).fetch();
         },
@@ -1582,6 +1700,11 @@ if (Meteor.isClient) {
             var rlist = dataSourceSearch(response);
             return rlist;
         },
+        BresultFullQuery: function (){
+            var n = Session.get("BResult");
+            return (n!=undefined && n == true);
+        }
+        ,
         NresultFullQuery: function () {
             var n = Session.get("NResult");
             if (n && n > 0) {
@@ -1598,7 +1721,16 @@ if (Meteor.isClient) {
                 return "glyphicon glyphicon-chevron-down";
             }
 
-        } ,
+        } , DespFac : function () {
+            var des = Session.get("DespFac");
+            if (des){
+                
+                return "glyphicon glyphicon-chevron-up";
+            } else {
+                return "glyphicon glyphicon-chevron-down";
+            }
+
+        },
         suggestedQueries: function () {
 
             var EntitySearch = get_radio_value("opciones");
@@ -2010,6 +2142,8 @@ if (Meteor.isClient) {
         "search-option": "Search by : " ,
         "advance-search": "Advance Search",
         "sug":"Suggestions",
+        "fac":"Faceted Search",
+        "noData":"No Data",
         "text-more":"more",
         "text-less":"less",
         "view-source":"View Source",
@@ -2156,6 +2290,8 @@ if (Meteor.isClient) {
         "search-option": "Buscando por : ",
         "advance-search": "Búsqueda Avanzada",
         "sug":"Sugerencias",
+        "fac":"Búsqueda por facetas",
+        "noData":"No hay datos",
         "text-more":"Más",
         "text-less":"Menos",
         "view-source":"Ver Fuente",

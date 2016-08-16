@@ -79,7 +79,8 @@ Hooks.onCreateUser = function (userId) {
  var usr = Meteor.users.findOne({'_id':userId});
 
   Profile.insert({idProfile: userId , nameUser: "", direction: "" , levelAcademic: "0", areasInterest: "", language: "es", password: "", secMail:  usr.emails[0].address , accessLevel: "0"});
- console.log ("Usuario Creado");
+  Meteor.users.update({_id:userId}, {$set:{"profile":{ lang: "es" ,  'access':0 }}});
+    console.log ("Usuario Creado");
  console.log (usr.emails[0].address);
 
 
@@ -285,6 +286,8 @@ String.prototype.keyword = function () {
     }
     return str;
 }
+var num_auto=0;
+
     Meteor.startup(function () {
         
         
@@ -302,7 +305,102 @@ String.prototype.keyword = function () {
       }
     });
     
-    
+    SyncedCron.add({
+      name: 'UpdateSugg',
+      schedule: function(parser) {
+        // parser is a later.parse object
+        return parser.text('every 1 seconds');
+      },
+      job: function() {
+
+
+	var endp = Endpoints.find().fetch();
+	for (;;){
+	        var pend= Cache.find({queue:{ $exists: true }}, {sort: { qord: -1 },limit: 1}).fetch();
+		if (pend.length ==0){
+			endp = Endpoints.find().fetch();
+			Meteor._sleepForMs(500000);
+			continue;
+		}
+		var sug = pend[0];	
+		if (sug.resp.length !=0){
+			var sidat=Cache.find({queue:{ $exists: true }, resp:{$size:0} }, {sort: { qord: -1 },limit: 1}).fetch();
+			if(sidat.length >0 ){
+				sug=sidat[0];
+			}
+		}
+		var query=sug.query;
+              	var clas_=sug.clas_;
+             	var lsend=sug.lsend;
+		var cont=sug.cont;
+		var resp = sug.resp;
+		var spar="select distinct ?p ?Score { (?e ?Score ?p) <http://jena.apache.org/text#query> (<---> '___' 3) } order by desc(?Score)";
+		spar=spar.replace(new RegExp("___", "g"), query);
+		var proper=[];
+                switch(clas_){
+                    case 'P':
+                        proper.push('http://xmlns.com/foaf/0.1/name');
+                        break;
+                    case 'D':
+                        proper.push('http://purl.org/dc/terms/subject');
+                        proper.push('http://purl.org/dc/terms/title');
+                        break;
+                    case 'C':
+                        proper.push('http://purl.org/dc/terms/description');
+                        break;
+                    case 'T':
+                        proper.push('http://xmlns.com/foaf/0.1/name');
+                        proper.push('http://purl.org/dc/terms/subject');
+                        proper.push('http://purl.org/dc/terms/description');
+                        proper.push('http://purl.org/dc/terms/title');
+                        break;
+                }
+		if (lsend==null){
+			var foo = [];
+			for (var i = 0; i < endp.length; i++) {
+			   foo.push(i);
+			}
+			lsend=foo;
+		}
+		var endpoint_i= Math.floor(cont / proper.length);
+		var prope_i = cont % proper.length;
+		var endpoint = endp[lsend[endpoint_i]];
+		var _spar=spar.replace(new RegExp("---", "g"), proper[prope_i]);
+                var result = Meteor.call('doQueryCacheStats', {sparql: _spar, ep: endpoint.endpoint, gr: endpoint.graphURI});
+		var r = result.resultSet.value;
+                var lsp = JSON.parse(r).results.bindings;
+		for (var k=0; k<lsp.length; k++){
+	                resp.push({d: lsp[k].p.value, s: lsp[k].Score.value});
+                }
+		var respo = resp.sort(function(a, b){ return b.s-a.s ; });
+                var resp2 = respo.map(function (d){ return d.d; });
+                var unique = resp2.filter(function(elem, index, self) {
+                    var indx=-1;
+                    for (var w=0; w<self.length; w++){
+                        if (self[w].removeDiacritics().toLowerCase() == elem.removeDiacritics().toLowerCase()){
+                            indx=w;
+                        }
+                    }
+                    return index == indx;
+                });
+		if (cont==0){
+	                Cache.insert({keyl:sug.queue, value:unique.slice(0,5),cacheable:false,ttl_date: new Date()});    
+                }else{
+                        Cache.update({keyl:sug.queue},{$set: {value:unique.slice(0,5),cacheable:false,ttl_date: new Date()}}); 
+                }
+		if (lsend.length -1 == endpoint_i && prope_i == proper.length-1){
+			Cache.update({keyl:sug.queue},{$set: {cacheable:true}});  
+			Cache.remove({queue:sug.queue});
+		}else{
+			cont=cont+1;
+			Cache.update({queue:sug.queue},{$set: {cont:cont,resp:resp}}); 
+		}
+	}
+
+
+        return 0;
+      }
+    });
 
 
         
@@ -324,6 +422,8 @@ String.prototype.keyword = function () {
         Cache._ensureIndex({'keyl': 1});
         Cache._ensureIndex({'key': 1, 'nresult':1});
         Cache._ensureIndex({'ttl_date': 1}, {'expireAfterSeconds':1209600});
+        Cache._ensureIndex({'queue': 1,'qord':-1});
+        Cache._ensureIndex({'queue': 1});
         
         // code to run on server at startup
         //Meteor.call('getEndpointStructure', 'http://190.15.141.102:8890/sparql', 'http://dspace.ucuenca.edu.ec/resource/');
@@ -594,7 +694,6 @@ String.prototype.keyword = function () {
 
             },
             doQueryCacheStats: function (a) {
-                this.unblock();
                 var f = a.fast != undefined ? a.fast : false;
                 var g = a.timeout ? a.timeout : 30000;
                 var h = {};
@@ -610,12 +709,14 @@ String.prototype.keyword = function () {
                     h.msg = "Base Endpoint is not registered!";
                 } else{
                     try {
-                        var j = a.sparql.trim().hashCode();
+			var aep= a.ep != undefined ? a.ep : i.endpoint;
+                        var agr= a.gr != undefined ? a.gr : i.graphURI;
+                        var j = (aep+agr+a.sparql).trim().hashCode();
                         var k = Cache.find({key: j}).fetch();
                         var l = {};
                         if (0 == k.length && !f) {
                             lr=true;
-                            l = Meteor.call("runQuery", i.endpoint, i.graphURI, a.sparql, undefined, g);
+                            l = Meteor.call("runQuery", aep, agr, a.sparql, undefined, g);
                             Cache.insert({
                                 key: j,
                                 value: l.content,
@@ -637,6 +738,7 @@ String.prototype.keyword = function () {
                 return h;
             },
             doQueryCache: function (a) {
+                 var FacSe = a.Faceted ? a.Faceted : [];
                 var c = a.ApplyFilter ? a.ApplyFilter : false;
                 var d = a.MainVar ? a.MainVar : "";
                 var e = a.offset ? a.offset : 0;
@@ -659,6 +761,155 @@ String.prototype.keyword = function () {
                         else
                             console.log("==Avoiding SPARQL validation on client");
                         var j = a.sparql.trim().hashCode();
+                        ///Faceted
+                        if(FacSe.length !=0 ){
+                            var kFaceted = Cache.findOne({key: j});   
+                            if (kFaceted){
+                                var all = [];
+                                
+                                for (var j_ = 0; j_ < FacSe.length; j_++){
+                                    
+                                    var all_ = {}
+                                    var fac = FacSe[j_];
+                                    if (fac.key == 'Year'){
+                                        var i__=fac.value[0];
+                                        var f__=fac.value[1];
+                                        all_= {$or: [{faceted: {$elemMatch: {key:'Year', value:{$gte:i__,$lte:f__}}} }, {faceted: {$elemMatch: {key:'Year', value:null}} }]};
+                                    }else{
+                                        var or_= [];
+                                        for (var q = 0; q < fac.value.length; q++){
+                                            or_.push({faceted: {$elemMatch: {key:fac.key, value:fac.value[q]}}});
+                                        }
+                                        all_={$or:or_};
+                                    }
+                                    all.push(all_);
+                                }
+                                all.push({key: j});
+                                console.log(JSON.stringify({$and : all }));
+                                var k = Cache.find({$and : all }, {sort:{nresult:1, firstResult:-1}}).fetch();
+                                var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
+                                var y = {};
+                                var z = {};
+                                if (k2.length > 0) {
+                                    y = k2[0].value;
+                                    z = JSON.parse(y.content);
+                                    if (z.results) {
+                                        z.results.bindings = [];
+                                    }
+                                }
+                                
+                                var r = {};
+                                var s = 0;
+                                var FacetedResum_Years=[];
+                                var FacetedResum_Endpoints=[];
+                                var FacetedResum_Langs=[];
+                                var FacetedResum_Types=[];
+                                
+                                for (var t = 0; t < k.length; t++) {
+                                    var FA = k[t].faceted;
+                                    if(k[t].firstResult){
+                                        var FacetedResum_Years2= FacetedResum_Years.filter(function(d){ return d.key == FA[0].value; });
+                                        if (FacetedResum_Years2.length >0){
+                                            var indx=FacetedResum_Years.indexOf(FacetedResum_Years2[0]);
+                                            FacetedResum_Years[indx].count = FacetedResum_Years[indx].count+1;
+                                        }else{
+                                            FacetedResum_Years.push({key:FA[0].value, count:1});
+                                        }
+                                        var FacetedResum_Endpoints2= FacetedResum_Endpoints.filter(function(d){ return d.key == FA[1].value; });
+                                        if (FacetedResum_Endpoints2.length >0){
+                                            var indx=FacetedResum_Endpoints.indexOf(FacetedResum_Endpoints2[0]);
+                                            FacetedResum_Endpoints[indx].count = FacetedResum_Endpoints[indx].count+1;
+                                        }else{
+                                            FacetedResum_Endpoints.push({key:FA[1].value, count:1});
+                                        }
+                                        var FacetedResum_Langs2= FacetedResum_Langs.filter(function(d){ return d.key == FA[2].value; });
+                                        if (FacetedResum_Langs2.length >0){
+                                            var indx=FacetedResum_Langs.indexOf(FacetedResum_Langs2[0]);
+                                            FacetedResum_Langs[indx].count = FacetedResum_Langs[indx].count+1;
+                                        }else{
+                                            FacetedResum_Langs.push({key:FA[2].value, count:1});
+                                        }
+                                        var FacetedResum_Types2= FacetedResum_Types.filter(function(d){ return d.key == FA[3].value; });
+                                        if (FacetedResum_Types2.length >0){
+                                            var indx=FacetedResum_Types.indexOf(FacetedResum_Types2[0]);
+                                            FacetedResum_Types[indx].count = FacetedResum_Types[indx].count+1;
+                                        }else{
+                                            FacetedResum_Types.push({key:FA[3].value, count:1});
+                                        }
+                                }
+                                    //
+                                    var A = k[t].value;
+                                    var B = JSON.parse(A.content);
+                                    var v = k[t].nresult;
+                                    if (r["_" + v]!= undefined) {
+                                    } else {
+                                        if (!k[t].firstResult){
+                                            console.log(A.content);
+                                        }
+                                        if (B.results) {
+                                                if (B.results.bindings.length > 0) {
+                                                    
+                                                    console.log(B.results.bindings[0][''+d].value+"   "+s+"    "+k[t].firstResult);
+                                                    
+                                                }
+                                            } else {
+                                                console.log(B[''+d].value+"   "+s+"    "+k[t].firstResult);
+                                        }    
+                                        
+                                        r["_" + v] = s;
+                                        s += 1;
+                                    }
+                                    if(k[t].firstResult){
+                                    
+                                }
+                                    
+                                    
+                                    if (r["_" + v]>= e && r["_" + v]<e+f){
+                                        if (B.results) {
+                                            if (B.results.bindings.length > 0) {
+                                                z.results.bindings.push(B.results.bindings[0]);
+                                            }
+                                        } else {
+                                            z.results.bindings.push(B);
+                                        }
+                                    }
+                                }
+                                FacetedResum_Years.sort(function (a,b) {  if (a.key < b.key)    return -1;  if (a.key > b.key)    return 1;  return 0; });
+                                FacetedResum_Types.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
+                                FacetedResum_Endpoints.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
+                                FacetedResum_Langs.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
+                            
+                                
+                                
+                                   h.facetedTotalsN={Years:FacetedResum_Years,Endpoints:FacetedResum_Endpoints,Langs:FacetedResum_Langs,Types:FacetedResum_Types};
+                                
+                                
+                                
+                                
+                                
+                                
+                                y.content = JSON.stringify(z);
+                                h.resultSet = y;
+                                h.resultCount = s;
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                return h;
+                            }
+                        }
+                        //Faceted
                         var k = Cache.find({
                             key: j,
                             nresult: {
@@ -667,7 +918,9 @@ String.prototype.keyword = function () {
                             }
                         }).fetch();
                         var l = "";
+                        var cacheo=false;
                         if (0 == k.length) {
+                            cacheo=true;
                             l = Meteor.call("runQuery", i.endpoint, i.graphURI, a.sparql, undefined, g);
                             var m = JSON.parse(l.content);
                             if (c) {
@@ -684,17 +937,63 @@ String.prototype.keyword = function () {
                             }
                             var q = m.results.bindings.length;
                             var r = {};
+                            var r_Type = {};
+                            var r_Year = {};
+                            var r_Endpoint = {};
+                            var r_Lang = {};
                             var s = 0;
                             for (var t = 0; t < q; t++) {
+                                var un=false;
                                 var v = m.results.bindings[t]["" + d].value;
                                 if (r["" + v]!= undefined) {
                                 } else {
+                                    un=true;
                                     r["" + v] = s;
                                     s += 1;
                                 }
                                 var back = l.content;
                                 var JSONOut2 = {};
                                 var orgi = false;
+                                var fType=null;
+                                var fEndpoint=null;
+                                var fLang=null;
+                                var fYear=null;
+                                
+                                if (r_Type["" + v]!= undefined){
+                                    fType=r_Type["" + v];
+                                }else{
+                                    if (m.results.bindings[t].Type != undefined){
+                                            fType = m.results.bindings[t].Type.value;
+                                    }
+                                    r_Type["" + v]=fType;
+                                }
+                                if (r_Endpoint["" + v] != undefined){
+                                    fEndpoint = r_Endpoint["" + v];
+                                } else{
+                                    if (m.results.bindings[t].Endpoint != undefined){
+                                        fEndpoint = m.results.bindings[t].Endpoint.value;
+                                    }
+                                    r_Endpoint["" + v] = fEndpoint;
+                                }
+                                if (r_Lang["" + v] != undefined){
+                                    fLang = r_Lang["" + v];
+                                } else{
+                                    if (m.results.bindings[t].Lang != undefined){
+                                            fLang = m.results.bindings[t].Lang.value;
+                                    }
+                                    r_Lang["" + v] = fLang;
+                                }
+                                if (r_Year["" + v] != undefined){
+                                    fYear = r_Year["" + v];
+                                } else{
+                                    if (m.results.bindings[t].Year != undefined){
+                                            fYear = m.results.bindings[t].Year.value;
+                                    }
+                                    r_Year["" + v] = fYear;
+                                }
+                                
+                                
+                                
                                 if (t == 0) {
                                     var u = JSON.parse(l.content);
                                     u.results.bindings = [m.results.bindings[t]];
@@ -718,6 +1017,8 @@ String.prototype.keyword = function () {
                                     value: JSONOut2,
                                     ttl_date: new Date(),
                                     nresult: r["" + v],
+                                    faceted: [{key:'Year', value:Number(fYear) == 0 ? null:Number(fYear)  },{key:'Endpoint', value:fEndpoint},{key:'Lang', value:fLang},{key:'Type', value:fType}] ,
+                                    firstResult:un,
                                     original: orgi
                                 });
                                 l.content = back;
@@ -740,6 +1041,52 @@ String.prototype.keyword = function () {
                                     }];
                             }
                         }
+                        
+                        if (cacheo){
+                            //Facetas
+                            var years= Cache.distinct ('faceted.0.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Year'}}});
+                            var years2 = [];
+                            for (var s=0; s<years.length; s++){
+                                var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Year', value:years[s]}}}).count();
+                                years2.push({key:years[s], count: re_co});  
+                            }
+                            var endpoints= Cache.distinct ('faceted.1.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Endpoint'}}});
+                            var endpoints2 = [];
+                            for (var s=0; s<endpoints.length; s++){
+                                var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Endpoint', value:endpoints[s]}}}).count();
+                                endpoints2.push({key:endpoints[s], count: re_co});    
+                            }
+                            var langs= Cache.distinct ('faceted.2.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Lang'}}});
+                            var langs2 = [];
+                            for (var s=0; s<langs.length; s++){
+                                var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Lang', value:langs[s]}}}).count();
+                                langs2.push({key:langs[s], count: re_co});    
+                            }
+                            var types= Cache.distinct ('faceted.3.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Type'}}});
+                            console.log(types+"  "+j);
+                            var types2 = [];
+                            for (var s=0; s<types.length; s++){
+                                var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Type', value:types[s]}}}).count();
+                                types2.push({key:types[s], count: re_co});    
+                            }
+                            
+                            years2.sort(function (a,b) {  if (a.key < b.key)    return -1;  if (a.key > b.key)    return 1;  return 0; });
+                            types2.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
+                            endpoints2.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
+                            langs2.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
+                            
+                            years2 = years2.filter(function (d){return d.count>0;});
+                            types2 = types2.filter(function (d){return d.count>0;});
+                            endpoints2 = endpoints2.filter(function (d){return d.count>0;});
+                            langs2 = langs2.filter(function (d){return d.count>0;});
+                            
+                            var k2_up = Cache.update({key: j, original: true}, {$set:{facetedTotals: {Years: years2, Endpoints: endpoints2, Langs: langs2, Types: types2}}});
+                        }
+
+                        
+                        
+                        
+                        //
                         var w = Cache.find({
                             key: j
                         }, {
@@ -755,8 +1102,10 @@ String.prototype.keyword = function () {
                         var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
                         var y = {};
                         var z = {};
+                        var facetedTotals ={};
                         if (k2.length > 0) {
                             y = k2[0].value;
+                            facetedTotals = k2[0].facetedTotals;
                             z = JSON.parse(y.content);
                             if (z.results) {
                                 z.results.bindings = [];
@@ -781,6 +1130,7 @@ String.prototype.keyword = function () {
                         y.content = JSON.stringify(z);
                         h.resultSet = y;
                         h.resultCount = x;
+                        h.facetedTotals = facetedTotals;
                     } catch (C) {
                         console.log(C.stack);
                         h.statusCode = 400;
@@ -980,7 +1330,7 @@ String.prototype.keyword = function () {
                 return response;
 
             },
-            getSuggestions: function (text,clas_, mode_, lsend){
+            getSuggestions: function (text,clas_, lsend){
                 this.unblock();
                 if (text==null || lsend!=null && lsend.length ==0 ){
                     return {data:[], cacheable:true};
@@ -990,110 +1340,64 @@ String.prototype.keyword = function () {
                     return {data:[], cacheable:true};
                 }
                 var strend ='';
-                var endp = Endpoints.find().fetch();
                 if(lsend !=null){
                     for (var g=0; g<lsend.length; g++){
                         strend+=lsend[g]+"__";
                     }
                 }else{
-                    for (var i = 0; i < endp.length; i++) {
-                        strend+=i+"__";
-                    }
+                        strend="ALL__";
                 }
-                var words = text2.split(" ").filter(function(d){return d!=="";});
-                for (var i=0; i< words.length; i++){
-                    if (i == words.length-1){
-                        words[i]="("+words[i]+"* OR "+words[i]+"~ OR "+words[i]+")";
-                    }else{
-                            words[i]="("+words[i]+"~ OR "+words[i]+")";
-                    }
-                }
-                words.sort();
-                var query="";
-                for (var i=0; i< words.length; i++){
-                    query+=words[i];
-                    if (i != words.length-1){
-                        query+=" AND ";
-                    }
-                }
-                query = "("+query+")";
-                var txtcach=query+clas_+strend;
-                var txtcachhsh= txtcach.hashCode();
-                
-                var rcal=Cache.find({keyl: txtcachhsh}).fetch();
-                if (rcal.length>0){
-                    return {data:rcal[0].value, cacheable:true};
-                }
-                var spar="select * {service <%%%> {select distinct ?p ?Score { (?e ?Score ?p) <http://jena.apache.org/text#query> (<---> '___' 3) }}}";
-                spar=spar.replace(new RegExp("___", "g"), query);
-                var proper=[];
-                switch(clas_){
-                    case 'P':
-                        proper.push('http://xmlns.com/foaf/0.1/name');
-                        break;
-                    case 'D':
-                        proper.push('http://purl.org/dc/terms/subject');
-                        proper.push('http://purl.org/dc/terms/title');
-                        break;
-                    case 'C':
-                        proper.push('http://purl.org/dc/terms/description');
-                        break;
-                    case 'T':
-                        proper.push('http://xmlns.com/foaf/0.1/name');
-                        proper.push('http://purl.org/dc/terms/subject');
-                        proper.push('http://purl.org/dc/terms/description');
-                        proper.push('http://purl.org/dc/terms/title');
-                        break;
-                }
-                
-                var resp=[];
-                var cn=0;
-                
-                var cach=true;
-                for (var i = 0; i < endp.length; i++) {
-                    if (lsend!=null && lsend.indexOf(i) == -1){
-                        continue;
-                    }
-                    var endpoint = endp[i];
-                    for (var j=0; j < proper.length; j++){
-                            var _spar=spar.replace(new RegExp("---", "g"), proper[j]).replace(new RegExp("%%%", "g"), endpoint.endpoint); 
-                            var result = Meteor.call('doQueryCacheStats', {sparql: _spar, fast: mode_});
-                            if (result.resultSet.value != undefined){
-                                if (!result.lr && !mode_){
-                                    return {data:[], cacheable:false};
-                                }
-                                var r = result.resultSet.value;
-                                var lsp = JSON.parse(r).results.bindings;
-                                for (var k=0; k<lsp.length; k++){
-                                    resp.push({d: lsp[k].p.value, s: lsp[k].Score.value});
-                                }
-                            }else{
-                                cach=false;
-                                if(mode_ && cn<15 && resp.length==0){
-                                    cn++;
-                                    Meteor._sleepForMs(500);
-                                    j--;
-                                }
-                            }
-                    }
-                }
-                resp.sort(function(a, b){
-                    return b.s-a.s ;
-                });
-                var resp2 = resp.map(function (d){ return d.d; });
-                var unique = resp2.filter(function(elem, index, self) {
-                    var indx=-1;
-                    for (var w=0; w<self.length; w++){
-                        if (self[w].removeDiacritics().toLowerCase() == elem.removeDiacritics().toLowerCase()){
-                            indx=w;
+		var words = text2.split(" ").filter(function(d){return d!=="";});
+                    for (var i=0; i< words.length; i++){
+                        if (i == words.length-1){
+                            words[i]="("+words[i]+"* OR "+words[i]+"~ OR "+words[i]+")";
+                        }else{
+                                words[i]="("+words[i]+"~ OR "+words[i]+")";
                         }
                     }
-                    return index == indx;
-                });
-                if (cach){
-                    Cache.insert({keyl:txtcachhsh, value:unique.slice(0,5),ttl_date: new Date()});
+                    words.sort();
+                    var query="";
+                    for (var i=0; i< words.length; i++){
+                        query+=words[i];
+                        if (i != words.length-1){
+                            query+=" AND ";
+                        }
+                    }
+                    query = "("+query+")";
+
+
+                var txtcach=query+clas_+strend;
+                var txtcachhsh= txtcach.hashCode();
+                var rca=Cache.find({keyl:txtcachhsh}).fetch();
+                
+                
+                if (rca.length > 0){
+                    //console.log('cache');
+                    rca=rca[0];
+                    return {data:rca.value, cacheable:rca.cacheable};
+                }else{
+                    rca=Cache.find({queue:txtcachhsh}).fetch();
+                    if (rca.length ==0){
+                        //console.log('envio cache');
+			num_auto = (num_auto>10000)?0:num_auto+1;
+                        Cache.insert({queue:txtcachhsh,qord:num_auto, cont:0, resp:[] ,query:query, clas_:clas_, lsend:lsend});
+                    }
+                    for (var w=0; w<10; w++){
+                        rca=Cache.find({keyl:txtcachhsh}).fetch();
+                        if (rca.length > 0){
+                            rca=rca[0];
+                            if (rca.value.length > 0){
+                                return {data:rca.value, cacheable:rca.cacheable};
+                            }
+                            
+                        }
+                        Meteor._sleepForMs(500);
+
+                    }
+                    
                 }
-                return {data: unique.slice(0,5), cacheable: cach};
+                
+                return {data: [], cacheable: false};
             }
             ,
             findPrefix: function (URIMap) {

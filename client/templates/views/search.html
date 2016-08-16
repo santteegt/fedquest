@@ -60,7 +60,108 @@
 		<div class="second-area">
 	    <div class="row">
 			<div class="sugestion-area col-md-3"> 
-				<div class="sugestion-panel">
+                            
+                                <div class="sugestion-panel" id = "pfac">
+					<span id="Title-suggestion" > <b>{{lang "fac"}} </b>  </span>
+					<span class = "{{DespFac}}" id= "expandfac"  onclick = "desplegar2 (this)"  > </span>
+					<div class="result-suggestion collapse" id = "fac">
+                                            {{#if BresultFullQuery}}
+                                                
+                                                {{#each facetedOptions}}
+                                                    <h3>{{Title}}</h3>
+                                                    {{#if Range}}
+                                                    
+                                                        {{#if Exists}}
+                                                        <div id="slider-range" data-inf="{{Values2}}" data-min="{{Min}}" data-max="{{Max}}"></div>
+                                                            <p>
+                                                                <label for="amount">Range:</label>
+                                                                <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                                                              </p>
+                                                              <script>
+                                                                  $(function(){
+                                                                      facetedRange();
+                                                                      
+                                                                      
+                                                                  });
+                                                                  
+                                                                  </script>
+
+                                                                        {{else}}
+                                                                        {{lang "noData"}}
+                                                          {{/if}}
+                                                    {{else}}
+                                                    {{#if Exists}}
+                                                        <div class="input-group" >
+                                                        {{#each Values}}
+                                                            <div style="float: left;"><input type="checkbox" data-count="{{count}}" data-key="{{key}}" checked="true"  class="optional" name="fcls_{{Title}}"> ({{count}}) {{key2}}&nbsp;&nbsp;</div>
+                                                    
+                                                    
+                                                        {{/each}}
+                                                        </div>
+                                                    {{else}}
+                                                    {{lang "noData"}}
+                                                          {{/if}}
+                                                    {{/if}}
+                                                {{/each}}
+                                                <p>
+                                                 <span class="input-group-btn">
+                                                    <input type="button" value={{lang "run-query"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearchFaceted" >                   
+                                                </span>
+                                                </p>
+                                                <script>
+                                                    
+                                                    function get_checkList_values3(CheckName) {
+                                                    var inputs = document.getElementsByName(CheckName);
+                                                    var values = [];
+                                                    for (var i = 0; i < inputs.length; i++) {
+                                                        if (inputs[i].checked) {
+                                                            if (inputs[i].attributes['data-key']){
+                                                                values.push(inputs[i].attributes['data-key'].value);
+                                                            }else{
+                                                                values.push(null);
+                                                            }
+                                                        }
+                                                    }
+                                                    return values;
+                                                }
+                                                    
+                                                                        $( function() {
+                                                                     
+                                                        $('input.runSearchFaceted').on('click', function (ev) {
+
+                                                            //alert('d');
+                                                            var fac=[];
+
+                                                            if ($( "#slider-range" )){
+                                                                var f1={key:'Year', value:[$( "#slider-range" ).slider( "values", 0 ), $( "#slider-range" ).slider( "values", 1 )]};
+                                                                fac.push(f1);
+                                                            }
+
+                                                            var ls = get_checkList_values3 ( 'fcls_Types');
+                                                            fac.push({key:'Type', value:ls});
+
+                                                            var ls = get_checkList_values3 ( 'fcls_Endpoints');
+                                                            fac.push({key:'Endpoint', value:ls});
+                                                            var ls = get_checkList_values3 ( 'fcls_Langs');
+                                                            fac.push({key:'Lang', value:ls});
+
+
+                                                            var jsonRequest = Session.get('jsonRequest');
+                                                            jsonRequest['Faceted']=fac;
+                                                            Session.set('jsonRequest', jsonRequest);
+                                                            App.SearchRun(0, 3);
+
+                                                        });
+                                               } );
+                                                                        </script> 
+                                                
+                                            {{else}}
+                                                {{lang "noData"}}
+                                            {{/if}}
+					</div>
+				</div>
+                            
+				<div class="sugestion-panel" id = "psug">
 					<span id="Title-suggestion" > <b>{{lang "sug"}} </b>  </span>
 					<span class = "{{DespSug}}" id= "expandsugg"  onclick = "desplegar (this)"  > </span>
 					<div class="result-suggestion collapse" id = "sug">

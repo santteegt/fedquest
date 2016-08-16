@@ -22,6 +22,7 @@ caching-compiler@1.0.4
 caching-html-compiler@1.0.6
 callback-hook@1.0.8
 check@1.2.1
+coffeescript@1.0.17
 ddp@1.2.5
 ddp-client@1.2.7
 ddp-common@1.2.5
@@ -69,6 +70,7 @@ modules-runtime@0.6.3
 mongo@1.1.7
 mongo-id@1.0.4
 mrt:jquery-ui@1.9.2
+mrt:mongodb-aggregation@0.1.71
 npm-bcrypt@0.8.5
 npm-container@1.2.0
 npm-mongo@1.4.43

@@ -194,12 +194,21 @@ this.SearchView = Backbone.View.extend({
     setEvents: function (divNode) {
         var FromList = [];
         Session.set('DespSug', true);
+        Session.set('DespFac', true);
+        
+        $("#pfac").css ("min-height", "40px");
         $("#sug").collapse('show');
+        $("#fac").collapse('show');
 
         var term = Session.get('s1');
         var type = Session.get('s2');
         var base = Session.get('s3')
 /*
+ * 
+ * 
+ * 
+ * 
+ * 
         $(".imgfav").click(function (){ 
         //$(".change").removeClass("selected");
         alert ("click");
@@ -289,9 +298,9 @@ this.SearchView = Backbone.View.extend({
                 }
                 if (term != null && term.trim().length > 3) {
                     
-                    Meteor.call('getSuggestions', term, t__, false, get_checkList_values2('repositoriesList'), function (error, result) {
-                    });
-                    Meteor.call('getSuggestions', term, t__, true, get_checkList_values2('repositoriesList'), function (error, result) {
+                    //Meteor.call('getSuggestions', term, t__, false, get_checkList_values2('repositoriesList'), function (error, result) {
+                   // });
+                    Meteor.call('getSuggestions', term, t__, get_checkList_values2('repositoriesList'), function (error, result) {
                         //console.log(result);
                         try {
                             cache[ term ] = result.data;
@@ -361,6 +370,9 @@ cache = {};
             
         });
         
+
+
+
 
         $('input.runSearch').on('click', function (ev) {
 
@@ -446,7 +458,7 @@ cache = {};
 
             var Query = "prefix text:<http://jena.apache.org/text#>\n";
 
-            Query += 'select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score{\n';
+            Query += 'select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score ?Year ?Lang ?Type {\n';
                 
             if (!AppFilt) {
                 TextSearch = TextSearch.trim().replace(/\s+/g, ' ');
@@ -475,10 +487,13 @@ cache = {};
                         var Property_ = ResqLis[oneRes].indexProperties[oneProp];
                         var PropertyName_ = ResqLis[oneRes].indexPropertiesName[oneProp];
                         var Label_ = ResqLis[oneRes].labelProperty;
-                        Query += 'select distinct ?Score (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue\n';
+                        Query += 'select distinct ?Score (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue  ?Year ?Lang ?Type\n';
                         Query += '{\n';
                         Query += '(?EntityURI ?Score ?PropertyValue) text:query (<' + Property_ + '> \'(' + TextSearch + ')\' ' + ResultLimitSubQ + ') .\n?EntityURI <' + Label_ + '> ?EntityLabel .\n';
                         Query += 'filter(str(?PropertyValue)!=\'\') .\n';
+                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang .  } \n"
+                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year ).  }\n";
+                        Query += "optional { ?EntityURI a ?Type . filter (str(?Type) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type) != 'http://purl.org/ontology/bibo/Document')  } \n"
                         Query += '}\n';
                         if (!EndpointLocal) {
                             Query += '}\n';
@@ -979,7 +994,7 @@ function fuente(uri, base) {
        // $("#sug").collapse('toggle');
 
      if ( Session.get ('DespSug')) {
-        $(".sugestion-panel").css ("min-height", "40px");
+        $("#psug").css ("min-height", "40px");
         $("#sug").collapse('hide');
         Session.set('DespSug', false);
        // $(".sugestion-panel").css ("min-height", "400px");
@@ -987,6 +1002,23 @@ function fuente(uri, base) {
     } else {
         $("#sug").collapse('show');
         Session.set('DespSug', true);
+        //$(".sugestion-panel").css ("min-height", "400px");
+     //   $("#sug").collapse();
+    }
+      //alert ("Desplegar");
+    }
+desplegar2 = function (e) {
+       // $("#sug").collapse('toggle');
+
+     if ( Session.get ('DespFac')) {
+        $("#pfac").css ("min-height", "40px");
+        $("#fac").collapse('hide');
+        Session.set('DespFac', false);
+       // $(".sugestion-panel").css ("min-height", "400px");
+        
+    } else {
+        $("#fac").collapse('show');
+        Session.set('DespFac', true);
         //$(".sugestion-panel").css ("min-height", "400px");
      //   $("#sug").collapse();
     }

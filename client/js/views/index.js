@@ -54,9 +54,9 @@ this.IndexView = Backbone.View.extend({
                 }
                 if (term != null && term.trim().length > 3) {
                     
-                    Meteor.call('getSuggestions', term, t__, false, null, function (error, result) {
-                    });
-                    Meteor.call('getSuggestions', term, t__, true, null, function (error, result) {
+                    //Meteor.call('getSuggestions', term, t__, false, null, function (error, result) {
+                    //});
+                    Meteor.call('getSuggestions', term, t__, null, function (error, result) {
                         //console.log(result);
                         try {
                             cache[ term ] = result.data;
