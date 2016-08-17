@@ -319,7 +319,7 @@ var num_auto=0;
 	        var pend= Cache.find({queue:{ $exists: true }}, {sort: { qord: -1 },limit: 1}).fetch();
 		if (pend.length ==0){
 			endp = Endpoints.find().fetch();
-			Meteor._sleepForMs(500000);
+			Meteor._sleepForMs(500);
 			continue;
 		}
 		var sug = pend[0];	
@@ -417,7 +417,9 @@ var num_auto=0;
 
         Properties._ensureIndex({'endpoint': 1, 'graphURI': 1});
         
-        
+        Cache._ensureIndex({'key': 1, 'original':-1});
+        Cache._ensureIndex({'key': 1, 'firstResult':-1, 'faceted.key':1, 'faceted.value':1});
+        Cache._ensureIndex({'key': 1, 'faceted.key':1, 'faceted.value':1});
         Cache._ensureIndex({'key': 1});
         Cache._ensureIndex({'keyl': 1});
         Cache._ensureIndex({'key': 1, 'nresult':1});
@@ -738,7 +740,7 @@ var num_auto=0;
                 return h;
             },
             doQueryCache: function (a) {
-                 var FacSe = a.Faceted ? a.Faceted : [];
+                var FacSe = a.Faceted ? a.Faceted : [];
                 var c = a.ApplyFilter ? a.ApplyFilter : false;
                 var d = a.MainVar ? a.MainVar : "";
                 var e = a.offset ? a.offset : 0;
@@ -785,7 +787,7 @@ var num_auto=0;
                                     all.push(all_);
                                 }
                                 all.push({key: j});
-                                console.log(JSON.stringify({$and : all }));
+                                //console.log(JSON.stringify({$and : all }));
                                 var k = Cache.find({$and : all }, {sort:{nresult:1, firstResult:-1}}).fetch();
                                 var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
                                 var y = {};
@@ -843,27 +845,9 @@ var num_auto=0;
                                     var v = k[t].nresult;
                                     if (r["_" + v]!= undefined) {
                                     } else {
-                                        if (!k[t].firstResult){
-                                            console.log(A.content);
-                                        }
-                                        if (B.results) {
-                                                if (B.results.bindings.length > 0) {
-                                                    
-                                                    console.log(B.results.bindings[0][''+d].value+"   "+s+"    "+k[t].firstResult);
-                                                    
-                                                }
-                                            } else {
-                                                console.log(B[''+d].value+"   "+s+"    "+k[t].firstResult);
-                                        }    
-                                        
                                         r["_" + v] = s;
                                         s += 1;
                                     }
-                                    if(k[t].firstResult){
-                                    
-                                }
-                                    
-                                    
                                     if (r["_" + v]>= e && r["_" + v]<e+f){
                                         if (B.results) {
                                             if (B.results.bindings.length > 0) {

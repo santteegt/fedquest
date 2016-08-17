@@ -770,7 +770,7 @@ actAHyper = function (e) {
     resp = sq.match(new RegExp(" (.*) \.", "g")).filter(contieneType)[0];
     resp = resp.split(' ');
     var TypeVar = resp[resp.length - 2];
-    var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ", "g"), 'SELECT DISTINCT ' + txtvar + SearchVar + ' ');
+    var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ", "g"), 'SELECT DISTINCT ' + txtvar + SearchVar + '?Year ?Lang ?Type ');
     NewSQ = NewSQ.replace(new RegExp("FROM(.*)", "g"), '');
     var TextSearch = $(".textToSearch").val();
     if (respp == 2) {
@@ -813,6 +813,9 @@ actAHyper = function (e) {
             Query += 'service <' + Service + '> {\n';
         }
         var NewSQ2 = NewSQ.replace(new RegExp("SELECT DISTINCT", "g"), "SELECT DISTINCT ('" + ServiceName + "' AS ?Endpoint)");
+        //str.replace(/\}$/, '');
+        NewSQ2 = NewSQ2.replace(/\}$/, "optional { "+MainVar+" <http://purl.org/dc/terms/language> ?Lang .  } \noptional { "+MainVar+" <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year ).  }\n optional { "+MainVar+" a ?Type . filter (str(?Type) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type) != 'http://purl.org/ontology/bibo/Document')  } \n\n}");
+        
         Query += NewSQ2 + "\n";
         if (!EndpointLocal) {
             Query += '}\n';
