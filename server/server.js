@@ -763,6 +763,7 @@ var num_auto=0;
                         else
                             console.log("==Avoiding SPARQL validation on client");
                         var j = a.sparql.trim().hashCode();
+                        console.log(j);
                         ///Faceted
                         if(FacSe.length !=0 ){
                             var kFaceted = Cache.findOne({key: j});   
@@ -782,7 +783,9 @@ var num_auto=0;
                                         for (var q = 0; q < fac.value.length; q++){
                                             or_.push({faceted: {$elemMatch: {key:fac.key, value:fac.value[q]}}});
                                         }
-                                        all_={$or:or_};
+                                        if (or_.length >0){
+                                            all_={$or:or_};
+                                        }
                                     }
                                     all.push(all_);
                                 }
@@ -1047,7 +1050,7 @@ var num_auto=0;
                                 langs2.push({key:langs[s], count: re_co});    
                             }
                             var types= Cache.distinct ('faceted.3.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Type'}}});
-                            console.log(types+"  "+j);
+                            //console.log(types+"  "+j);
                             var types2 = [];
                             for (var s=0; s<types.length; s++){
                                 var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Type', value:types[s]}}}).count();

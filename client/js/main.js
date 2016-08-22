@@ -1680,12 +1680,13 @@ if (Meteor.isClient) {
             n.Endpoints = n.Endpoints.map(function (d){ d.Title='Endpoints';  return d; });
             
             
+            var bbl= (n.Langs.length>0);
             
             
             
             var facetes=[{Title:'Years', Range:true, Values:n.Years, Values2:JSON.stringify(n.Years), Exists: n.Years2.length>0, Min:n.Years2.length>0 ?n.Years2[0].key:0, Max:n.Years2.length>0 ?n.Years2[n.Years2.length-1].key:0 },
                 {Title:'Types', Range:false, Exists: n.Types.length>0,Values:n.Types},
-                {Title:'Languages', Range:false, Exists: n.Langs.length>0,Values:n.Langs},
+                {Title:'Languages', Range:false, Exists: bbl,Values:n.Langs},
                 {Title:'Endpoints', Range:false, Exists: n.Endpoints.length>0,Values:n.Endpoints}];
             
                 
