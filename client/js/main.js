@@ -85,6 +85,8 @@ if (Meteor.isClient) {
         waitingDialog.show();
         Meteor.call('doQueryCache', jsonRequest, function (error, result) {
 
+            
+
             if (result.statusCode != 200) {
                 console.log(result.stack);
                 $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g, '&#60;').replace(/[\n\r]/g, '<br/>')) : '');
@@ -1331,6 +1333,18 @@ if (Meteor.isClient) {
     }
 //JO*
 
+Template.profile.helpers({
+    IntAreas: function (){
+        
+        var inta=[];
+        for (var i=0; i<19;i++){
+            inta.push({lbl: lang.lang("FoS_"+i), pos:i});
+        }
+        return inta;
+    }
+});
+
+
     Template.dashboard.helpers({
         endpointsAvailable: function () {
             return Endpoints.find({status: 'A'}).fetch();
@@ -1684,10 +1698,10 @@ if (Meteor.isClient) {
             
             
             
-            var facetes=[{Title:'Years', Range:true, Values:n.Years, Values2:JSON.stringify(n.Years), Exists: n.Years2.length>0, Min:n.Years2.length>0 ?n.Years2[0].key:0, Max:n.Years2.length>0 ?n.Years2[n.Years2.length-1].key:0 },
-                {Title:'Types', Range:false, Exists: n.Types.length>0,Values:n.Types},
-                {Title:'Languages', Range:false, Exists: bbl,Values:n.Langs},
-                {Title:'Endpoints', Range:false, Exists: n.Endpoints.length>0,Values:n.Endpoints}];
+            var facetes=[{Title:lang.lang('lblYears'), Range:true, Values:n.Years, Values2:JSON.stringify(n.Years), Exists: n.Years2.length>0, Min:n.Years2.length>0 ?n.Years2[0].key:0, Max:n.Years2.length>0 ?n.Years2[n.Years2.length-1].key:0 },
+                {Title:lang.lang('lblTypes'), Range:false, Exists: n.Types.length>0,Values:n.Types},
+                {Title:lang.lang('lblLanguages'), Range:false, Exists: bbl,Values:n.Langs},
+                {Title:lang.lang('lblEndpoints'), Range:false, Exists: n.Endpoints.length>0,Values:n.Endpoints}];
             
                 
             
@@ -2130,6 +2144,37 @@ if (Meteor.isClient) {
       function language (){
 
             var idiomEng = {
+                
+                "lblRange":"Range",
+                "lblYears":"Years",
+                "lblTypes":"Types",                
+                "lblEndpoints":"Repositories",
+                "lblLanguages":"Languages",
+                                                
+                
+                
+                "FoS_0":"Art",
+                "FoS_1":"Biology",
+                "FoS_2":"Business",
+                "FoS_3":"Chemistry",
+                "FoS_4":"Computer science",
+                "FoS_5":"Economics",
+                "FoS_6":"Engineering",
+                "FoS_7":"Environmental science",
+                "FoS_8":"Geography",
+                "FoS_9":"Geology",
+                "FoS_10":"History",
+                "FoS_11":"Materials science",
+                "FoS_12":"Mathematics",
+                "FoS_13":"Medicine",
+                "FoS_14":"Philosophy",
+                "FoS_15":"Physics",
+                "FoS_16":"Political science",
+                "FoS_17":"Psychology",
+                "FoS_18":"Sociology",
+                
+                
+                
         "welcome-title":"Bibliographic Resources  Searcher",
         "resources-search":"Search by: All",
         "placeholder-search":"Terms of search",
@@ -2278,6 +2323,35 @@ if (Meteor.isClient) {
     };
 
     var idiomEsp = {
+        
+        
+        "lblRange":"Rango",
+        "lblYears":"Años",
+                "lblTypes":"Tipos",                
+                "lblEndpoints":"Repositorios",
+                "lblLanguages":"Lenguajes",
+        
+        
+        "FoS_0":"Arte",
+                "FoS_1":"Biología",
+                "FoS_2":"Negocios",
+                "FoS_3":"Química",
+                "FoS_4":"Ciencias de la computación",
+                "FoS_5":"Economía",
+                "FoS_6":"Ingeniería",
+                "FoS_7":"Ciencias medioambientales",
+                "FoS_8":"Geografía",
+                "FoS_9":"Geología",
+                "FoS_10":"Historia",
+                "FoS_11":"Ciencias de los materiales",
+                "FoS_12":"Matemáticas",
+                "FoS_13":"Medicina",
+                "FoS_14":"Filosofía",
+                "FoS_15":"Física",
+                "FoS_16":"Ciencias políticas",
+                "FoS_17":"Psicología",
+                "FoS_18":"Sociología",
+        
         "welcome-title":"Buscador de Recursos Bibliográficos.",
         "resources-search":"Buscando por: Todo",
         "placeholder-search":"Terminos de búsqueda",
@@ -2406,7 +2480,7 @@ if (Meteor.isClient) {
             "chemistry":"Química" ,
              "Email":"Correo Electrónico",
              "Spanish":"Español",
-             "English" : "Ingles" ,
+             "English" : "Inglés" ,
              "Access_Level":"Nivel de Acceso" ,
              "User":"Usuario Básico",
              "Advanced_User":"Usuario Avanzado" ,

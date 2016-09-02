@@ -60,6 +60,7 @@ meteor-platform@1.2.6
 meteorhacks:async@1.0.0
 meteorhacks:npm@1.5.0
 mfpierre:chartist-js@1.6.2
+mikowals:batch-insert@1.1.13
 minifier-css@1.1.11
 minifier-js@1.1.11
 minimongo@1.0.16

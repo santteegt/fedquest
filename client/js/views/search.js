@@ -458,7 +458,7 @@ cache = {};
 
             var Query = "prefix text:<http://jena.apache.org/text#>\n";
 
-            Query += 'select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score ?Year ?Lang ?Type {\n';
+            Query += 'select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type) (group_concat(?Sub1; separator = "#|#") as ?Sub) {\n';
                 
             if (!AppFilt) {
                 TextSearch = TextSearch.trim().replace(/\s+/g, ' ');
@@ -487,13 +487,14 @@ cache = {};
                         var Property_ = ResqLis[oneRes].indexProperties[oneProp];
                         var PropertyName_ = ResqLis[oneRes].indexPropertiesName[oneProp];
                         var Label_ = ResqLis[oneRes].labelProperty;
-                        Query += 'select distinct ?Score (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue  ?Year ?Lang ?Type\n';
+                        Query += 'select distinct ?Score (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue  ?Year1 ?Lang1 ?Type1 ?Sub1\n';
                         Query += '{\n';
                         Query += '(?EntityURI ?Score ?PropertyValue) text:query (<' + Property_ + '> \'(' + TextSearch + ')\' ' + ResultLimitSubQ + ') .\n?EntityURI <' + Label_ + '> ?EntityLabel .\n';
                         Query += 'filter(str(?PropertyValue)!=\'\') .\n';
-                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang .  } \n"
-                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year ).  }\n";
-                        Query += "optional { ?EntityURI a ?Type . filter (str(?Type) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type) != 'http://purl.org/ontology/bibo/Document')  } \n"
+                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/subject> ?Sub1 .  } \n"
+                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang1 .  } \n"
+                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n";
+                        Query += "optional { ?EntityURI a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document')  } \n"
                         Query += '}\n';
                         if (!EndpointLocal) {
                             Query += '}\n';
@@ -514,8 +515,8 @@ cache = {};
             });
 
 
-            Query += '} order by DESC(?Score)\n  ' + ResultLimit;
-            var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
+            Query += '} group by ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score order by DESC(?Score) \n  ' + ResultLimit;
+            var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI","ApplyFilter": AppFilt};
             console.log(jsonRequest);
             Session.set('jsonRequest', jsonRequest);
             App.SearchRun(0, 1);
@@ -770,7 +771,18 @@ actAHyper = function (e) {
     resp = sq.match(new RegExp(" (.*) \.", "g")).filter(contieneType)[0];
     resp = resp.split(' ');
     var TypeVar = resp[resp.length - 2];
-    var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ", "g"), 'SELECT DISTINCT ' + txtvar + SearchVar + '?Year ?Lang ?Type ');
+    
+    var varia='*';
+    var varia2='*';
+    var patt = new RegExp("SELECT DISTINCT(.*)\n",'g'); 
+    var res = patt.exec(sq); 
+    if (res !=null){
+        varia2=res[1]+' '+txtvar + SearchVar +' ?Endpoint';
+        varia=res[1]+' '+txtvar + SearchVar +' ?Endpoint (max(?Year1) as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type) (group_concat(?Sub1; separator = "#|#") as ?Sub)';
+    }
+    //Obtener original
+    
+    var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ", "g"), 'SELECT DISTINCT ' + txtvar + SearchVar + '?Year1 ?Lang1 ?Type1 ?Sub1');
     NewSQ = NewSQ.replace(new RegExp("FROM(.*)", "g"), '');
     var TextSearch = $(".textToSearch").val();
     if (respp == 2) {
@@ -785,7 +797,7 @@ actAHyper = function (e) {
         NewSQ = NewSQ.replace(new RegExp("'wildcard'", "g"), TextSearch);
     }
     var FromList = get_checkList_values("repositoriesList");
-    var Query = 'select * {\n';
+    var Query = 'select '+varia+' {\n';
     var SubQN = 0;
     var TitleVar = sq.match(new RegExp("SELECT DISTINCT (.*)", "g"))[0].replace(new RegExp("SELECT DISTINCT ", "g"), '').split(' ');
     var i = TitleVar.indexOf(MainVar);
@@ -811,23 +823,22 @@ actAHyper = function (e) {
         }
         if (!EndpointLocal) {
             Query += 'service <' + Service + '> {\n';
-        }
+        }        
         var NewSQ2 = NewSQ.replace(new RegExp("SELECT DISTINCT", "g"), "SELECT DISTINCT ('" + ServiceName + "' AS ?Endpoint)");
-        //str.replace(/\}$/, '');
-        NewSQ2 = NewSQ2.replace(/\}$/, "optional { "+MainVar+" <http://purl.org/dc/terms/language> ?Lang .  } \noptional { "+MainVar+" <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year ).  }\n optional { "+MainVar+" a ?Type . filter (str(?Type) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type) != 'http://purl.org/ontology/bibo/Document')  } \n\n}");
-        
+        NewSQ2 = NewSQ2.replace(/\}$/, "optional { "+MainVar+" <http://purl.org/dc/terms/subject> ?Sub1 .  } \n optional { "+MainVar+" <http://purl.org/dc/terms/language> ?Lang1 .  } \noptional { "+MainVar+" <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n optional { "+MainVar+" a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document')  } \n\n}");
+
         Query += NewSQ2 + "\n";
         if (!EndpointLocal) {
             Query += '}\n';
         }
         Query += '}\n';
     }
-    Query += '}\n';
+    Query += '} group by '+varia2+' \n';
     if (respp == 2) {
         Query += 'order by desc(?Score)\n';
     }
 
-    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''), "ApplyFilter": AppFilt};
+    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''),"ApplyFilter": AppFilt};
     Session.set('jsonRequest', jsonRequest);
     //Session.set('Qmode', 2);
     App.SearchRun(0, 2);

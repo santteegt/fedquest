@@ -286,6 +286,178 @@ String.prototype.keyword = function () {
     }
     return str;
 }
+
+var mlseconds=0;
+
+function TickTock(msj){
+    var d_d_ = new Date();
+    var n_n_ = d_d_.getTime();
+    var r=0;
+    if (mlseconds ==0){   
+        mlseconds=n_n_;
+        r = mlseconds;
+    }else{
+        r=(n_n_-mlseconds);
+        if (msj){
+            console.log(r);
+        }
+        mlseconds=0;
+    }
+    return r;
+}
+
+
+Array.prototype.unique= function(){
+    var a=this;
+    a=a.filter(function(item, pos) {
+        return a.indexOf(item) == pos;
+    });    
+    return a;
+}
+
+var similarity = require("similarity");
+
+function intersect(a, b) {
+    if (b.length==0 || a.length==0){
+        return 0;
+    }
+    var t;
+    if (b.length > a.length)
+    {t = b, b = a, a = t;} // indexOf to loop over shorter
+    return a.filter(function (e) {
+        for (var m=0; m<b.length; m++){
+           var sim= similarity(e, b[m]);
+           if (sim > 0.8){
+               b[m]="";
+               return true;
+           }
+        }
+        return false;
+    });
+}
+
+
+function Prio_IntA (tx, lsin){
+    var lsmat =[];
+    var txtl=tx ;
+    var txtl_= txtl.split(" ").unique().filter(function(d){return d!=="";});
+    var nu1=txtl_.length;
+    for (var i=0; i<lsin.length; i++) {
+        var txtl_2= lsin[i];
+        var nu2=txtl_2.length;
+        if (nu1>0 || nu2>0){
+            var vin = intersect(txtl_.slice(0),txtl_2.slice(0)).length / (nu1<nu2? nu1:nu2);
+            if (vin > 0.9 ){
+                lsmat.push(i%19);
+                lsin[i]=[];
+            }
+        }
+    }
+    return lsmat;
+}
+
+
+
+
+
+
+function Prio (idc,cons, ord, pon, idi, e, f, t, lsi){
+    
+    
+    var key =idc+'_'+JSON.stringify(cons)+'_'+ JSON.stringify(ord)+'_'+pon+'_'+idi+'_'+JSON.stringify(lsi);
+    
+    //console.log('key'+key);
+    
+    
+    var kwq= Cache.find({keyk:key.hashCode()}).fetch();
+    
+      var k=null;
+    
+    if(kwq.length ==0){
+        TickTock(true);
+                if (ord !=null){
+                          k=Cache.find(cons, ord).fetch();
+                  }else{
+                      k=Cache.find(cons).fetch();
+                  }
+
+                  if (k.length ==0){
+                      return k;
+                  }
+
+                            var rob={};
+                            for (var ii=0; ii< k.length; ii++){
+                                k[ii].score = Number(k[ii].score);
+                                var ponn=1;
+                                if (rob[k[ii].uri+''] != undefined){
+                                    ponn = rob[k[ii].uri+''];
+                                }else{
+                                    
+                                    if (k[ii].faceted[3].value != null &&  (k[ii].faceted[3].value == 'http://purl.org/net/nknouf/ns/bibtex#Mastersthesis' || k[ii].faceted[3].value == 'http://purl.org/ontology/bibo/Article') ){
+                                        //k[ii].score = k[ii].score * pon;
+                                        //console.log('type'+k[ii].uri+k[ii].score);
+                                        ponn+=pon-1;
+                                    }
+                                    if (k[ii].faceted[2].value != null &&  (k[ii].faceted[2].value == idi) ){
+                                        //k[ii].score = k[ii].score * 3;
+                                        //console.log('lang'+k[ii].uri+k[ii].score);
+                                        ponn+=2;
+                                    }
+
+                                    if (k[ii].sub!== null && k[ii].sub.length>0 ){
+                                        for (var tss=0; tss<lsi.length; tss++){
+                                            for (var tssz=0; tssz<k[ii].sub.length; tssz++){
+                                                if (lsi[tss] == k[ii].sub[tssz] ){
+                                                    //k[ii].score = k[ii].score * 2;
+                                                    ponn+=1;
+                                                    //console.log('inter'+k[ii].uri+k[ii].score); 
+                                                    break;
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                    rob[k[ii].uri+'']= ponn;
+                                    
+                                }
+                                k[ii].score = k[ii].score * ponn;
+                                
+                            }
+                            k= _.sortBy(k, function(o) { return -1*o.score; })
+                            var r__={};
+                            var s__=0;
+                            for (var ii=0; ii< k.length; ii++){
+                                //console.log(k[ii].uri+'  '+k[ii].score);
+                                if (r__[''+k[ii].uri] == undefined){
+                                    r__[''+k[ii].uri] = s__;
+                                    s__++;
+                                }
+                                k[ii].nresult=r__[''+k[ii].uri];
+                            }
+                            //k=k.sort(function (a,b){ return a.nresult>b.nresult;});
+                            k= _.sortBy(k, function(o) { return o.nresult; })
+                            
+                            
+                            Cache.insert({keyk:key.hashCode(), result:k, ttl_date: new Date()});
+                            TickTock(true);
+                        }else{
+                           k= kwq[0].result;
+                       }
+                            if (t){
+                               k=k.filter (function (d){return d.nresult>= e && d.nresult< e+f; });
+                            }
+                            return k;
+}
+
+
+
+
+
+
+
+
+
+
 var num_auto=0;
 
     Meteor.startup(function () {
@@ -420,12 +592,14 @@ var num_auto=0;
         Cache._ensureIndex({'key': 1, 'original':-1});
         Cache._ensureIndex({'key': 1, 'firstResult':-1, 'faceted.key':1, 'faceted.value':1});
         Cache._ensureIndex({'key': 1, 'faceted.key':1, 'faceted.value':1});
-        Cache._ensureIndex({'key': 1});
-        Cache._ensureIndex({'keyl': 1});
+        Cache._ensureIndex({'key': 1}, { unique: true });
+        Cache._ensureIndex({'keyl': 1}, { unique: true });
+        Cache._ensureIndex({'keyk': 1});
+        
         Cache._ensureIndex({'key': 1, 'nresult':1});
         Cache._ensureIndex({'ttl_date': 1}, {'expireAfterSeconds':1209600});
         Cache._ensureIndex({'queue': 1,'qord':-1});
-        Cache._ensureIndex({'queue': 1});
+        Cache._ensureIndex({'queue': 1}, { unique: true });
         
         // code to run on server at startup
         //Meteor.call('getEndpointStructure', 'http://190.15.141.102:8890/sparql', 'http://dspace.ucuenca.edu.ec/resource/');
@@ -738,7 +912,7 @@ var num_auto=0;
                 }
                 h.lr=lr; 
                 return h;
-            },
+            }, 
             doQueryCache: function (a) {
                 var FacSe = a.Faceted ? a.Faceted : [];
                 var c = a.ApplyFilter ? a.ApplyFilter : false;
@@ -756,14 +930,100 @@ var num_auto=0;
                 if (!i) {
                     h.statusCode = 400;
                     h.msg = "Base Endpoint is not registered!";
-                } else
+                } else {
                     try {
-                        if (a.validateQuery)
-                            b.parse(a.sparql);
-                        else
-                            console.log("==Avoiding SPARQL validation on client");
+                        if (a.validateQuery){
+                            b.parse(a.sparql);}
+                        else{
+                            console.log("==Avoiding SPARQL validation on client");}
                         var j = a.sparql.trim().hashCode();
-                        console.log(j);
+                        //console.log(j);
+                        //Get profile
+                        var usr = Profile.findOne({idProfile:this.userId});
+                        var appPri=false;
+                        var pon = 1;
+                        var idi = null;
+                        var lsareint=[];
+                        var lsareintP=[];
+                        //console.log(usr);
+                        
+                        var englsar={"FoS_0":"Art",
+                "FoS_1":"Biology",
+                "FoS_2":"Business",
+                "FoS_3":"Chemistry",
+                "FoS_4":"Computer science",
+                "FoS_5":"Economics",
+                "FoS_6":"Engineering",
+                "FoS_7":"Environmental science",
+                "FoS_8":"Geography",
+                "FoS_9":"Geology",
+                "FoS_10":"History",
+                "FoS_11":"Materials science",
+                "FoS_12":"Mathematics",
+                "FoS_13":"Medicine",
+                "FoS_14":"Philosophy",
+                "FoS_15":"Physics",
+                "FoS_16":"Political science",
+                "FoS_17":"Psychology",
+                "FoS_18":"Sociology"};
+            
+                var esplsar={"FoS_0":"Arte",
+                "FoS_1":"Biología",
+                "FoS_2":"Negocios",
+                "FoS_3":"Química",
+                "FoS_4":"Ciencias de la computación",
+                "FoS_5":"Economía",
+                "FoS_6":"Ingeniería",
+                "FoS_7":"Ciencias medioambientales",
+                "FoS_8":"Geografía",
+                "FoS_9":"Geología",
+                "FoS_10":"Historia",
+                "FoS_11":"Ciencias de los materiales",
+                "FoS_12":"Matemáticas",
+                "FoS_13":"Medicina",
+                "FoS_14":"Filosofía",
+                "FoS_15":"Física",
+                "FoS_16":"Ciencias políticas",
+                "FoS_17":"Psicología",
+                "FoS_18":"Sociología"};
+                        
+                        
+                       // console.log(this.userId);
+                        if (usr){
+                          //   console.log(usr);
+                            
+                            appPri=true;
+                            if (usr.levelAcademic==1){
+                                pon=2;
+                            }
+                            if (usr.levelAcademic==2){
+                                pon=3;
+                            
+                            }
+                            if (usr.areasInterest!=undefined &&  Array.isArray(usr.areasInterest) ){
+                                lsareint=usr.areasInterest;
+                            }
+                            
+                            var lsnn=[];
+                            
+                            for (var ik=0; ik<19; ik++){
+                                lsareintP.push(englsar['FoS_'+ik]);
+                                
+                            }
+                            for (var ik=0; ik<19; ik++){
+                                lsareintP.push(esplsar['FoS_'+ik]);  
+                                
+                            }
+                            
+                            lsnn=lsareintP;
+                            for (var n=0; n<lsnn.length;n++){
+                                lsnn[n] = lsnn[n].removeDiacritics().keyword().trim().toLowerCase().split(" ").unique().filter(function(d){return d!=="";});
+                            }
+                            lsareintP=lsnn;
+                            idi=usr.language;
+                        }
+                        //
+                        //
                         ///Faceted
                         if(FacSe.length !=0 ){
                             var kFaceted = Cache.findOne({key: j});   
@@ -791,7 +1051,13 @@ var num_auto=0;
                                 }
                                 all.push({key: j});
                                 //console.log(JSON.stringify({$and : all }));
-                                var k = Cache.find({$and : all }, {sort:{nresult:1, firstResult:-1}}).fetch();
+                                var k = null;
+                                if (!appPri){
+                                    k=Cache.find({$and : all }, {sort:{nresult:1, firstResult:-1}}).fetch();
+                                }else{
+                                    k=Prio(j,{$and : all },{sort:{nresult:1, firstResult:-1}}, pon, idi, e, f,false, lsareint);
+                                }
+                                
                                 var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
                                 var y = {};
                                 var z = {};
@@ -864,46 +1130,36 @@ var num_auto=0;
                                 FacetedResum_Years.sort(function (a,b) {  if (a.key < b.key)    return -1;  if (a.key > b.key)    return 1;  return 0; });
                                 FacetedResum_Types.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
                                 FacetedResum_Endpoints.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
-                                FacetedResum_Langs.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
-                            
-                                
+                                FacetedResum_Langs.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });            
                                 
                                    h.facetedTotalsN={Years:FacetedResum_Years,Endpoints:FacetedResum_Endpoints,Langs:FacetedResum_Langs,Types:FacetedResum_Types};
-                                
-                                
-                                
-                                
-                                
+
                                 
                                 y.content = JSON.stringify(z);
                                 h.resultSet = y;
                                 h.resultCount = s;
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
-                                
+
                                 return h;
                             }
                         }
                         //Faceted
-                        var k = Cache.find({
-                            key: j,
-                            nresult: {
-                                $gte: e,
-                                $lt: e + f
-                            }
-                        }).fetch();
+                        var k = null;
+                        if (!appPri){
+                            k=Cache.find({
+                                key: j,
+                                nresult: {
+                                    $gte: e,
+                                    $lt: e + f
+                                }
+                            }, {
+                                    sort: {
+                                        nresult: +1
+                                    }
+                                }).fetch();
+                        }else{
+                            k=Prio(j,{key: j},null, pon, idi, e, f,true, lsareint);
+                        }
+                        /////
                         var l = "";
                         var cacheo=false;
                         if (0 == k.length) {
@@ -924,11 +1180,11 @@ var num_auto=0;
                             }
                             var q = m.results.bindings.length;
                             var r = {};
-                            var r_Type = {};
-                            var r_Year = {};
-                            var r_Endpoint = {};
-                            var r_Lang = {};
+                            var r_Sub = {};
                             var s = 0;
+                            var timi=0.0;
+                            var bulk=[];
+                            //TickTock(true);
                             for (var t = 0; t < q; t++) {
                                 var un=false;
                                 var v = m.results.bindings[t]["" + d].value;
@@ -945,39 +1201,66 @@ var num_auto=0;
                                 var fEndpoint=null;
                                 var fLang=null;
                                 var fYear=null;
+                                var fScore=0.0;
+                                var fSub=null;
                                 
-                                if (r_Type["" + v]!= undefined){
-                                    fType=r_Type["" + v];
-                                }else{
+                                
+                                
+                                if (m.results.bindings[t].Score != undefined){
+                                            fScore = Number(m.results.bindings[t].Score.value);
+                                }
+                                   
+                                if (true){
+                                    if (r_Sub["" + v]!= undefined){
+                                        fSub=r_Sub["" + v];
+                                    }else{
+                                        if (m.results.bindings[t].Sub != undefined && m.results.bindings[t].Sub != null ){
+                                                var lsnn = m.results.bindings[t].Sub.value.removeDiacritics().keyword().trim().toLowerCase().split('#|#').unique().filter(function(d){return d!=="";});
+                                                var rresy=[]; 
+                                                var lsareintPP= lsareintP.slice(0);
+                                                for (var kw=0; kw<lsnn.length; kw++){
+                                                    var areinc = Prio_IntA(lsnn[kw], lsareintPP);
+                                                    rresy= rresy.concat(areinc);
+                                                }       
+                                                fSub = rresy.unique();
+                                        }
+                                        r_Sub["" + v]=fSub;
+
+                                    }
+                                }
+                                
+                               // if (r_Type["" + v]!= undefined){
+                                 //   fType=r_Type["" + v];
+                                //}else{
                                     if (m.results.bindings[t].Type != undefined){
                                             fType = m.results.bindings[t].Type.value;
                                     }
-                                    r_Type["" + v]=fType;
-                                }
-                                if (r_Endpoint["" + v] != undefined){
-                                    fEndpoint = r_Endpoint["" + v];
-                                } else{
+                                  //  r_Type["" + v]=fType;
+                               // }
+                               // if (r_Endpoint["" + v] != undefined){
+                                 //   fEndpoint = r_Endpoint["" + v];
+                               // } else{
                                     if (m.results.bindings[t].Endpoint != undefined){
                                         fEndpoint = m.results.bindings[t].Endpoint.value;
                                     }
-                                    r_Endpoint["" + v] = fEndpoint;
-                                }
-                                if (r_Lang["" + v] != undefined){
-                                    fLang = r_Lang["" + v];
-                                } else{
+                                 //   r_Endpoint["" + v] = fEndpoint;
+                               // }
+                              //  if (r_Lang["" + v] != undefined){
+                                //    fLang = r_Lang["" + v];
+                                //} else{
                                     if (m.results.bindings[t].Lang != undefined){
                                             fLang = m.results.bindings[t].Lang.value;
                                     }
-                                    r_Lang["" + v] = fLang;
-                                }
-                                if (r_Year["" + v] != undefined){
-                                    fYear = r_Year["" + v];
-                                } else{
+                                 //   r_Lang["" + v] = fLang;
+                               // }
+                               // if (r_Year["" + v] != undefined){
+                                //    fYear = r_Year["" + v];
+                               // } else{
                                     if (m.results.bindings[t].Year != undefined){
                                             fYear = m.results.bindings[t].Year.value;
                                     }
-                                    r_Year["" + v] = fYear;
-                                }
+                                //    r_Year["" + v] = fYear;
+                               // }
                                 
                                 
                                 
@@ -999,37 +1282,71 @@ var num_auto=0;
                                         delete JSONOut2.statusCode;
                                     }
                                 }
-                                Cache.insert({
+                                bulk.push({
                                     key: j,
-                                    value: JSONOut2,
+                                    value: JSON.parse(JSON.stringify(JSONOut2)),
                                     ttl_date: new Date(),
                                     nresult: r["" + v],
+                                    score:Number(fScore),
+                                    uri:v,
+                                    sub:fSub,
                                     faceted: [{key:'Year', value:Number(fYear) == 0 ? null:Number(fYear)  },{key:'Endpoint', value:fEndpoint},{key:'Lang', value:fLang},{key:'Type', value:fType}] ,
                                     firstResult:un,
                                     original: orgi
                                 });
+                                /*Cache.insert({
+                                    key: j,
+                                    value: JSONOut2,
+                                    ttl_date: new Date(),
+                                    nresult: r["" + v],
+                                    score:Number(fScore),
+                                    uri:v,
+                                    sub:fSub,
+                                    faceted: [{key:'Year', value:Number(fYear) == 0 ? null:Number(fYear)  },{key:'Endpoint', value:fEndpoint},{key:'Lang', value:fLang},{key:'Type', value:fType}] ,
+                                    firstResult:un,
+                                    original: orgi
+                                });*/
+                                
                                 l.content = back;
                             }
-                            k = Cache.find({
-                                key: j,
-                                nresult: {
-                                    $gte: e,
-                                    $lt: e + f
-                                }
-                            }, {
-                                sort: {
-                                    nresult: +1
-                                }
-                            }).fetch();
+
+                            Cache.batchInsert(bulk);
+                            //TickTock(true);
+                            //Limipiar
+                            r={};
+                            r_Sub={};
+                            m={};
+                            l={};
+                            bulk=[];
+                            
+                            if (!appPri){
+                                k = Cache.find({
+                                    key: j,
+                                    nresult: {
+                                        $gte: e,
+                                        $lt: e + f
+                                    }
+                                }, {
+                                    sort: {
+                                        nresult: +1
+                                    }
+                                }).fetch();
+                            }else{
+                                k=Prio(j,{key: j},null, pon, idi, e, f, true, lsareint);
+                            }
+                            
+                            //////
                             if (0 == q) {
                                 k = [{
                                         key: j,
                                         value: l
                                     }];
                             }
+                        }else{
                         }
                         
                         if (cacheo){
+                            //console.log('calculo facteted');
                             //Facetas
                             var years= Cache.distinct ('faceted.0.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Year'}}});
                             var years2 = [];
@@ -1124,6 +1441,7 @@ var num_auto=0;
                         h.msg = "Error executing SPARQL Query: See console for details";
                         h.stack = C.toString();
                     }
+                }
                 return h;
             },
             doQueryDesc: function (jsonRequest, endpoint) {
@@ -1991,7 +2309,7 @@ var num_auto=0;
         });
 
         //Update Prefixes schema on every server startup
-        Meteor.call('updatePrefixes');
+        //Meteor.call('updatePrefixes');
         SyncedCron.start();
 
     });

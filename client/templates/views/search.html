@@ -64,17 +64,17 @@
                                 <div class="sugestion-panel" id = "pfac">
 					<span id="Title-suggestion" > <b>{{lang "fac"}} </b>  </span>
 					<span class = "{{DespFac}}" id= "expandfac"  onclick = "desplegar2 (this)"  > </span>
-					<div class="result-suggestion collapse" id = "fac">
+					<div class="result-suggestion collapse" id = "fac" style="padding: 5px;">
                                             {{#if BresultFullQuery}}
                                                 
                                                 {{#each facetedOptions}}
-                                                    <h3>{{Title}}</h3>
+                                                    <h4>{{Title}}</h4>
                                                     {{#if Range}}
                                                     
                                                         {{#if Exists}}
                                                         <div id="slider-range" data-inf="{{Values2}}" data-min="{{Min}}" data-max="{{Max}}"></div>
                                                             <p>
-                                                                <label for="amount">Range:</label>
+                                                                <label for="amount">{{lang "lblRange"}}:</label>
                                                                 <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
                                                               </p>
                                                               <script>
