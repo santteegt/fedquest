@@ -195,25 +195,25 @@ this.SearchView = Backbone.View.extend({
         var FromList = [];
         Session.set('DespSug', true);
         Session.set('DespFac', true);
-        
-        $("#pfac").css ("min-height", "40px");
+
+        $("#pfac").css("min-height", "40px");
         $("#sug").collapse('show');
         $("#fac").collapse('show');
 
         var term = Session.get('s1');
         var type = Session.get('s2');
         var base = Session.get('s3')
-/*
- * 
- * 
- * 
- * 
- * 
-        $(".imgfav").click(function (){ 
-        //$(".change").removeClass("selected");
-        alert ("click");
-       $(this).attr ("src","/images/starblue.png");
-      });*/
+        /*
+         * 
+         * 
+         * 
+         * 
+         * 
+         $(".imgfav").click(function (){ 
+         //$(".change").removeClass("selected");
+         alert ("click");
+         $(this).attr ("src","/images/starblue.png");
+         });*/
 
 
         //      alert (term);
@@ -248,27 +248,27 @@ this.SearchView = Backbone.View.extend({
 
         var cache = {};
         var actu = {};
-        var strend ='';
-        
-        
+        var strend = '';
+
+
         //try{
         $("#mce-text").autocomplete({
             minLength: 3,
             source: function (request, response) {
-                
-                var strend2 ='';
+
+                var strend2 = '';
                 var lsend = get_checkList_values2('repositoriesList');
-                for (var g=0; g<lsend.length; g++){
-                    strend2+=lsend[g]+"__";
+                for (var g = 0; g < lsend.length; g++) {
+                    strend2 += lsend[g] + "__";
                 }
-                
-                if (strend !== strend2){
+
+                if (strend !== strend2) {
                     cache = {};
                     actu = {};
-                    strend=strend2;
+                    strend = strend2;
                 }
-                
-                
+
+
                 var term = request.term;
                 if (term in cache) {
                     if (cache[ term ].length > 0) {
@@ -297,9 +297,9 @@ this.SearchView = Backbone.View.extend({
                         break;
                 }
                 if (term != null && term.trim().length > 3) {
-                    
+
                     //Meteor.call('getSuggestions', term, t__, false, get_checkList_values2('repositoriesList'), function (error, result) {
-                   // });
+                    // });
                     Meteor.call('getSuggestions', term, t__, get_checkList_values2('repositoriesList'), function (error, result) {
                         //console.log(result);
                         try {
@@ -321,8 +321,8 @@ this.SearchView = Backbone.View.extend({
         });
         //}catch(e){
         //    console.log(e);
-            
-      //  }
+
+        //  }
 
         //$('#ui-id-1').css('text-align: center;');
 
@@ -334,15 +334,15 @@ this.SearchView = Backbone.View.extend({
         var prev;
         $("#documentos2").click(function () {
             cache = {};
-                    actu = {};
+            actu = {};
             var val = 'documentos';
             prev = selec2(prev, val);
 
         });
 
         $("#autores2").click(function () {
-cache = {};
-                    actu = {};
+            cache = {};
+            actu = {};
             var val = 'autores';
             prev = selec2(prev, val);
             console.log($('input[data-name=' + base + ']'));
@@ -350,26 +350,27 @@ cache = {};
 
         $("#colecciones2").click(function () {
             cache = {};
-                    actu = {};
+            actu = {};
             var val = 'colecciones';
             prev = selec2(prev, val);
         });
-        
+
         $('#AllRepo').on('click', function (ev) {
             if (document.getElementsByName('repositoriesListAll')[0].checked) {
-                var inputs = document.getElementsByName('repositoriesList'); 
-                for (var i = 0; i < inputs.length; i++){
-                    inputs[i].checked=true; inputs[i].disabled=true;
-                } 
+                var inputs = document.getElementsByName('repositoriesList');
+                for (var i = 0; i < inputs.length; i++) {
+                    inputs[i].checked = true;
+                    inputs[i].disabled = true;
+                }
             } else {
-                var inputs = document.getElementsByName('repositoriesList'); 
-                for (var i = 0; i < inputs.length; i++){
-                    inputs[i].disabled=false;
-                } 
+                var inputs = document.getElementsByName('repositoriesList');
+                for (var i = 0; i < inputs.length; i++) {
+                    inputs[i].disabled = false;
+                }
             }
-            
+
         });
-        
+
 
 
 
@@ -379,7 +380,7 @@ cache = {};
             //Session.set("auxAct", Session.get("auxAct") + 1);
             //App.resultCollection2.remove({});
             //var EntitySearch = get_radio_value("resourceType");
-               
+
 
             var EntitySearch = get_radio_value("opciones");
 
@@ -391,7 +392,7 @@ cache = {};
             }
 
             var TextSearch = $("input.textToSearch").val().clearWords();
-            var  originTextSearch  = $("input.textToSearch").val();
+            var originTextSearch = $("input.textToSearch").val();
             // alert(FromList);
             // console.log($('input[data-name='+base+']'));
             //console.log("Radio");
@@ -456,13 +457,38 @@ cache = {};
             }
 
 
+            //}
+                var usr = Profile.findOne({idProfile: Meteor.userId() });
+                var idi ='none';
+                var ty = '1';
+                var int='';
+                if(usr){
+                    idi = usr.language;
+                    if (usr.levelAcademic == 1) {
+                        ty = 2;
+                    }
+                    if (usr.levelAcademic == 2) {
+                        ty = 3;
+                    }
+                    if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
+                        var inte= usr.areasInterest;
+                        for (var sd=0; sd<inte.length; sd++){
+                            int +=lang.getDictionnary('es')['FoS_'+inte[sd]]+' ';
+                            int +=lang.getDictionnary('en')['FoS_'+inte[sd]]+' ';
+                        }
+                    }
+                }
+                if (int == ''){
+                    int ='_';
+                }
+            //
             var Query = "prefix text:<http://jena.apache.org/text#>\n";
 
-            Query += 'select ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type) (group_concat(?Sub1; separator = "#|#") as ?Sub) {\n';
-                
+            Query += 'select *  {\n';
+
             if (!AppFilt) {
                 TextSearch = TextSearch.trim().replace(/\s+/g, ' ');
-          
+
                 TextSearch = TextSearch.replace(/\s/g, " AND ");
             }
             var ResultLimitSubQ = (AppFilt) ? '15' : '1000';
@@ -487,15 +513,18 @@ cache = {};
                         var Property_ = ResqLis[oneRes].indexProperties[oneProp];
                         var PropertyName_ = ResqLis[oneRes].indexPropertiesName[oneProp];
                         var Label_ = ResqLis[oneRes].labelProperty;
-                        Query += 'select distinct ?Score (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue  ?Year1 ?Lang1 ?Type1 ?Sub1\n';
+                        Query += 'select   ?Score1 (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue  (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type)  ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,'+ty+',1)) as ?Score ) \n'; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
                         Query += '{\n';
-                        Query += '(?EntityURI ?Score ?PropertyValue) text:query (<' + Property_ + '> \'(' + TextSearch + ')\' ' + ResultLimitSubQ + ') .\n?EntityURI <' + Label_ + '> ?EntityLabel .\n';
+                        Query += '(?EntityURI ?Score1 ?PropertyValue) text:query (<' + Property_ + '> \'(' + TextSearch + ')\' ' + ResultLimitSubQ + ') .\n?EntityURI <' + Label_ + '> ?EntityLabel .\n';
                         Query += 'filter(str(?PropertyValue)!=\'\') .\n';
-                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/subject> ?Sub1 .  } \n"
-                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang1 .  } \n"
+                        Query += "optional { (?EntityURI ?Score2 ?PropertyValue2) text:query (<http://purl.org/dc/terms/subject> '("+int+")' ) .  } \n"
+                        //Query += "optional { ?EntityURI <http://purl.org/dc/terms/subject> ?Sub1 .  } \n"
+                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang1 .   } \n"
+                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang2 .  filter(str(?Lang2) = '"+idi+"'). bind( 1 as ?Score3  ).  } \n"
                         Query += "optional { ?EntityURI <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n";
-                        Query += "optional { ?EntityURI a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document')  } \n"
-                        Query += '}\n';
+                        Query += "optional { ?EntityURI a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document') .   } \n"
+                        Query += "optional { {?EntityURI a <http://purl.org/ontology/bibo/Article> .  bind(1 as ?Score4  ). } union { ?EntityURI a <http://purl.org/net/nknouf/ns/bibtex#Mastersthesis> .  bind(1 as ?Score4  ). }  } \n"
+                        Query += '} group by ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score1  \n';
                         if (!EndpointLocal) {
                             Query += '}\n';
                         }
@@ -503,31 +532,32 @@ cache = {};
                     }
                 }
                 var source = {};
-                source.Name = ServiceName; 
+                source.Name = ServiceName;
                 source.Endpoint = Service;
-                sources.push (source);
+                sources.push(source);
 
             }
-            console.log ("Hasta aqui");
-            console.log (sources);
-            var rest = Meteor.call('savesearch' , originTextSearch ,  sources , EntitySearch ,function (error, result) { 
-                console.log (result); 
-            });
+            console.log("Hasta aqui");
+            console.log(sources);
+            if (!_.isNull(Meteor.userId())) {
+                var rest = Meteor.call('savesearch', originTextSearch, sources, EntitySearch, function (error, result) {
+                    console.log(result);
+                });
+            }
 
-
-            Query += '} group by ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score order by DESC(?Score) \n  ' + ResultLimit;
-            var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI","ApplyFilter": AppFilt};
+            Query += ' . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
+            var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
             console.log(jsonRequest);
             Session.set('jsonRequest', jsonRequest);
             App.SearchRun(0, 1);
             //Session.set('Qmode', 1);
         });
-        
-        
+
+
         if (term != "null") {
             $(".textToSearch").val(term);
-            
-            
+
+
             switch (type) {
                 case 'autores':
                     $("#autores2").attr('checked', 'checked');
@@ -550,14 +580,14 @@ cache = {};
 });
 
 function darclick(FromList) {
-   // console.log("Dar click");
+    // console.log("Dar click");
 
     var result2 = Meteor.call('findAllEndpoints', function (error, en) {
         // FromList.push({attributes:{"data-base": true , "data-endpoint": result.endpoint , "data-graphuri" : result.graphURI }}) ;
         // alert("Hola");
-        for (var i=0; i< en.length; i++){
+        for (var i = 0; i < en.length; i++) {
             var result = en[i];
-            FromList.push({attributes: {"data-base": {"value": result.base}, "data-endpoint": {"value": result.endpoint}, "data-graphuri": {"value": result.graphURI}, "data-name": {"value": result.name}}});    
+            FromList.push({attributes: {"data-base": {"value": result.base}, "data-endpoint": {"value": result.endpoint}, "data-graphuri": {"value": result.graphURI}, "data-name": {"value": result.name}}});
             //FromList.push({attributes: {"data-base": {"value": true}, "data-endpoint": {"value": result.endpoint}, "data-graphuri": {"value": result.graphURI}, "data-name": {"value": result.name}}});    
         }
         $('input.runSearch').click();
@@ -622,6 +652,7 @@ linkg = function (e) {
     var v2 = encodeURIComponent(en.endpoint);
     var v3 = encodeURIComponent(en.graphURI);
     window.open('/graph/' + v1 + '/' + v2 + '/' + v3);
+    interestitem (obj.attributes['data-uri'].value);
 };
 
 function Query(endpoint, graph, query) {
@@ -675,6 +706,7 @@ linkg2 = function (e) {
         }
     }
     );
+    interestitem (v1);
 };
 
 ValidateSuggestionQuery = function (query) {
@@ -696,7 +728,7 @@ ValidateSuggestionQuery = function (query) {
         if (respp == 1) {
             SearchVar = resp.split('(')[1].split(',')[0];
         } else {
-            SearchVar = resp.split(' ?Score ')[1].split(')')[0];
+            SearchVar = resp.split(' ?Score1 ')[1].split(')')[0];
         }
         errMsj = "Main variable not found";
         resp = sq.match(new RegExp("(.*) a", "g"))[0];
@@ -738,6 +770,32 @@ actAHyper = function (e) {
     //Session.set("auxAct", Session.get("auxAct") + 1);
     //App.resultCollection2.remove({});
 
+var usr = Profile.findOne({idProfile: Meteor.userId() });
+                var idi ='none';
+                var ty = '1';
+                var int='';
+                if(usr){
+                    idi = usr.language;
+                    if (usr.levelAcademic == 1) {
+                        ty = 2;
+                    }
+                    if (usr.levelAcademic == 2) {
+                        ty = 3;
+                    }
+                    if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
+                        var inte= usr.areasInterest;
+                        for (var sd=0; sd<inte.length; sd++){
+                            int +=lang.getDictionnary('es')['FoS_'+inte[sd]]+' ';
+                            int +=lang.getDictionnary('en')['FoS_'+inte[sd]]+' ';
+                        }
+                    }
+                }
+                if (int == ''){
+                    int ='_';
+                }
+
+
+
     var AppFilt = false;
     var r = e.currentTarget.attributes['data-title'];
     var w = Queries.find({title: r.value}).fetch();
@@ -763,26 +821,31 @@ actAHyper = function (e) {
     if (respp == 1) {
         SearchVar = resp.split('(')[1].split(',')[0];
     } else {
-        SearchVar = resp.split(' ?Score ')[1].split(')')[0];
-        txtvar = '?Score '
+        SearchVar = resp.split(' ?Score1 ')[1].split(')')[0];
+        txtvar = '?Score1 '
     }
     resp = sq.match(new RegExp("(.*) a", "g"))[0];
     var MainVar = resp.split(' ')[0];
     resp = sq.match(new RegExp(" (.*) \.", "g")).filter(contieneType)[0];
     resp = resp.split(' ');
     var TypeVar = resp[resp.length - 2];
-    
-    var varia='*';
-    var varia2='*';
-    var patt = new RegExp("SELECT DISTINCT(.*)\n",'g'); 
-    var res = patt.exec(sq); 
-    if (res !=null){
-        varia2=res[1]+' '+txtvar + SearchVar +' ?Endpoint';
-        varia=res[1]+' '+txtvar + SearchVar +' ?Endpoint (max(?Year1) as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type) (group_concat(?Sub1; separator = "#|#") as ?Sub)';
+
+    var varia = '*';
+    var varia2 = '*';
+    var patt = new RegExp("SELECT DISTINCT(.*)\n", 'g');
+    var res = patt.exec(sq);
+    if (res != null) {
+        if (respp == 1){
+            varia2 = res[1] + ' ' + txtvar + SearchVar + ' ?Endpoint ?Score1 ';
+        }else{
+            varia2 = res[1] + ' ' + txtvar + SearchVar + ' ?Endpoint';    
+        }
+        
+        varia = res[1] + ' ' + txtvar + SearchVar + ' ?Endpoint (max(?Year1) as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type) ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,'+ty+',1)) as ?Score ) '; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
     }
     //Obtener original
-    
-    var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ", "g"), 'SELECT DISTINCT ' + txtvar + SearchVar + '?Year1 ?Lang1 ?Type1 ?Sub1');
+
+    var NewSQ = sq.replace(new RegExp("SELECT DISTINCT ", "g"), 'SELECT DISTINCT ' + txtvar + SearchVar + ' ?Year1 ?Lang1 ?Type1 ?Score1 ?Score2 ?Score3 ?Score4 ');
     NewSQ = NewSQ.replace(new RegExp("FROM(.*)", "g"), '');
     var TextSearch = $(".textToSearch").val();
     if (respp == 2) {
@@ -797,7 +860,7 @@ actAHyper = function (e) {
         NewSQ = NewSQ.replace(new RegExp("'wildcard'", "g"), TextSearch);
     }
     var FromList = get_checkList_values("repositoriesList");
-    var Query = 'select '+varia+' {\n';
+    var Query = 'select ' + varia + ' {\n';
     var SubQN = 0;
     var TitleVar = sq.match(new RegExp("SELECT DISTINCT (.*)", "g"))[0].replace(new RegExp("SELECT DISTINCT ", "g"), '').split(' ');
     var i = TitleVar.indexOf(MainVar);
@@ -823,9 +886,15 @@ actAHyper = function (e) {
         }
         if (!EndpointLocal) {
             Query += 'service <' + Service + '> {\n';
-        }        
-        var NewSQ2 = NewSQ.replace(new RegExp("SELECT DISTINCT", "g"), "SELECT DISTINCT ('" + ServiceName + "' AS ?Endpoint)");
-        NewSQ2 = NewSQ2.replace(/\}$/, "optional { "+MainVar+" <http://purl.org/dc/terms/subject> ?Sub1 .  } \n optional { "+MainVar+" <http://purl.org/dc/terms/language> ?Lang1 .  } \noptional { "+MainVar+" <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n optional { "+MainVar+" a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document')  } \n\n}");
+        }
+        var NewSQ2 = NewSQ.replace(new RegExp("SELECT DISTINCT", "g"), "SELECT DISTINCT ('" + ServiceName + "' AS ?Endpoint) ?Score2 ?Score3 ?Score4 ");
+        var sr='';
+        if (respp == 2) {
+            sr="";
+        }else{
+            sr="  bind(1 as ?Score1). ";
+        }
+        NewSQ2 = NewSQ2.replace(/\}\n\}$/, sr+"optional { (" + MainVar + " ?Score2 ?PropertyValue2) <http://jena.apache.org/text#query> (<http://purl.org/dc/terms/subject> '("+int+")' ) .  } \n   optional { " + MainVar + " <http://purl.org/dc/terms/language> ?Lang1 .  } \n optional { " + MainVar + " <http://purl.org/dc/terms/language> ?Lang2 .  filter(str(?Lang2) = '"+idi+"'). bind( 1 as ?Score3  ).  } \n optional { " + MainVar + " <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n  optional { " + MainVar + " a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document')  } \n optional { {" + MainVar + " a <http://purl.org/ontology/bibo/Article> .  bind(1 as ?Score4  ). } union { " + MainVar + " a <http://purl.org/net/nknouf/ns/bibtex#Mastersthesis> .  bind(1 as ?Score4  ). }  } \n }} ");
 
         Query += NewSQ2 + "\n";
         if (!EndpointLocal) {
@@ -833,12 +902,12 @@ actAHyper = function (e) {
         }
         Query += '}\n';
     }
-    Query += '} group by '+varia2+' \n';
-    if (respp == 2) {
+    Query += '} group by ' + varia2 + ' \n';
+    //if (respp == 2) {
         Query += 'order by desc(?Score)\n';
-    }
+    //}
 
-    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''),"ApplyFilter": AppFilt};
+    var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''), "ApplyFilter": AppFilt};
     Session.set('jsonRequest', jsonRequest);
     //Session.set('Qmode', 2);
     App.SearchRun(0, 2);
@@ -889,11 +958,13 @@ qrmodalshow = function (e, base, type) {
 
     //  $("#qrarea2").qrcode ( {width: 125 ,height: 125,text: "http://localhost" });
     $("#myqrmodal").modal();
+    interestitem (e);
 }
 
 download = function (URI) {
     $("#mydwmodal").modal();
     $("#mydwmodal").attr("URI", URI);
+    interestitem (URI);
 
 
 }
@@ -964,20 +1035,26 @@ hide = function (e) {
         $(".oculto").css("display", "inline");
         //  alert ("Hola");
     }
-} 
+}
 
 
-    favaction = function ( uri , label) 
-   {
-   Meteor.call('savefavresource', uri , label , function (error, result) { 
-    console.log (result);
-   // alert (result);
-   });
-       
+favaction = function (uri, label)
+{
+    if (!_.isNull(Meteor.userId()) ){
+    Meteor.call('savefavresource', uri, label, function (error, result) {
+        console.log(result);
+        // alert (result);
+    });
+    } else {
+        alert ("Por favor, ingrese un usuario para utilizar esta característica");
+    }
 
+}
+
+rdflink = function (URI){
+   window.open(URI);
+     interestitem (URI);
    }
-  
-
 
 function fuente(uri, base) {
 
@@ -1004,37 +1081,49 @@ function fuente(uri, base) {
     );
 };
 
-    desplegar = function (e) {
-       // $("#sug").collapse('toggle');
+function interestitem (URI) {
+    
+    // alert (URI);
+    if (!_.isNull(Meteor.userId())) {
+     Meteor.call('saveinterest', URI  , function (error, result) { 
+    console.log (result);
+   // alert (result);
+   });
+    }
+    }
 
-     if ( Session.get ('DespSug')) {
-        $("#psug").css ("min-height", "40px");
+
+desplegar = function (e) {
+    // $("#sug").collapse('toggle');
+
+    if (Session.get('DespSug')) {
+        $("#psug").css("min-height", "40px");
         $("#sug").collapse('hide');
         Session.set('DespSug', false);
-       // $(".sugestion-panel").css ("min-height", "400px");
-        
+        // $(".sugestion-panel").css ("min-height", "400px");
+
     } else {
         $("#sug").collapse('show');
         Session.set('DespSug', true);
         //$(".sugestion-panel").css ("min-height", "400px");
-     //   $("#sug").collapse();
+        //   $("#sug").collapse();
     }
-      //alert ("Desplegar");
-    }
+    //alert ("Desplegar");
+}
 desplegar2 = function (e) {
-       // $("#sug").collapse('toggle');
+    // $("#sug").collapse('toggle');
 
-     if ( Session.get ('DespFac')) {
-        $("#pfac").css ("min-height", "40px");
+    if (Session.get('DespFac')) {
+        $("#pfac").css("min-height", "40px");
         $("#fac").collapse('hide');
         Session.set('DespFac', false);
-       // $(".sugestion-panel").css ("min-height", "400px");
-        
+        // $(".sugestion-panel").css ("min-height", "400px");
+
     } else {
         $("#fac").collapse('show');
         Session.set('DespFac', true);
         //$(".sugestion-panel").css ("min-height", "400px");
-     //   $("#sug").collapse();
+        //   $("#sug").collapse();
     }
-      //alert ("Desplegar");
-    }
+    //alert ("Desplegar");
+}

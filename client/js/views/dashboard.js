@@ -435,7 +435,7 @@ this.DashboardView = Backbone.View.extend({
                         }
 //JO
                         if (applyRegexFilter2) {
-                            _whereClause2 += "\n(" + _entityField + ' ?Score ' + _cfield + ') <http://jena.apache.org/text#query> (<' + _cptype + '> "' + _cfieldValue + '" @0@).';
+                            _whereClause2 += "\n(" + _entityField + ' ?Score1 ' + _cfield + ') <http://jena.apache.org/text#query> (<' + _cptype + '> "' + _cfieldValue + '" @0@).';
                         }
                         if (!applyRegexFilter1 && !applyRegexFilter2) {
 //JO

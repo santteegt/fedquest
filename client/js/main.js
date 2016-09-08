@@ -1,26 +1,26 @@
 if (Meteor.isClient) {
- 
-  var _logout = Meteor.logout;
-  Meteor.logout = function customLogout() {
-    // Do your thing here
-   // window.open('/',"_self" );
-  // alert ("Salio");
-    _logout.apply(Meteor, arguments);
-    window.open('/',"_self" );
-  }
 
-  /* Accounts.onLogin  = function customhello () {
-    alert ("Hola");
-  }*/
-  /*
-  Meteor.login = function customLogin() {
-    // Do your thing here
-   // window.open('/',"_self" );
-   alert ("Salio");
-   // _logout.apply(Meteor, arguments);
-    //window.open('/',"_self" );
-  }*/
-  
+    var _logout = Meteor.logout;
+    Meteor.logout = function customLogout() {
+        // Do your thing here
+        // window.open('/',"_self" );
+        // alert ("Salio");
+        _logout.apply(Meteor, arguments);
+        window.open('/', "_self");
+    }
+
+    /* Accounts.onLogin  = function customhello () {
+     alert ("Hola");
+     }*/
+    /*
+     Meteor.login = function customLogin() {
+     // Do your thing here
+     // window.open('/',"_self" );
+     alert ("Salio");
+     // _logout.apply(Meteor, arguments);
+     //window.open('/',"_self" );
+     }*/
+
 
 
     window.d3 = require("d3");
@@ -51,8 +51,8 @@ if (Meteor.isClient) {
     this.Endpoints = new Meteor.Collection("endpoints");
     this.Queries = new Meteor.Collection("queries");
     this.Profile = new Meteor.Collection("profile");
-    this.Searchs = new Meteor.Collection ("searchs");
-    this.Favresources = new Meteor.Collection ("favresources");
+    this.Searchs = new Meteor.Collection("searchs");
+    this.Favresources = new Meteor.Collection("favresources");
     this.App.resultCollection = new Meteor.Collection(null);
     this.App.resultCollection2 = new Meteor.Collection(null);
     this.App.resultCollection3 = new Meteor.Collection(null);
@@ -85,7 +85,7 @@ if (Meteor.isClient) {
         waitingDialog.show();
         Meteor.call('doQueryCache', jsonRequest, function (error, result) {
 
-            
+
 
             if (result.statusCode != 200) {
                 console.log(result.stack);
@@ -101,26 +101,26 @@ if (Meteor.isClient) {
                     if (qm > 0) {
                         pa = -1;
                         Session.set("NResult", result.resultCount);
-                        if (qm !=3){
+                        if (qm != 3) {
                             //$("#fac").empty();;
-                            
-                            
+
+
                             Session.set("BResult", true);
                             Session.set("facetedTotals", null);
                             Session.set("facetedTotalsN", null);
-                            
+
                             Qmode = qm;
 
-                            Meteor.call('findbase', function (errorddd, resultdd) {    
-                                Session.set("BResult", result.resultCount>0);
-                                Session.set("facetedTotals", result.facetedTotals);    
-                                
+                            Meteor.call('findbase', function (errorddd, resultdd) {
+                                Session.set("BResult", result.resultCount > 0);
+                                Session.set("facetedTotals", result.facetedTotals);
+
                             });
-                                
-                            
-                        }else{
+
+
+                        } else {
                             Session.set("facetedTotalsN", result.facetedTotalsN);
-                            Meteor.call('findbase', function (errorddd, resultdd) {    
+                            Meteor.call('findbase', function (errorddd, resultdd) {
                                 facetedRange();
                             });
                         }
@@ -131,7 +131,7 @@ if (Meteor.isClient) {
             }
             //alert('f');
             waitingDialog.hide();
-            
+
         });
         return "";
     });
@@ -294,7 +294,7 @@ if (Meteor.isClient) {
                             "font": "verdana"
                         },
                         "subtitle": {
-                            "text": lang.lang ("sub-title-g2") ,
+                            "text": lang.lang("sub-title-g2"),
                             "color": "#999999",
                             "fontSize": 10,
                             "font": "verdana"
@@ -580,19 +580,19 @@ if (Meteor.isClient) {
                                     "translate(" + margin.left + "," + margin.top + ")");
 
 
-                     var mmax = d3.max(data, function (d) {
-                            return d.label;
-                        });
-                    
+                    var mmax = d3.max(data, function (d) {
+                        return d.label;
+                    });
+
                     var __d = new Date();
                     var __n = __d.getFullYear();
-                    
-                   mmax = (mmax > __n )? __n+1: mmax;
+
+                    mmax = (mmax > __n) ? __n + 1 : mmax;
                     // Scale the range of the data
                     x.domain([since, mmax]);
-                   /* x.domain([since, d3.max(data, function (d) {
-                            return d.label;
-                        })]);*/
+                    /* x.domain([since, d3.max(data, function (d) {
+                     return d.label;
+                     })]);*/
                     y.domain([1, d3.max(data, function (d) {
                             return d.value;
                         })]);
@@ -617,7 +617,7 @@ if (Meteor.isClient) {
                                 div.transition()
                                         .duration(200)
                                         .style("opacity", .9);
-                                div.html(d.label + "<br/>" + "("+d.value+")")
+                                div.html(d.label + "<br/>" + "(" + d.value + ")")
                                         .style("left", (d3.event.pageX) + "px")
                                         .style("top", (d3.event.pageY - 28) + "px");
                             })
@@ -1095,12 +1095,13 @@ if (Meteor.isClient) {
                         ]
             };
         }
-    });   
+    });
     // JS
-      Template.favsearch.helpers({
-
+    Template.favsearch.helpers({
         histsearch: function () {
-            return Searchs.find({ idUser: Meteor.userId()}).fetch();
+            var s = Searchs.find({ idUser: Meteor.userId()}).fetch();
+            waitingDialog.hide ();
+            return s;
         },
         settingshist: function () {
             return {
@@ -1113,62 +1114,59 @@ if (Meteor.isClient) {
                         [
                             {
                                 key: 'searchword',
-                                label:  lang.lang ("Search_action") ,
-                                headerClass: 'col-md-4' ,
+                                label: lang.lang("Search_action"),
+                                headerClass: 'col-md-4',
                                 fn: function (searchword, object) {
-                                    var html = '<a  href="/search/'+searchword+'/'+object.searchfilters+'/UCUE">' + searchword + '</a>';
+                                    var html = '<a  href="/search/' + searchword + '/' + object.searchfilters + '/UCUE">' + searchword + '</a>';
                                     return new Spacebars.SafeString(html);
                                 }
 
                             },
-                           
-                             { 
-                                     key : 'searchfilters' ,
-                                     label:  lang.lang ("Filters") ,
-                                  
-
-                             } ,
-                             {   key: 'sources' ,
-                                label : lang.lang ("Sources") ,
+                            {
+                                key: 'searchfilters',
+                                label: lang.lang("Filters"),
+                            },
+                            {key: 'sources',
+                                label: lang.lang("Sources"),
                                 fn: function (sources, object) {
                                     var listsources = "";
-                                   _.each (  object.sources , function  (el , idx){
-                                   
-                                      listsources = el.Name + ', '+listsources;
-                                    
-                                    }) ;
+                                    _.each(object.sources, function (el, idx) {
+
+                                        listsources = el.Name + ', ' + listsources;
+
+                                    });
                                     //console.log (object);
                                     //object.sources 
-                                   // console.log (sources);
+                                    // console.log (sources);
                                     return listsources;
                                 }
 
-                             },  {key: 'timeaction', 
-                                  label:  lang.lang ("Date") , headerClass: 'col-md-3' ,
-                                     sortOrder: 0 ,
-                                     sortDirection: 'descending' ,
-                                     sortByValue: true ,
-                                     fn: function (timeact , object){
-                                     console.log (object.timeaction);
-                                      var d =  new Date (object.timeaction);
-                                      return    d.toLocaleString();
-                                     }
-                            
-                             }  ,    {
-                                key: '_id' ,
-                                label: lang.lang ("delete") ,
-                                fn: function (value ,object){
-                                  return new Spacebars.SafeString( "<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deletehist(this)' Idsearch="+value+"  ><span class='glyphicon glyphicon-remove'></span></button></td>");     
+                            }, {key: 'timeaction',
+                                label: lang.lang("Date"), headerClass: 'col-md-3',
+                                sortOrder: 0,
+                                sortDirection: 'descending',
+                                sortByValue: true,
+                                fn: function (timeact, object) {
+                                    console.log(object.timeaction);
+                                    var d = new Date(object.timeaction);
+                                    return    d.toLocaleString();
+                                }
+
+                            }, {
+                                key: '_id',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deletehist(this)' Idsearch=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
                                 }
 
                             }
                         ]
             };
         }
-        , 
-          favres : function  () {
-            return   Favresources.find({ idUser: Meteor.userId()}).fetch();
-          } , settingsfav :function  (){
+        ,
+        favres: function () {
+            return   Favresources.find({idUser: Meteor.userId()}).fetch();
+        }, settingsfav: function () {
             return {
                 rowsPerPage: 5,
                 showFilter: false,
@@ -1176,55 +1174,53 @@ if (Meteor.isClient) {
                 //showColumnToggles: true,
                 fields:
                         [
-                        
-                            {   key: 'urifav', 
-                                label: lang.lang ("Resource") , 
-                                fn: function (urifav  , object){
-                                var html = '<a target="_blank" href="'+ urifav +'">' + urifav + '</a>';
+                            {key: 'urifav',
+                                label: lang.lang("Resource"),
+                                fn: function (urifav, object) {
+                                    var html = '<a target="_blank" href="' + urifav + '">' + urifav + '</a>';
                                     return new Spacebars.SafeString(html);
                                 }
-                                 
-                            
-                             } , {
-                                  key: 'labelres' ,
-                                  label: lang.lang ("Name") ,
-                                  headerClass: 'col-md-6' 
 
 
-                             } ,
-                             { 
-                                key : 'timeaction' ,
-                                label:   lang.lang ("Date") ,
-                                sortOrder: 0 ,
-                                sortDirection: 'descending' ,
-                                sortByValue: true ,
-                                fn: function (timeact , object){
-                                console.log (object.timeaction);
-                                var d =  new Date (object.timeaction);
-                                return    d.toLocaleString();
-                                }
-                            
-                                  
+                            }, {
+                                key: 'labelres',
+                                label: lang.lang("Name"),
+                                headerClass: 'col-md-6'
 
-                             } ,
 
+                            },
                             {
-                                key: '_id' ,
-                                label: lang.lang("delete") ,
-                                fn: function (value ,object){
-                                  return new Spacebars.SafeString( "<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deletefav(this)' Idres="+value+"  ><span class='glyphicon glyphicon-remove'></span></button></td>");     
+                                key: 'timeaction',
+                                label: lang.lang("Date"),
+                                sortOrder: 0,
+                                sortDirection: 'descending',
+                                sortByValue: true,
+                                fn: function (timeact, object) {
+                                    console.log(object.timeaction);
+                                    var d = new Date(object.timeaction);
+                                    return    d.toLocaleString();
+                                }
+
+
+
+                            },
+                            {
+                                key: '_id',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deletefav(this)' Idres=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
                                 }
 
                             }
-                           
+
                         ]
 
 
             }
-          }
+        }
     });
 
-       Template.adminpanel.helpers({
+    Template.adminpanel.helpers({
         usersAvailable: function () {
 
             return Profile.find().fetch();
@@ -1239,82 +1235,86 @@ if (Meteor.isClient) {
                 fields:
                         [
                             {
-                              key: 'nameUser',
+                                key: 'nameUser',
                                 label: lang.lang("Names")
                             },
-                            {  key: 'accessLevel', 
-                             label: lang.lang("User"),
-                             fn: function (value, object) { 
-                            
-                                 var check ;
-                               // alert (countrow);
-                                if (value == 0)
-                                { 
-                                    check =  'checked' ;
-                                }else {
-                                    check =  '' ;
-                                }
-                                //$(this).attr('checked','checked');
-                               // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
-                               return new Spacebars.SafeString("<input value="+0+" name=user"+object.idProfile+" "+check+" type='radio' onClick='ChangeAccess(this)' />"); }
-                            },
-                             {  key: 'accessLevel', 
-                             label: lang.lang("Advanced_User"),
-                             fn: function (value, object) { 
-                                var check ;
-                              
-                             
-                                if (value == 1)
-                                { 
-                                    check =  'checked' ;
-                                } else {
-                                    check =  '' ;
-                                }
-                                //$(this).attr('checked','checked');
-                               // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
-                               //return new Spacebars.SafeString("<input name=user"+object.idProfile+" checked="+check+" type='radio' />"); }
-                                return new Spacebars.SafeString("<input value="+1+" name=user"+object.idProfile+" "+check+"  type='radio' onClick='ChangeAccess(this)' />"); }
-                            } , {  key: 'accessLevel', 
-                             label: lang.lang("Admin"),
-                             fn: function (value, object) { 
-                                var check ;
-                              //  alert (object);
-                                if (value == 2)
-                                { 
-                                    check =  'checked' ;
-                                } else {
-                                    check =  '' ;
-                                }
-                                //$(this).attr('checked','checked');
-                               // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
-                               return new Spacebars.SafeString("<input value="+2+" name=user"+object.idProfile+" "+check+" type='radio'  onClick='ChangeAccess(this)' />"); }
-                            } ,
-                            {  key: 'levelAcademic', 
-                             label: lang.lang("Occupation") ,
-                             fn: function (value, object) { 
-                                var text;
-                                 if (value == 0)
-                                { 
-                                    text = "Estudiante";
-                                } else if (value == 1) {
-                                    text = "Profesor";
-                                }else  if  (value == 2) {
-                                    text = "Investigador";
-                                }else {
+                            {key: 'accessLevel',
+                                label: lang.lang("User"),
+                                fn: function (value, object) {
 
-                                    text = "Otros";
+                                    var check;
+                                    // alert (countrow);
+                                    if (value == 0)
+                                    {
+                                        check = 'checked';
+                                    } else {
+                                        check = '';
+                                    }
+                                    //$(this).attr('checked','checked');
+                                    // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                                    return new Spacebars.SafeString("<input value=" + 0 + " name=user" + object.idProfile + " " + check + " type='radio' onClick='ChangeAccess(this)' />");
                                 }
-                                 
-                                 return new Spacebars.SafeString("<p>"+text+"</p>"); }
                             },
-                            {  key: 'secMail', 
-                             label: lang.lang("Email")
-                            } ,
+                            {key: 'accessLevel',
+                                label: lang.lang("Advanced_User"),
+                                fn: function (value, object) {
+                                    var check;
+
+
+                                    if (value == 1)
+                                    {
+                                        check = 'checked';
+                                    } else {
+                                        check = '';
+                                    }
+                                    //$(this).attr('checked','checked');
+                                    // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                                    //return new Spacebars.SafeString("<input name=user"+object.idProfile+" checked="+check+" type='radio' />"); }
+                                    return new Spacebars.SafeString("<input value=" + 1 + " name=user" + object.idProfile + " " + check + "  type='radio' onClick='ChangeAccess(this)' />");
+                                }
+                            }, {key: 'accessLevel',
+                                label: lang.lang("Admin"),
+                                fn: function (value, object) {
+                                    var check;
+                                    //  alert (object);
+                                    if (value == 2)
+                                    {
+                                        check = 'checked';
+                                    } else {
+                                        check = '';
+                                    }
+                                    //$(this).attr('checked','checked');
+                                    // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                                    return new Spacebars.SafeString("<input value=" + 2 + " name=user" + object.idProfile + " " + check + " type='radio'  onClick='ChangeAccess(this)' />");
+                                }
+                            },
+                            {key: 'levelAcademic',
+                                label: lang.lang("Occupation"),
+                                fn: function (value, object) {
+                                    var text;
+                                    if (value == 0)
+                                    {
+                                        text = "Estudiante";
+                                    } else if (value == 1) {
+                                        text = "Profesor";
+                                    } else if (value == 2) {
+                                        text = "Investigador";
+                                    } else {
+
+                                        text = "Otros";
+                                    }
+
+                                    return new Spacebars.SafeString("<p>" + text + "</p>");
+                                }
+                            },
+                            {key: 'secMail',
+                                label: lang.lang("Email")
+                            },
                             {
-                                key: 'idProfile' ,
-                                label: lang.lang("delete") ,
-                                fn: function (value ,object){
-                                  return new Spacebars.SafeString( "<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deleteUser(this)' userId="+value+"  ><span class='glyphicon glyphicon-remove'></span></button></td>");     
+                                key: 'idProfile',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deleteUser(this)' userId=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
                                 }
 
                             }
@@ -1333,16 +1333,16 @@ if (Meteor.isClient) {
     }
 //JO*
 
-Template.profile.helpers({
-    IntAreas: function (){
-        
-        var inta=[];
-        for (var i=0; i<19;i++){
-            inta.push({lbl: lang.lang("FoS_"+i), pos:i});
+    Template.profile.helpers({
+        IntAreas: function () {
+
+            var inta = [];
+            for (var i = 0; i < 19; i++) {
+                inta.push({lbl: lang.lang("FoS_" + i), pos: i});
+            }
+            return inta;
         }
-        return inta;
-    }
-});
+    });
 
 
     Template.dashboard.helpers({
@@ -1590,121 +1590,195 @@ Template.profile.helpers({
 
     Session.set('auxAct', 0);
 
-/*
-   Template.header.helpers({
-  access_level: function() {
-   // if  (Meteor.user().profile[1].access > 1) {
-      //  var obj = Meteor.user().profile;
-       // var valaccess =  obj[Object.keys(obj)[0]];
-       console.log ("Usuario segundo");
-      // var usr = Meteor.users.find(Meteor.userId()).fetch();
+    /*
+     Template.header.helpers({
+     access_level: function() {
+     // if  (Meteor.user().profile[1].access > 1) {
+     //  var obj = Meteor.user().profile;
+     // var valaccess =  obj[Object.keys(obj)[0]];
+     console.log ("Usuario segundo");
+     // var usr = Meteor.users.find(Meteor.userId()).fetch();
      var usr =  Meteor.users.find(Meteor.userId()).fetch()[0].profile[1].access;
-         console.log (usr);
-         return true;
-   //  } else {
- //       return false;
-   //  }
+     console.log (usr);
+     return true;
+     //  } else {
+     //       return false;
+     //  }
+     
+     
+     }
+     });*/
 
-   
-  }
-});*/
-  
-  this.facetedRange = (function () {
+    this.facetedRange = (function () {
 
-        try{
-            var ss= $("#slider-range")[0].attributes['data-inf'].value;
-        }catch(s){
+        try {
+            var ss = $("#slider-range")[0].attributes['data-inf'].value;
+        } catch (s) {
             return 0;
         }
-   
-            
-            var mm = Number($("#slider-range")[0].attributes['data-min'].value);
-            var mx = Number($("#slider-range")[0].attributes['data-max'].value);
-            var mm_ = Number($("#slider-range")[0].attributes['data-min'].value);
-            var mx_ = Number($("#slider-range")[0].attributes['data-max'].value);
-            
-            
-            
-            console.log(mm);
-            console.log(mx);
-            console.log(mm_);
-            console.log(mx_);
-            try{
-                mm_ = $("#slider-range").slider("values", 0)
-                mx_ = $("#slider-range").slider("values", 1)
-            }catch(e){}
-            var d = JSON.parse($("#slider-range")[0].attributes['data-inf'].value);
 
-            $("#slider-range").empty();
-            Array.prototype.sum = function (prop) {
-                var total = 0
-                for (var i = 0, _len = this.length; i < _len; i++) {
-                    total += this[i][prop]
-                }
-                return total
+
+        var mm = Number($("#slider-range")[0].attributes['data-min'].value);
+        var mx = Number($("#slider-range")[0].attributes['data-max'].value);
+        var mm_ = Number($("#slider-range")[0].attributes['data-min'].value);
+        var mx_ = Number($("#slider-range")[0].attributes['data-max'].value);
+
+
+
+        console.log(mm);
+        console.log(mx);
+        console.log(mm_);
+        console.log(mx_);
+        try {
+            mm_ = $("#slider-range").slider("values", 0)
+            mx_ = $("#slider-range").slider("values", 1)
+        } catch (e) {
+        }
+        var d = JSON.parse($("#slider-range")[0].attributes['data-inf'].value);
+
+        $("#slider-range").empty();
+        Array.prototype.sum = function (prop) {
+            var total = 0
+            for (var i = 0, _len = this.length; i < _len; i++) {
+                total += this[i][prop]
             }
+            return total
+        }
 
-            var data = d;
-            $("#slider-range").slider({
-                range: true,
-                min: mm,
-                max: mx,
-                values: [mm_, mx_],
-                slide: function (event, ui) {
-                    var n = data.filter(function (d) {
-                        return d.key == null || d.key >= ui.values[ 0 ] && d.key <= ui.values[ 1 ];
-                    }).sum("count");
-                    $("#amount").val("" + ui.values[ 0 ] + " - " + ui.values[ 1 ] + " (" + n + ")");
-                }
-            });
-            var n = data.filter(function (d) {
-                return d.key == null || d.key >= $("#slider-range").slider("values", 0) && d.key <= $("#slider-range").slider("values", 1);
-            }).sum("count");
-            $("#amount").val("" + $("#slider-range").slider("values", 0) +
-                    " - " + $("#slider-range").slider("values", 1) + " (" + n + ")");
-
-            
-           return 0;
+        var data = d;
+        $("#slider-range").slider({
+            range: true,
+            min: mm,
+            max: mx,
+            values: [mm_, mx_],
+            slide: function (event, ui) {
+                var n = data.filter(function (d) {
+                    return d.key == null || d.key >= ui.values[ 0 ] && d.key <= ui.values[ 1 ];
+                }).sum("count");
+                $("#amount").val("" + ui.values[ 0 ] + " - " + ui.values[ 1 ] + " (" + n + ")");
+            }
         });
-  
-  
+        var n = data.filter(function (d) {
+            return d.key == null || d.key >= $("#slider-range").slider("values", 0) && d.key <= $("#slider-range").slider("values", 1);
+        }).sum("count");
+        $("#amount").val("" + $("#slider-range").slider("values", 0) +
+                " - " + $("#slider-range").slider("values", 1) + " (" + n + ")");
+
+
+        return 0;
+    });
+
+
 
     Template.search.helpers({
-        
         facetedOptions: function () {
             //$("#fac").empty();
             var n = Session.get("facetedTotals");
             var nn = Session.get("facetedTotalsN");
-            if (n == null || n == null && nn==null){
+            if (n == null || n == null && nn == null) {
                 return [];
             }
-            if(nn!=undefined && nn!=null){
-                n.Years=n.Years.map(function (d) { var r=nn.Years.filter(function (q){return q.key==d.key;}); if(r.length>0){d.count=r[0].count;}else{d.count=0;}  return d; });
-                n.Types=n.Types.map(function (d) { var r=nn.Types.filter(function (q){return q.key==d.key;}); if(r.length>0){d.count=r[0].count;}else{d.count=0;}  return d; });
-                n.Langs=n.Langs.map(function (d) { var r=nn.Langs.filter(function (q){return q.key==d.key;}); if(r.length>0){d.count=r[0].count;}else{d.count=0;}  return d; });
-                n.Endpoints=n.Endpoints.map(function (d) { var r=nn.Endpoints.filter(function (q){return q.key==d.key;}); if(r.length>0){d.count=r[0].count;}else{d.count=0;}  return d; });
+            if (nn != undefined && nn != null) {
+                n.Years = n.Years.map(function (d) {
+                    var r = nn.Years.filter(function (q) {
+                        return q.key == d.key;
+                    });
+                    if (r.length > 0) {
+                        d.count = r[0].count;
+                    } else {
+                        d.count = 0;
+                    }
+                    return d;
+                });
+                n.Types = n.Types.map(function (d) {
+                    var r = nn.Types.filter(function (q) {
+                        return q.key == d.key;
+                    });
+                    if (r.length > 0) {
+                        d.count = r[0].count;
+                    } else {
+                        d.count = 0;
+                    }
+                    return d;
+                });
+                n.Langs = n.Langs.map(function (d) {
+                    var r = nn.Langs.filter(function (q) {
+                        return q.key == d.key;
+                    });
+                    if (r.length > 0) {
+                        d.count = r[0].count;
+                    } else {
+                        d.count = 0;
+                    }
+                    return d;
+                });
+                n.Endpoints = n.Endpoints.map(function (d) {
+                    var r = nn.Endpoints.filter(function (q) {
+                        return q.key == d.key;
+                    });
+                    if (r.length > 0) {
+                        d.count = r[0].count;
+                    } else {
+                        d.count = 0;
+                    }
+                    return d;
+                });
             }
-            n.Years2 = n.Years.filter(function (d){ return d.key!=null; });
-            n.Types = n.Types.map(function (d){ d.key2=d.key;  if (d.key ==null){d.key2='None'; return d;} d.key2=d.key.substr(d.key.lastIndexOf('/') + 1);d.key2=d.key2.substr(d.key2.lastIndexOf('#') + 1);  return d;  });
-            n.Langs = n.Langs.map(function (d){ d.key2=d.key; if (d.key ==null){d.key2='None';}; return d;  });
-            n.Endpoints = n.Endpoints.map(function (d){ d.key2=d.key; if (d.key ==null){d.key2='None';}; return d;  });
-            
-            n.Types = n.Types.map(function (d){ d.Title='Types';  return d; });
-            n.Langs = n.Langs.map(function (d){ d.Title='Langs';  return d; });
-            n.Endpoints = n.Endpoints.map(function (d){ d.Title='Endpoints';  return d; });
-            
-            
-            var bbl= (n.Langs.length>0);
-            
-            
-            
-            var facetes=[{Title:lang.lang('lblYears'), Range:true, Values:n.Years, Values2:JSON.stringify(n.Years), Exists: n.Years2.length>0, Min:n.Years2.length>0 ?n.Years2[0].key:0, Max:n.Years2.length>0 ?n.Years2[n.Years2.length-1].key:0 },
-                {Title:lang.lang('lblTypes'), Range:false, Exists: n.Types.length>0,Values:n.Types},
-                {Title:lang.lang('lblLanguages'), Range:false, Exists: bbl,Values:n.Langs},
-                {Title:lang.lang('lblEndpoints'), Range:false, Exists: n.Endpoints.length>0,Values:n.Endpoints}];
-            
-                
-            
+            n.Years2 = n.Years.filter(function (d) {
+                return d.key != null;
+            });
+            n.Types = n.Types.map(function (d) {
+                d.key2 = d.key;
+                if (d.key == null) {
+                    d.key2 = 'None';
+                    return d;
+                }
+                d.key2 = d.key.substr(d.key.lastIndexOf('/') + 1);
+                d.key2 = d.key2.substr(d.key2.lastIndexOf('#') + 1);
+                return d;
+            });
+            n.Langs = n.Langs.map(function (d) {
+                d.key2 = d.key;
+                if (d.key == null) {
+                    d.key2 = 'None';
+                }
+                ;
+                return d;
+            });
+            n.Endpoints = n.Endpoints.map(function (d) {
+                d.key2 = d.key;
+                if (d.key == null) {
+                    d.key2 = 'None';
+                }
+                ;
+                return d;
+            });
+
+            n.Types = n.Types.map(function (d) {
+                d.Title = 'Types';
+                return d;
+            });
+            n.Langs = n.Langs.map(function (d) {
+                d.Title = 'Langs';
+                return d;
+            });
+            n.Endpoints = n.Endpoints.map(function (d) {
+                d.Title = 'Endpoints';
+                return d;
+            });
+
+
+            var bbl = (n.Langs.length > 0);
+
+
+
+            var facetes = [{Title: lang.lang('lblYears'), Range: true, Values: n.Years, Values2: JSON.stringify(n.Years), Exists: n.Years2.length > 0, Min: n.Years2.length > 0 ? n.Years2[0].key : 0, Max: n.Years2.length > 0 ? n.Years2[n.Years2.length - 1].key : 0},
+                {Title: lang.lang('lblTypes'), Range: false, Exists: n.Types.length > 0, Values: n.Types},
+                {Title: lang.lang('lblLanguages'), Range: false, Exists: bbl, Values: n.Langs},
+                {Title: lang.lang('lblEndpoints'), Range: false, Exists: n.Endpoints.length > 0, Values: n.Endpoints}];
+
+
+
             return facetes;
         },
         endpointsAvailable: function () {
@@ -1715,31 +1789,31 @@ Template.profile.helpers({
             var rlist = dataSourceSearch(response);
             return rlist;
         },
-        BresultFullQuery: function (){
+        BresultFullQuery: function () {
             var n = Session.get("BResult");
-            return (n!=undefined && n == true);
+            return (n != undefined && n == true);
         }
         ,
         NresultFullQuery: function () {
             var n = Session.get("NResult");
             if (n && n > 0) {
-                return n + lang.lang ('results');
+                return n + lang.lang('results');
             } else {
-                return  lang.lang ('No-results');
+                return  lang.lang('No-results');
             }
-        }, DespSug : function () {
+        }, DespSug: function () {
             var des = Session.get("DespSug");
-            if (des){
-                
+            if (des) {
+
                 return "glyphicon glyphicon-chevron-up";
             } else {
                 return "glyphicon glyphicon-chevron-down";
             }
 
-        } , DespFac : function () {
+        }, DespFac: function () {
             var des = Session.get("DespFac");
-            if (des){
-                
+            if (des) {
+
                 return "glyphicon glyphicon-chevron-up";
             } else {
                 return "glyphicon glyphicon-chevron-down";
@@ -1750,32 +1824,32 @@ Template.profile.helpers({
 
             var EntitySearch = get_radio_value("opciones");
             var w = [];
-         //    alert ("Adiios");
-           var des = Session.get("DespSug");
+            //    alert ("Adiios");
+            var des = Session.get("DespSug");
             //  if (des){
             switch (EntitySearch) {
                 case 'autores':
                     w = loadQueryFirstNode('http://xmlns.com/foaf/0.1/Person');
 
-                  //  Session.set('DespSug', true);
+                    //  Session.set('DespSug', true);
                     break;
                 case 'documentos':
                     w = loadQueryFirstNode('http://purl.org/ontology/bibo/Document');
 
-                   // Session.set('DespSug', true);
+                    // Session.set('DespSug', true);
                     break;
                 case 'colecciones':
                     w = loadQueryFirstNode('http://purl.org/ontology/bibo/Collection');
 
-                  //  Session.set('DespSug', true);
+                    //  Session.set('DespSug', true);
                     break;
                 default :
-                  //  w = Queries.find().fetch();
-                //  $(".sugestion-panel").css ("min-height", "400px");
-                //$("#sug").collapse('show');
-                //  Session.set('DespSug', false);
+                    //  w = Queries.find().fetch();
+                    //  $(".sugestion-panel").css ("min-height", "400px");
+                    //$("#sug").collapse('show');
+                    //  Session.set('DespSug', false);
                     break;
-            } 
+            }
             var aux = Session.get("auxAct");
             var TextSearch = $(".textToSearch").val();
             for (var q = 0; q < w.length; q++) {
@@ -1786,7 +1860,7 @@ Template.profile.helpers({
             w = w.filter(function (el) {
                 return el.commend == true;
             });
-      //  }  // Final If
+            //  }  // Final If
             return w;
         },
         paginationSettings: function () {
@@ -1794,10 +1868,10 @@ Template.profile.helpers({
             n = n ? n : 0;
             if (n == 0) {
                 //n = 1;
-                  $(".pagination").css("display" ,"none");
-              //  $(".pagination").css("display", "none");
+                $(".pagination").css("display", "none");
+                //  $(".pagination").css("display", "none");
             } else {
-                 $(".pagination").css("display" ,"block");
+                $(".pagination").css("display", "block");
             }
             var pagcon = {};
             pagcon.total = Math.ceil(n / 10);
@@ -1985,40 +2059,55 @@ Template.profile.helpers({
                             OneResult.Icon = 'glyphicon glyphicon-file';
                             break;
                     }
-                           var Resourcesfav =  Favresources.find ({idUser: Meteor.userId() }).fetch();
+                    var Resourcesfav = Favresources.find({idUser: Meteor.userId()}).fetch();
 
-                            var  favorite  =  Resourcesfav.find(function (val) {
-                                return  val.urifav == OneResult.URI;
-                            }); 
-                              if (favorite){
-                         
-                          OneResult.Fav = "/images/starblue.png"; 
+                    var favorite = Resourcesfav.find(function (val) {
+                        return  val.urifav == OneResult.URI;
+                    });
+                    if (favorite) {
 
-                              }else {
-                          
-                          OneResult.Fav = "/images/stargray.png"; 
+                        OneResult.Fav = "/images/starblue.png";
 
-                              }
+                    } else {
 
-                              
-                            // OneResult.Fav = '/images/stargray.png'; 
+                        OneResult.Fav = "/images/stargray.png";
+
+                    }
+
+
+                    // OneResult.Fav = '/images/stargray.png'; 
 
                     toShow.push(OneResult);
                 } else {
                     //Add
-                    // console.log ("Resultado");
+                    // 
+                    
+                    //Título largo
+                    
+                    
+                    
+                    //
                     // console.log (OneResult);
                     console.log("Resultado 1");
                     console.log(OneResult);
 
                     OneResult = OneResult[0];
+                    
+                    if (NumMode == 1) {
+                        OneResult.Label = (OneResult.Label.length < resp[k].EntityLabel.value.length )? resp[k].EntityLabel.value: OneResult.Label;
+                    }
+                    
+                     if (NumMode == 2) {
+                        OneResult.Label =(OneResult.Label.length < resp[k][TitleVar].value.length )? resp[k][TitleVar].value: OneResult.Label;
+                     }
+                    
                     OneResult.Weight += 1;
                     if (NumMode == 1) {
                         var ln = OneResult.MatchsProperty.filter(function (e) {
                             return e.p == resp[k].PropertyLabel.value && e.v == resp[k].PropertyValue.value;
                         }).length;
 
-                        if (OneResult.Label!= resp[k].EntityLabel.value)
+                        if (OneResult.Label != resp[k].EntityLabel.value)
                         {
                             ln = 1;
                             // console.log (resp[k].EntityLabel.value);
@@ -2058,15 +2147,15 @@ Template.profile.helpers({
                         }
                     }
                     if (NumMode == 2) {
-                        console.log ("One sug");
-                             console.log (OneResult);
+                        console.log("One sug");
+                        console.log(OneResult);
 
                         var ln = OneResult.MatchsProperty.filter(function (e) {
-                            return e.p == SearchVar_ && e.v == resp[k][SearchVar].value ;
-                           // return e.p == SearchVar_ && e.v == resp[k][SearchVar].value && titledoc == resp[k][TitleVar].value;
+                            return e.p == SearchVar_ && e.v == resp[k][SearchVar].value;
+                            // return e.p == SearchVar_ && e.v == resp[k][SearchVar].value && titledoc == resp[k][TitleVar].value;
                         }).length;
-                             
-                         if ( (OneResult.Type != resp[k][TypeVar].value) || (OneResult.Label!= resp[k][TitleVar].value ))
+
+                        if ((OneResult.Type != resp[k][TypeVar].value) || (OneResult.Label != resp[k][TitleVar].value))
                         {
                             ln = 1;
                             //console.log ("Titulo igual");
@@ -2118,7 +2207,7 @@ Template.profile.helpers({
             }
         }
 //toShow.sort(compare);
-     
+
         return toShow;
     }
 
@@ -2141,374 +2230,363 @@ Template.profile.helpers({
         return str.indexOf(prefix) === 0;
     }
 
-      function language (){
+    function language() {
 
-            var idiomEng = {
-                
-                "lblRange":"Range",
-                "lblYears":"Years",
-                "lblTypes":"Types",                
-                "lblEndpoints":"Repositories",
-                "lblLanguages":"Languages",
-                                                
-                
-                
-                "FoS_0":"Art",
-                "FoS_1":"Biology",
-                "FoS_2":"Business",
-                "FoS_3":"Chemistry",
-                "FoS_4":"Computer science",
-                "FoS_5":"Economics",
-                "FoS_6":"Engineering",
-                "FoS_7":"Environmental science",
-                "FoS_8":"Geography",
-                "FoS_9":"Geology",
-                "FoS_10":"History",
-                "FoS_11":"Materials science",
-                "FoS_12":"Mathematics",
-                "FoS_13":"Medicine",
-                "FoS_14":"Philosophy",
-                "FoS_15":"Physics",
-                "FoS_16":"Political science",
-                "FoS_17":"Psychology",
-                "FoS_18":"Sociology",
-                
-                
-                
-        "welcome-title":"Bibliographic Resources  Searcher",
-        "resources-search":"Search by: All",
-        "placeholder-search":"Terms of search",
-        "search":"GO",
-        "Autores" : "Authors" ,
-        "Documentos" : "Documents",
-        "Colecciones": "Collections" ,  
-        "tip-author":"Authors",
-        "tip-document":"Documents",
-        "tip-collection":"Collections",
-        "search-option": "Search by : " ,
-        "advance-search": "Advance Search",
-        "sug":"Suggestions",
-        "fac":"Faceted Search",
-        "noData":"No Data",
-        "text-more":"more",
-        "text-less":"less",
-        "view-source":"View Source",
-        "view-rdf":"View RDF",
-        "view-graph":"View Graph",
-        "Name":"Name",
-        "Title":"Title",
-        "Subject": "Subject",
-        "subject": "Subject",
-        "Language": "Language",
-        "Description":"Description",
-        "Type":"Type",
-        "Abstract":"Abstract",
-        "results": " results",
-        "No-results": "No results",
-        "panel-info":"Panel Info",
-        "warning":"Warning",
-        "warning-data": "The selected item contains a lot of resources, so it could slow down the exploration. Do you want to display all data ?.",
-        "afirmative" : "Yes ",
-        "sample": "Sample ",
-        "More Info":"More Info",
-        "dashboard":"DASHBOARD",
-        "clean-dash" :"Clear dashboard",
-        "load-json": "Load JSON",
-        "zoom-out": "Zoom out",
-        "zoom-in" : "Zoom in",
-        "query-editor":"Query Editor",
-        "graph-query":"Graph Query",
-        "query-title" : "(*)Query Title",
-        "query-des":"Query Description",
-        "run-query": "Run Query",
-        "save-query":"Save Query",
-        "delete-query" : "Delete Query",
-        "raw-node": "Raw Node",
-        "raw-node-value":"Raw Node Value",
-        "entity":"Entity",
-        "property":"Property",
-        "entities": "Entities",
-        "properties": "Properties",
-         "disp-endpoints":"Available Endpoints",
-         "Graph": "Graph" ,
-         "Status": "Status" ,
-         "Optional": "Optional",
-         "close": "close",
-         "New":"New" ,
-         "graph-url":"Graph URL (Required)",
-         "identifier":"Identifier (Required)",
-         "graph-color": "Graph Color",
-         "load-schema":"Load Schema (It should take a while depending on Graph size)",
-         "Register":"Register" ,
-         "val-node" : "Node Value",
-         "simple-match" : "Simple match",
-         "save":"Save",
-         "console-error":"Console Error",
-         "avoid-sparql":"Avoid SPARQL Validation on Client",
-         "result-query":"Result Query" ,
-         "delete" : "Delete",
-         "msg-delete": "Are you sure you want to delete the Endpoint?",
-          "template-title":"Template Queries",
-          "Home": "Home" ,
-          "Search": "Search",
-          "Statistics":"Statistics" ,
-          "query-temp":"Query Templates",
-          "query-builder":"Query Builder" ,
-          "ava-endpoints":"Available Endpoints",
-          "new-endpoint":"New SPARQL endpoint",
-          "Help":"Help",
-          "Options": "Options",
-          "Collections":"Collections" ,
-          "Documents": "Documents" ,
-          "Persons": "Persons" ,
-          "title-g1" : "Resources" ,
-          "sub-title-g1":"Total amount of resources within the registered repositories",
-          "title-g2": "Repositories",
-           "sub-title-g2":"Registered repositories" ,
-            "top-topics": "Top Topics" ,
-            "group-by": "Group by:" ,
+        var idiomEng = {
+            "lblRange": "Range",
+            "lblYears": "Years",
+            "lblTypes": "Types",
+            "lblEndpoints": "Repositories",
+            "lblLanguages": "Languages",
+            "FoS_0": "Art",
+            "FoS_1": "Biology",
+            "FoS_2": "Business",
+            "FoS_3": "Chemistry",
+            "FoS_4": "Computer science",
+            "FoS_5": "Economics",
+            "FoS_6": "Engineering",
+            "FoS_7": "Environmental science",
+            "FoS_8": "Geography",
+            "FoS_9": "Geology",
+            "FoS_10": "History",
+            "FoS_11": "Materials science",
+            "FoS_12": "Mathematics",
+            "FoS_13": "Medicine",
+            "FoS_14": "Philosophy",
+            "FoS_15": "Physics",
+            "FoS_16": "Political science",
+            "FoS_17": "Psychology",
+            "FoS_18": "Sociology",
+            "welcome-title": "Bibliographic Resources  Searcher",
+            "resources-search": "Search by: All",
+            "placeholder-search": "Terms of search",
+            "search": "GO",
+            "Autores": "Authors",
+            "Documentos": "Documents",
+            "Colecciones": "Collections",
+            "tip-author": "Authors",
+            "tip-document": "Documents",
+            "tip-collection": "Collections",
+            "search-option": "Search by : ",
+            "advance-search": "Advance Search",
+            "sug": "Suggestions",
+            "fac": "Faceted Search",
+            "noData": "No Data",
+            "text-more": "more",
+            "text-less": "less",
+            "view-source": "View Source",
+            "view-rdf": "View RDF",
+            "view-graph": "View Graph",
+            "Name": "Name",
+            "Title": "Title",
+            "Subject": "Subject",
+            "subject": "Subject",
+            "Language": "Language",
+            "Description": "Description",
+            "Type": "Type",
+            "Abstract": "Abstract",
+            "results": " results",
+            "No-results": "No results",
+            "panel-info": "Panel Info",
+            "warning": "Warning",
+            "warning-data": "The selected item contains a lot of resources, so it could slow down the exploration. Do you want to display all data ?.",
+            "afirmative": "Yes ",
+            "sample": "Sample ",
+            "More Info": "More Info",
+            "dashboard": "DASHBOARD",
+            "clean-dash": "Clear dashboard",
+            "load-json": "Load JSON",
+            "zoom-out": "Zoom out",
+            "zoom-in": "Zoom in",
+            "query-editor": "Query Editor",
+            "graph-query": "Graph Query",
+            "query-title": "(*)Query Title",
+            "query-des": "Query Description",
+            "run-query": "Run Query",
+            "save-query": "Save Query",
+            "delete-query": "Delete Query",
+            "raw-node": "Raw Node",
+            "raw-node-value": "Raw Node Value",
+            "entity": "Entity",
+            "property": "Property",
+            "entities": "Entities",
+            "properties": "Properties",
+            "disp-endpoints": "Available Endpoints",
+            "Graph": "Graph",
+            "Status": "Status",
+            "Optional": "Optional",
+            "close": "close",
+            "New": "New",
+            "graph-url": "Graph URL (Required)",
+            "identifier": "Identifier (Required)",
+            "graph-color": "Graph Color",
+            "load-schema": "Load Schema (It should take a while depending on Graph size)",
+            "Register": "Register",
+            "val-node": "Node Value",
+            "simple-match": "Simple match",
+            "save": "Save",
+            "console-error": "Console Error",
+            "avoid-sparql": "Avoid SPARQL Validation on Client",
+            "result-query": "Result Query",
+            "delete": "Delete",
+            "msg-delete": "Are you sure you want to delete the Endpoint?",
+            "template-title": "Template Queries",
+            "Home": "Home",
+            "Search": "Search",
+            "Statistics": "Statistics",
+            "query-temp": "Query Templates",
+            "query-builder": "Query Builder",
+            "ava-endpoints": "Available Endpoints",
+            "new-endpoint": "New SPARQL endpoint",
+            "Help": "Help",
+            "Options": "Options",
+            "Collections": "Collections",
+            "Documents": "Documents",
+            "Persons": "Persons",
+            "title-g1": "Resources",
+            "sub-title-g1": "Total amount of resources within the registered repositories",
+            "title-g2": "Repositories",
+            "sub-title-g2": "Registered repositories",
+            "top-topics": "Top Topics",
+            "group-by": "Group by:",
             "Year": "Year",
-            "All":"All" ,
-            "top-collections":"Top Collections",
-           "Repository":"Repository",
-           "top-persons": "Top Persons",
-           "Global":"Global" ,
-           "Stats": "Stats",
-           "Profile": "Profile",
-           "Close":"Close" ,
-           "Change_password":"Change password" ,
-           "Sign_out":"Sign out" ,
-           "Sign_in":"Sign in" ,
-           "Create_account":"Create account" ,
-           "Forgot_password":"Forgot password",
-            "Change_password":"Change password" ,
+            "All": "All",
+            "top-collections": "Top Collections",
+            "Repository": "Repository",
+            "top-persons": "Top Persons",
+            "Global": "Global",
+            "Stats": "Stats",
+            "Profile": "Profile",
+            "Close": "Close",
+            "Change_password": "Change password",
+            "Sign_out": "Sign out",
+            "Sign_in": "Sign in",
+            "Create_account": "Create account",
+            "Forgot_password": "Forgot password",
+            "Change_password":"Change password",
+                    "New_password": "New password",
+            "Set_password": "Set password",
+            "Current_password": "Current password",
             "New_password":"New password",
-            "Set_password":"Set password" ,
-            "Current_password":"Current password" ,
-            "New_password":"New password",
-            "My_Profile":"My Profile" ,
-            "Names":"Names" ,
-            "Direction":"Direction",
-            "Occupation":"Occupation",
-            "Student":"Student",
-            "Teacher":"Teacher",
-            "Researcher":"Researcher",
-            "Other" :"Other" ,
-            "Interest_Areas":"Interest Areas",
-            "Sciences":"Sciencies",
-            "Mathematics":"Mathematics" ,
-            "Literature":"Literature",
-            "chemistry":"Chemistry" ,
-            "Email":"Email Address",
-            "Spanish":"Spanish" ,
-            "English" : "English" ,
-            "Access_Level":"Access Level" ,
-            "User":"Normal User",
-            "Advanced_User":"Advanced User" ,
-            "Admin":"Administrator",
-             "Send" :"Save" ,
-             "Manage":"Manage",
-             "Accounts":"Accounts" ,
-             "Users_List":"Users List" ,
-             "wildcard":"suggestion node",
-             "Search_History":"Search History",
-             "Favorite_Resources" : "Favorite Resources" ,
-             "My_Searches" : "My Searches" ,
-             "Resource" : " Resource" , 
-             "Sources" : "Sources" ,
-             "Date" : "Date" ,
-             "Filters" : "Filters",
-             "Search_action":"Search" ,
-             "it":"italien"
-    };
+                    "My_Profile": "My Profile",
+            "Names": "Names",
+            "Direction": "Direction",
+            "Occupation": "Occupation",
+            "Student": "Student",
+            "Teacher": "Teacher",
+            "Researcher": "Researcher",
+            "Other": "Other",
+            "Interest_Areas": "Interest Areas",
+            "Sciences": "Sciencies",
+            "Mathematics": "Mathematics",
+            "Literature": "Literature",
+            "chemistry": "Chemistry",
+            "Email": "Email Address",
+            "Spanish": "Spanish",
+            "English": "English",
+            "Access_Level": "Access Level",
+            "User": "Normal User",
+            "Advanced_User": "Advanced User",
+            "Admin": "Administrator",
+            "Send": "Save",
+            "Manage": "Manage",
+            "Accounts": "Accounts",
+            "Users_List": "Users List",
+            "wildcard": "suggestion node",
+            "Search_History": "Search History",
+            "Favorite_Resources": "Favorite Resources",
+            "My_Searches": "My Searches",
+            "Resource": " Resource",
+            "Sources": "Sources",
+            "Date": "Date",
+            "Filters": "Filters",
+            "Search_action": "Search",
+            "it": "italien"
+        };
 
-    var idiomEsp = {
-        
-        
-        "lblRange":"Rango",
-        "lblYears":"Años",
-                "lblTypes":"Tipos",                
-                "lblEndpoints":"Repositorios",
-                "lblLanguages":"Lenguajes",
-        
-        
-        "FoS_0":"Arte",
-                "FoS_1":"Biología",
-                "FoS_2":"Negocios",
-                "FoS_3":"Química",
-                "FoS_4":"Ciencias de la computación",
-                "FoS_5":"Economía",
-                "FoS_6":"Ingeniería",
-                "FoS_7":"Ciencias medioambientales",
-                "FoS_8":"Geografía",
-                "FoS_9":"Geología",
-                "FoS_10":"Historia",
-                "FoS_11":"Ciencias de los materiales",
-                "FoS_12":"Matemáticas",
-                "FoS_13":"Medicina",
-                "FoS_14":"Filosofía",
-                "FoS_15":"Física",
-                "FoS_16":"Ciencias políticas",
-                "FoS_17":"Psicología",
-                "FoS_18":"Sociología",
-        
-        "welcome-title":"Buscador de Recursos Bibliográficos.",
-        "resources-search":"Buscando por: Todo",
-        "placeholder-search":"Terminos de búsqueda",
-        "search":"Buscar",
-        "Autores" : "Autores" ,
-        "Documentos" : "Documentos",
-        "Colecciones": "Colecciones" , 
-        "tip-author":"Autores",
-        "tip-document":"Documentos",
-        "tip-collection":"Colecciones",
-        "search-option": "Buscando por : ",
-        "advance-search": "Búsqueda Avanzada",
-        "sug":"Sugerencias",
-        "fac":"Búsqueda por facetas",
-        "noData":"No hay datos",
-        "text-more":"Más",
-        "text-less":"Menos",
-        "view-source":"Ver Fuente",
-        "view-rdf":"Ver RDF",
-        "view-graph":"Ver Grafo",
-        "Name":"Nombre Completo",
-        "First Name":"Nombres",
-        "Last Name":"Apellidos",
-        "Title":"Título",
-        "Subject": "Tema",
-        "subject": "Tema",
-        "Language": "Idioma",
-        "Description":"Descripción",
-        "Type":"Tipo",
-        "Abstract":"Resumen",
-         "results": " resultados",
-        "No-results": "Sin resultados",
-        "panel-info":"Información",
-        "warning":"Atención",
-        "warning-data": "El elemento seleccionado contiene una gran cantidad de recursos, por lo que podria relantizar la exploración. ¿Desea desplegar todos los datos?." ,
-        "afirmative" : "Sí " ,
-        "sample": "Muestra ",
-        "More Info":"Más Información",
-        "dashboard":"TABLERO",
-        "clean-dash" :"Limpiar Área",
-        "load-json": "Cargar JSON",
-        "zoom-out": "Alejar",
-        "zoom-in" : "Acercar",
-        "query-editor":"Editor",
-        "graph-query":"Consulta",
-        "query-title" : "(*)Título de la consulta",
-        "query-des":"Descripción de la consulta",
-        "run-query": "Ejecutar Consulta",
-        "save-query":"Guardar Consulta",
-        "delete-query" : "Borrar Consulta",
-        "raw-node": "Nodo Genérico",
-        "raw-node-value":"Valor del Nodo Genérico",
-        "entity":"Entidad",
-        "property":"Propiedad",
-         "entities": "Entidades",
-         "properties": "Propiedades",
-         "disp-endpoints":"Endpoints Disponibles",
-        "Graph": "Grafo" ,
-        "Status": "Estado" ,
-        "Optional": "Opcional",
-        "close": "Cerrar",
-         "New" : "Nuevo",
-        "graph-url":"URL del Esquema (Requerido)",
-        "identifier":"Identificador (Requirido)",
-        "graph-color" :"Color del Grafo",
-        "load-schema":"Cargar Esquema (Podría tardar un tiempo, dependiendo del tamaño del esquema)",
-        "Register":"Registrar" ,
-        "val-node" :  "Valor del Nodo",
-        "simple-match" : "Coincidencia Simple",
-        "save":"Guardar",
-        "console-error":"Consola de Error",
-        "avoid-sparql":"Evitar validación del cliente SPARQL",
-        "result-query":"Resultado de la consulta" ,
-        "delete" : "Borrar",
-         "msg-delete": "¿Esta seguro que quiere borrar el endpoint?",
-         "template-title":"Plantilla de Consultas",
-          "Home": "Inicio" ,
-          "Search": "Buscador",
-          "Statistics":"Estadísticas" ,
-          "query-temp":"Plantilla de Consultas",
-          "query-builder":"Constructor de Consultas" ,
-          "ava-endpoints":"Endpoints Disponibles",
-          "new-endpoint":"Nuevo SPARQL endpoint",
-          "Help":"Ayuda",
-          "Options": "Opciones",
-         "Collections":"Colecciones" ,
-          "Documents": "Documentos" ,
-          "Persons": "Personas" ,
-          "title-g1" : "Recursos" ,
-          "sub-title-g1":"Monto total de recursos dentro de los repositorios registrados",
-          "title-g2": "Repositorios",
-            "sub-title-g2":"Repositorios Registrados" ,
-            "top-topics": "Temas Destacados" ,
-            "group-by": "Agrupado por:" ,
-            "Year": "Año" ,
-            "All":"Todos" ,
-            "top-collections":"Colecciones Destacadas",
-            "Repository":"Repositorios",
+        var idiomEsp = {
+            "lblRange": "Rango",
+            "lblYears": "Años",
+            "lblTypes": "Tipos",
+            "lblEndpoints": "Repositorios",
+            "lblLanguages": "Lenguajes",
+            "FoS_0": "Arte",
+            "FoS_1": "Biología",
+            "FoS_2": "Negocios",
+            "FoS_3": "Química",
+            "FoS_4": "Ciencias de la computación",
+            "FoS_5": "Economía",
+            "FoS_6": "Ingeniería",
+            "FoS_7": "Ciencias medioambientales",
+            "FoS_8": "Geografía",
+            "FoS_9": "Geología",
+            "FoS_10": "Historia",
+            "FoS_11": "Ciencias de los materiales",
+            "FoS_12": "Matemáticas",
+            "FoS_13": "Medicina",
+            "FoS_14": "Filosofía",
+            "FoS_15": "Física",
+            "FoS_16": "Ciencias políticas",
+            "FoS_17": "Psicología",
+            "FoS_18": "Sociología",
+            "welcome-title": "Buscador de Recursos Bibliográficos.",
+            "resources-search": "Buscando por: Todo",
+            "placeholder-search": "Terminos de búsqueda",
+            "search": "Buscar",
+            "Autores": "Autores",
+            "Documentos": "Documentos",
+            "Colecciones": "Colecciones",
+            "tip-author": "Autores",
+            "tip-document": "Documentos",
+            "tip-collection": "Colecciones",
+            "search-option": "Buscando por : ",
+            "advance-search": "Búsqueda Avanzada",
+            "sug": "Sugerencias",
+            "fac": "Búsqueda por facetas",
+            "noData": "No hay datos",
+            "text-more": "Más",
+            "text-less": "Menos",
+            "view-source": "Ver Fuente",
+            "view-rdf": "Ver RDF",
+            "view-graph": "Ver Grafo",
+            "Name": "Nombre Completo",
+            "First Name": "Nombres",
+            "Last Name": "Apellidos",
+            "Title": "Título",
+            "Subject": "Tema",
+            "subject": "Tema",
+            "Language": "Idioma",
+            "Description": "Descripción",
+            "Type": "Tipo",
+            "Abstract": "Resumen",
+            "results": " resultados",
+            "No-results": "Sin resultados",
+            "panel-info": "Información",
+            "warning": "Atención",
+            "warning-data": "El elemento seleccionado contiene una gran cantidad de recursos, por lo que podria relantizar la exploración. ¿Desea desplegar todos los datos?.",
+            "afirmative": "Sí ",
+            "sample": "Muestra ",
+            "More Info": "Más Información",
+            "dashboard": "TABLERO",
+            "clean-dash": "Limpiar Área",
+            "load-json": "Cargar JSON",
+            "zoom-out": "Alejar",
+            "zoom-in": "Acercar",
+            "query-editor": "Editor",
+            "graph-query": "Consulta",
+            "query-title": "(*)Título de la consulta",
+            "query-des": "Descripción de la consulta",
+            "run-query": "Ejecutar Consulta",
+            "save-query": "Guardar Consulta",
+            "delete-query": "Borrar Consulta",
+            "raw-node": "Nodo Genérico",
+            "raw-node-value": "Valor del Nodo Genérico",
+            "entity": "Entidad",
+            "property": "Propiedad",
+            "entities": "Entidades",
+            "properties": "Propiedades",
+            "disp-endpoints": "Endpoints Disponibles",
+            "Graph": "Grafo",
+            "Status": "Estado",
+            "Optional": "Opcional",
+            "close": "Cerrar",
+            "New": "Nuevo",
+            "graph-url": "URL del Esquema (Requerido)",
+            "identifier": "Identificador (Requirido)",
+            "graph-color": "Color del Grafo",
+            "load-schema": "Cargar Esquema (Podría tardar un tiempo, dependiendo del tamaño del esquema)",
+            "Register": "Registrar",
+            "val-node": "Valor del Nodo",
+            "simple-match": "Coincidencia Simple",
+            "save": "Guardar",
+            "console-error": "Consola de Error",
+            "avoid-sparql": "Evitar validación del cliente SPARQL",
+            "result-query": "Resultado de la consulta",
+            "delete": "Borrar",
+            "msg-delete": "¿Esta seguro que quiere borrar el endpoint?",
+            "template-title": "Plantilla de Consultas",
+            "Home": "Inicio",
+            "Search": "Buscador",
+            "Statistics": "Estadísticas",
+            "query-temp": "Plantilla de Consultas",
+            "query-builder": "Constructor de Consultas",
+            "ava-endpoints": "Endpoints Disponibles",
+            "new-endpoint": "Nuevo SPARQL endpoint",
+            "Help": "Ayuda",
+            "Options": "Opciones",
+            "Collections": "Colecciones",
+            "Documents": "Documentos",
+            "Persons": "Personas",
+            "title-g1": "Recursos",
+            "sub-title-g1": "Monto total de recursos dentro de los repositorios registrados",
+            "title-g2": "Repositorios",
+            "sub-title-g2": "Repositorios Registrados",
+            "top-topics": "Temas Destacados",
+            "group-by": "Agrupado por:",
+            "Year": "Año",
+            "All": "Todos",
+            "top-collections": "Colecciones Destacadas",
+            "Repository": "Repositorios",
             "top-persons": "Personas Destacadas",
-            "Global":"Globales" ,
+            "Global": "Globales",
             "Stats": "Estadísticas",
             "Profile": "Mi Perfil",
-            "Close":"Cerrar" ,
-            "Change_password":"Cambiar Contraseña" ,
-            "Sign_out":"Cerrar Sesión",
-            "Sign_in":"Registrarse" ,
-            "Create_account":"Crear Cuenta" ,
-            "Forgot_password":"Contraseña Olvidada",
-            "Change_password":"Cambiar Contraseña" ,
-            "New_password":"Nueva Contraseña" ,
-            "Set_password":"Colocar Contraseña" ,
-            "Current_password":"Password Actual" ,
+            "Close": "Cerrar",
+            "Change_password": "Cambiar Contraseña",
+            "Sign_out": "Cerrar Sesión",
+            "Sign_in": "Registrarse",
+            "Create_account": "Crear Cuenta",
+            "Forgot_password": "Contraseña Olvidada",
+            "Change_password":"Cambiar Contraseña",
+                    "New_password": "Nueva Contraseña",
+            "Set_password": "Colocar Contraseña",
+            "Current_password": "Password Actual",
             "New_password":"Nuevo password",
-            "My_Profile":"Mi Perfil" ,
-            "Names":"Nombres" ,
-            "Direction":"Dirección",
-            "Occupation":"Cargo",
-             "Student":"Estudiante",
-            "Teacher":"Profesor",
-            "Researcher":"Investigador",
-            "Other" :"Otro" ,
-            "Interest_Areas":"Areas de Interes",
-            "Sciences":"Ciencias",
-            "Mathematics":"Matemáticas",
-            "Literature":"Literatura" ,
-            "chemistry":"Química" ,
-             "Email":"Correo Electrónico",
-             "Spanish":"Español",
-             "English" : "Inglés" ,
-             "Access_Level":"Nivel de Acceso" ,
-             "User":"Usuario Básico",
-             "Advanced_User":"Usuario Avanzado" ,
-              "Admin":"Administrador",
-              "Send" :"Guardar" ,
-              "Manage":"Administrar" ,
-              "Accounts":"Cuentas" ,
-              "Users_List":"Lista de Usuarios" ,
-              "wildcard":"nodo de sugerencia",
-              "Search_History":"Historial de Búsqueda",
-              "Favorite_Resources" : "Recursos Favoritos" ,
-              "My_Searches" : "Mis Consultas" ,
-              "Resource" : " Recurso" , 
-              "Sources" : "Fuentes" ,
-              "Date" : "Fecha" ,
-              "Filters" : "Filtros",
-              "Search_action" : "Búsqueda" ,
-         "it":"italian"
-    };
+                    "My_Profile": "Mi Perfil",
+            "Names": "Nombres",
+            "Direction": "Dirección",
+            "Occupation": "Cargo",
+            "Student": "Estudiante",
+            "Teacher": "Profesor",
+            "Researcher": "Investigador",
+            "Other": "Otro",
+            "Interest_Areas": "Areas de Interes",
+            "Sciences": "Ciencias",
+            "Mathematics": "Matemáticas",
+            "Literature": "Literatura",
+            "chemistry": "Química",
+            "Email": "Correo Electrónico",
+            "Spanish": "Español",
+            "English": "Inglés",
+            "Access_Level": "Nivel de Acceso",
+            "User": "Usuario Básico",
+            "Advanced_User": "Usuario Avanzado",
+            "Admin": "Administrador",
+            "Send": "Guardar",
+            "Manage": "Administrar",
+            "Accounts": "Cuentas",
+            "Users_List": "Lista de Usuarios",
+            "wildcard": "nodo de sugerencia",
+            "Search_History": "Historial de Búsqueda",
+            "Favorite_Resources": "Recursos Favoritos",
+            "My_Searches": "Mis Consultas",
+            "Resource": " Recurso",
+            "Sources": "Fuentes",
+            "Date": "Fecha",
+            "Filters": "Filtros",
+            "Search_action": "Búsqueda",
+            "it": "italian"
+        };
 
-  
-    lang.init("USER_PROFILE","es");
-  //  lang.init("SESSION","en");
-    lang.setDictionnary("es",idiomEsp);
-    lang.setDictionnary("en",idiomEng);
-    //lang.setDictionnary("it",dicoIt);
 
-         };
+        lang.init("USER_PROFILE", "es");
+        //  lang.init("SESSION","en");
+        lang.setDictionnary("es", idiomEsp);
+        lang.setDictionnary("en", idiomEng);
+        //lang.setDictionnary("it",dicoIt);
+
+    }
+    ;
 
 //*
     Template.hello.events({
@@ -2517,64 +2595,64 @@ Template.profile.helpers({
         }
     });
 
-/*
+    /*
      Template.header.events({
-
-        setEvents: function (divNode) {
-            $("#lang-esp").click(function () {   
-        alert ("Hola");
-       lang.init("SESSION","es");
-  //   change_language("es");
-       
-           });
-
-       $("#lang-en").click(function () {   
-  
-    // lang.init("SESSION","en");
+     
+     setEvents: function (divNode) {
+     $("#lang-esp").click(function () {   
+     alert ("Hola");
+     lang.init("SESSION","es");
+     //   change_language("es");
+     
+     });
+     
+     $("#lang-en").click(function () {   
+     
+     // lang.init("SESSION","en");
      // change_language("en");
-  
-        });
-
-
-        }
-         
-        
-        
-    });
-
-
+     
+     });
+     
+     
+     }
+     
+     
+     
+     });
+     
+     
      Template.header.helpers({
-         setEvents: function (divNode) {
-            $("#lang-esp").click(function () {   
-        alert ("Hola");
-       lang.init("SESSION","es");
-  //   change_language("es");
-       
-           });
-
-       $("#lang-en").click(function () {   
-  
-    // lang.init("SESSION","en");
+     setEvents: function (divNode) {
+     $("#lang-esp").click(function () {   
+     alert ("Hola");
+     lang.init("SESSION","es");
+     //   change_language("es");
+     
+     });
+     
+     $("#lang-en").click(function () {   
+     
+     // lang.init("SESSION","en");
      // change_language("en");
-  
-        });
-
-
-        }
-        
-    });
-*/
+     
+     });
+     
+     
+     }
+     
+     });
+     */
     function deleteUser(e) {
-              alert("borrado");
-              console.log ("Borradpo");
-      }
-        
+        alert("borrado");
+        console.log("Borradpo");
+    }
+
 
 
     Meteor.startup(function () {
         console.log('inicializacion');
-        language ();
-        Hooks.init() ;
+        language();
+        Hooks.init();
         return $(function () {
             App.router = new Router();
             console.log('inicializacion OK');
@@ -2585,9 +2663,9 @@ Template.profile.helpers({
     });
 
 
-   
-       
-  
+
+
+
 //--------------------------------------
     function Query(endpoint, graph, query) {
         var aux = undefined;
@@ -2616,10 +2694,10 @@ Template.profile.helpers({
         }
     }
 
-     
+
 
 
 
 }
 
- 
+

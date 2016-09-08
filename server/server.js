@@ -78,7 +78,7 @@ Hooks.onCreateUser = function (userId) {
  //alert ("Login");
  var usr = Meteor.users.findOne({'_id':userId});
 
-  Profile.insert({idProfile: userId , nameUser: "", direction: "" , levelAcademic: "0", areasInterest: "", language: "es", password: "", secMail:  usr.emails[0].address , accessLevel: "0"});
+  Profile.insert({idProfile: userId , nameUser: "", direction: "" , levelAcademic: "0", areasInterest: [], language: "es", password: "", secMail:  usr.emails[0].address , accessLevel: "0"});
   Meteor.users.update({_id:userId}, {$set:{"profile":{ lang: "es" ,  'access':0 }}});
     console.log ("Usuario Creado");
  console.log (usr.emails[0].address);
@@ -121,78 +121,78 @@ Administrador del sitio Fedquest.
     // See the section about html emails below.
   }
 };
-     function valAccess (id , n){
-      var usuario = Meteor.users.findOne({'_id' : id});
-      if (usuario.profile.access >= n){
+function valAccess(id, n) {
+    var usuario = Meteor.users.findOne({'_id': id});
+    if (usuario.profile.access >= n) {
         return true;
-      } else {
+    } else {
         return false;
-      }
-     }
-
-
-    function merge_(obj1, obj2) {
-        var result = {};
-        for (var key in obj1)
-            result[key] = obj1[key];
-        for (var key in obj2)
-            result[key] = obj2[key];
-        return result;
     }
- 
+}
 
-    String.prototype.hashCode = function () {
-        var a = 0, b, c, d;
-        if (0 === this.length)
-            return a;
-        for (b = 0, d = this.length; b < d; b++) {
-            c = this.charCodeAt(b);
-            a = (a << 5) - a + c;
-            a |= 0;
-        }
+
+function merge_(obj1, obj2) {
+    var result = {};
+    for (var key in obj1)
+        result[key] = obj1[key];
+    for (var key in obj2)
+        result[key] = obj2[key];
+    return result;
+}
+
+
+String.prototype.hashCode = function () {
+    var a = 0, b, c, d;
+    if (0 === this.length)
         return a;
-    };
+    for (b = 0, d = this.length; b < d; b++) {
+        c = this.charCodeAt(b);
+        a = (a << 5) - a + c;
+        a |= 0;
+    }
+    return a;
+};
 String.prototype.keyword = function () {
-                var x;
-                var y;
-                var word;
-                var stop_word;
-                var regex_str;
-                var regex;
-                var cleansed_string = this.valueOf();
-                var stop_words = ["a", "actualmente", "acuerdo", "adelante", "ademas", "además", "adrede", "afirmó", "agregó", "ahi", "ahora", "ahí", "al", "algo", "alguna", "algunas", "alguno", "algunos", "algún", "alli", "allí", "alrededor", "ambos", "ampleamos", "antano", "antaño", "ante", "anterior", "antes", "apenas", "aproximadamente", "aquel", "aquella", "aquellas", "aquello", "aquellos", "aqui", "aquél", "aquélla", "aquéllas", "aquéllos", "aquí", "arriba", "arribaabajo", "aseguró", "asi", "así", "atras", "aun", "aunque", "ayer", "añadió", "aún", "b", "bajo", "bastante", "bien", "breve", "buen", "buena", "buenas", "bueno", "buenos", "c", "cada", "casi", "cerca", "cierta", "ciertas", "cierto", "ciertos", "cinco", "claro", "comentó", "como", "con", "conmigo", "conocer", "conseguimos", "conseguir", "considera", "consideró", "consigo", "consigue", "consiguen", "consigues", "contigo", "contra", "cosas", "creo", "cual", "cuales", "cualquier", "cuando", "cuanta", "cuantas", "cuanto", "cuantos", "cuatro", "cuenta", "cuál", "cuáles", "cuándo", "cuánta", "cuántas", "cuánto", "cuántos", "cómo", "d", "da", "dado", "dan", "dar", "de", "debajo", "debe", "deben", "debido", "decir", "dejó", "del", "delante", "demasiado", "demás", "dentro", "deprisa", "desde", "despacio", "despues", "después", "detras", "detrás", "dia", "dias", "dice", "dicen", "dicho", "dieron", "diferente", "diferentes", "dijeron", "dijo", "dio", "donde", "dos", "durante", "día", "días", "dónde", "e", "ejemplo", "el", "ella", "ellas", "ello", "ellos", "embargo", "empleais", "emplean", "emplear", "empleas", "empleo", "en", "encima", "encuentra", "enfrente", "enseguida", "entonces", "entre", "era", "eramos", "eran", "eras", "eres", "es", "esa", "esas", "ese", "eso", "esos", "esta", "estaba", "estaban", "estado", "estados", "estais", "estamos", "estan", "estar", "estará", "estas", "este", "esto", "estos", "estoy", "estuvo", "está", "están", "ex", "excepto", "existe", "existen", "explicó", "expresó", "f", "fin", "final", "fue", "fuera", "fueron", "fui", "fuimos", "g", "general", "gran", "grandes", "gueno", "h", "ha", "haber", "habia", "habla", "hablan", "habrá", "había", "habían", "hace", "haceis", "hacemos", "hacen", "hacer", "hacerlo", "haces", "hacia", "haciendo", "hago", "han", "hasta", "hay", "haya", "he", "hecho", "hemos", "hicieron", "hizo", "horas", "hoy", "hubo", "i", "igual", "incluso", "indicó", "informo", "informó", "intenta", "intentais", "intentamos", "intentan", "intentar", "intentas", "intento", "ir", "j", "junto", "k", "l", "la", "lado", "largo", "las", "le", "lejos", "les", "llegó", "lleva", "llevar", "lo", "los", "luego", "lugar", "m", "mal", "manera", "manifestó", "mas", "mayor", "me", "mediante", "medio", "mejor", "mencionó", "menos", "menudo", "mi", "mia", "mias", "mientras", "mio", "mios", "mis", "misma", "mismas", "mismo", "mismos", "modo", "momento", "mucha", "muchas", "mucho", "muchos", "muy", "más", "mí", "mía", "mías", "mío", "míos", "n", "nada", "nadie", "ni", "ninguna", "ningunas", "ninguno", "ningunos", "ningún", "no", "nos", "nosotras", "nosotros", "nuestra", "nuestras", "nuestro", "nuestros", "nueva", "nuevas", "nuevo", "nuevos", "nunca", "o", "ocho", "os", "otra", "otras", "otro", "otros", "p", "pais", "para", "parece", "parte", "partir", "pasada", "pasado", "paìs", "peor", "pero", "pesar", "poca", "pocas", "poco", "pocos", "podeis", "podemos", "poder", "podria", "podriais", "podriamos", "podrian", "podrias", "podrá", "podrán", "podría", "podrían", "poner", "por", "porque", "posible", "primer", "primera", "primero", "primeros", "principalmente", "pronto", "propia", "propias", "propio", "propios", "proximo", "próximo", "próximos", "pudo", "pueda", "puede", "pueden", "puedo", "pues", "q", "qeu", "que", "quedó", "queremos", "quien", "quienes", "quiere", "quiza", "quizas", "quizá", "quizás", "quién", "quiénes", "qué", "r", "raras", "realizado", "realizar", "realizó", "repente", "respecto", "s", "sabe", "sabeis", "sabemos", "saben", "saber", "sabes", "salvo", "se", "sea", "sean", "segun", "segunda", "segundo", "según", "seis", "ser", "sera", "será", "serán", "sería", "señaló", "si", "sido", "siempre", "siendo", "siete", "sigue", "siguiente", "sin", "sino", "sobre", "sois", "sola", "solamente", "solas", "solo", "solos", "somos", "son", "soy", "soyos", "su", "supuesto", "sus", "suya", "suyas", "suyo", "sé", "sí", "sólo", "t", "tal", "tambien", "también", "tampoco", "tan", "tanto", "tarde", "te", "temprano", "tendrá", "tendrán", "teneis", "tenemos", "tener", "tenga", "tengo", "tenido", "tenía", "tercera", "ti", "tiempo", "tiene", "tienen", "toda", "todas", "todavia", "todavía", "todo", "todos", "total", "trabaja", "trabajais", "trabajamos", "trabajan", "trabajar", "trabajas", "trabajo", "tras", "trata", "través", "tres", "tu", "tus", "tuvo", "tuya", "tuyas", "tuyo", "tuyos", "tú", "u", "ultimo", "un", "una", "unas", "uno", "unos", "usa", "usais", "usamos", "usan", "usar", "usas", "uso", "usted", "ustedes", "v", "va", "vais", "valor", "vamos", "van", "varias", "varios", "vaya", "veces", "ver", "verdad", "verdadera", "verdadero", "vez", "vosotras", "vosotros", "voy", "vuestra", "vuestras", "vuestro", "vuestros", "w", "x", "y", "ya", "yo", "z", "él", "ésa", "ésas", "ése", "ésos", "ésta", "éstas", "éste", "éstos", "última", "últimas", "último", "últimos"];
-                // Split out all the individual words in the phrase
-                words = cleansed_string.match(/[^\s]+|\s+[^\s+]$/g)
+    var x;
+    var y;
+    var word;
+    var stop_word;
+    var regex_str;
+    var regex;
+    var cleansed_string = this.valueOf();
+    var stop_words = ["a", "actualmente", "acuerdo", "adelante", "ademas", "además", "adrede", "afirmó", "agregó", "ahi", "ahora", "ahí", "al", "algo", "alguna", "algunas", "alguno", "algunos", "algún", "alli", "allí", "alrededor", "ambos", "ampleamos", "antano", "antaño", "ante", "anterior", "antes", "apenas", "aproximadamente", "aquel", "aquella", "aquellas", "aquello", "aquellos", "aqui", "aquél", "aquélla", "aquéllas", "aquéllos", "aquí", "arriba", "arribaabajo", "aseguró", "asi", "así", "atras", "aun", "aunque", "ayer", "añadió", "aún", "b", "bajo", "bastante", "bien", "breve", "buen", "buena", "buenas", "bueno", "buenos", "c", "cada", "casi", "cerca", "cierta", "ciertas", "cierto", "ciertos", "cinco", "claro", "comentó", "como", "con", "conmigo", "conocer", "conseguimos", "conseguir", "considera", "consideró", "consigo", "consigue", "consiguen", "consigues", "contigo", "contra", "cosas", "creo", "cual", "cuales", "cualquier", "cuando", "cuanta", "cuantas", "cuanto", "cuantos", "cuatro", "cuenta", "cuál", "cuáles", "cuándo", "cuánta", "cuántas", "cuánto", "cuántos", "cómo", "d", "da", "dado", "dan", "dar", "de", "debajo", "debe", "deben", "debido", "decir", "dejó", "del", "delante", "demasiado", "demás", "dentro", "deprisa", "desde", "despacio", "despues", "después", "detras", "detrás", "dia", "dias", "dice", "dicen", "dicho", "dieron", "diferente", "diferentes", "dijeron", "dijo", "dio", "donde", "dos", "durante", "día", "días", "dónde", "e", "ejemplo", "el", "ella", "ellas", "ello", "ellos", "embargo", "empleais", "emplean", "emplear", "empleas", "empleo", "en", "encima", "encuentra", "enfrente", "enseguida", "entonces", "entre", "era", "eramos", "eran", "eras", "eres", "es", "esa", "esas", "ese", "eso", "esos", "esta", "estaba", "estaban", "estado", "estados", "estais", "estamos", "estan", "estar", "estará", "estas", "este", "esto", "estos", "estoy", "estuvo", "está", "están", "ex", "excepto", "existe", "existen", "explicó", "expresó", "f", "fin", "final", "fue", "fuera", "fueron", "fui", "fuimos", "g", "general", "gran", "grandes", "gueno", "h", "ha", "haber", "habia", "habla", "hablan", "habrá", "había", "habían", "hace", "haceis", "hacemos", "hacen", "hacer", "hacerlo", "haces", "hacia", "haciendo", "hago", "han", "hasta", "hay", "haya", "he", "hecho", "hemos", "hicieron", "hizo", "horas", "hoy", "hubo", "i", "igual", "incluso", "indicó", "informo", "informó", "intenta", "intentais", "intentamos", "intentan", "intentar", "intentas", "intento", "ir", "j", "junto", "k", "l", "la", "lado", "largo", "las", "le", "lejos", "les", "llegó", "lleva", "llevar", "lo", "los", "luego", "lugar", "m", "mal", "manera", "manifestó", "mas", "mayor", "me", "mediante", "medio", "mejor", "mencionó", "menos", "menudo", "mi", "mia", "mias", "mientras", "mio", "mios", "mis", "misma", "mismas", "mismo", "mismos", "modo", "momento", "mucha", "muchas", "mucho", "muchos", "muy", "más", "mí", "mía", "mías", "mío", "míos", "n", "nada", "nadie", "ni", "ninguna", "ningunas", "ninguno", "ningunos", "ningún", "no", "nos", "nosotras", "nosotros", "nuestra", "nuestras", "nuestro", "nuestros", "nueva", "nuevas", "nuevo", "nuevos", "nunca", "o", "ocho", "os", "otra", "otras", "otro", "otros", "p", "pais", "para", "parece", "parte", "partir", "pasada", "pasado", "paìs", "peor", "pero", "pesar", "poca", "pocas", "poco", "pocos", "podeis", "podemos", "poder", "podria", "podriais", "podriamos", "podrian", "podrias", "podrá", "podrán", "podría", "podrían", "poner", "por", "porque", "posible", "primer", "primera", "primero", "primeros", "principalmente", "pronto", "propia", "propias", "propio", "propios", "proximo", "próximo", "próximos", "pudo", "pueda", "puede", "pueden", "puedo", "pues", "q", "qeu", "que", "quedó", "queremos", "quien", "quienes", "quiere", "quiza", "quizas", "quizá", "quizás", "quién", "quiénes", "qué", "r", "raras", "realizado", "realizar", "realizó", "repente", "respecto", "s", "sabe", "sabeis", "sabemos", "saben", "saber", "sabes", "salvo", "se", "sea", "sean", "segun", "segunda", "segundo", "según", "seis", "ser", "sera", "será", "serán", "sería", "señaló", "si", "sido", "siempre", "siendo", "siete", "sigue", "siguiente", "sin", "sino", "sobre", "sois", "sola", "solamente", "solas", "solo", "solos", "somos", "son", "soy", "soyos", "su", "supuesto", "sus", "suya", "suyas", "suyo", "sé", "sí", "sólo", "t", "tal", "tambien", "también", "tampoco", "tan", "tanto", "tarde", "te", "temprano", "tendrá", "tendrán", "teneis", "tenemos", "tener", "tenga", "tengo", "tenido", "tenía", "tercera", "ti", "tiempo", "tiene", "tienen", "toda", "todas", "todavia", "todavía", "todo", "todos", "total", "trabaja", "trabajais", "trabajamos", "trabajan", "trabajar", "trabajas", "trabajo", "tras", "trata", "través", "tres", "tu", "tus", "tuvo", "tuya", "tuyas", "tuyo", "tuyos", "tú", "u", "ultimo", "un", "una", "unas", "uno", "unos", "usa", "usais", "usamos", "usan", "usar", "usas", "uso", "usted", "ustedes", "v", "va", "vais", "valor", "vamos", "van", "varias", "varios", "vaya", "veces", "ver", "verdad", "verdadera", "verdadero", "vez", "vosotras", "vosotros", "voy", "vuestra", "vuestras", "vuestro", "vuestros", "w", "x", "y", "ya", "yo", "z", "él", "ésa", "ésas", "ése", "ésos", "ésta", "éstas", "éste", "éstos", "última", "últimas", "último", "últimos"];
+    // Split out all the individual words in the phrase
+    words = cleansed_string.match(/[^\s]+|\s+[^\s+]$/g)
 
-                // Review all the words
-                for (x = 0; x < words.length; x++) {
+    // Review all the words
+    for (x = 0; x < words.length; x++) {
         // For each word, check all the stop words
         for (y = 0; y < stop_words.length; y++) {
-        // Get the current word
-        word = words[x].replace(/\s+|[^a-z]+/ig, ""); // Trim the word and remove non-alpha
+            // Get the current word
+            word = words[x].replace(/\s+|[^a-z]+/ig, ""); // Trim the word and remove non-alpha
 
-                // Get the stop word
-                stop_word = stop_words[y];
-                // If the word matches the stop word, remove it from the keywords
-                if (word.toLowerCase() == stop_word) {
-        // Build the regex
-        regex_str = "^\\s*" + stop_word + "\\s*$"; // Only word
+            // Get the stop word
+            stop_word = stop_words[y];
+            // If the word matches the stop word, remove it from the keywords
+            if (word.toLowerCase() == stop_word) {
+                // Build the regex
+                regex_str = "^\\s*" + stop_word + "\\s*$"; // Only word
                 regex_str += "|^\\s*" + stop_word + "\\s+"; // First word
                 regex_str += "|\\s+" + stop_word + "\\s*$"; // Last word
                 regex_str += "|\\s+" + stop_word + "\\s+"; // Word somewhere in the middle
                 regex = new RegExp(regex_str, "ig");
                 // Remove the word from the keywords
                 cleansed_string = cleansed_string.replace(regex, " ");
+            }
         }
-        }
-        }
-        return cleansed_string.replace(/^\s+|\s+$/g, "");
-        }
-    
-    
-    
-    String.prototype.removeDiacritics = function  () {
-        var str=this;
+    }
+    return cleansed_string.replace(/^\s+|\s+$/g, "");
+}
+
+
+
+String.prototype.removeDiacritics = function () {
+    var str = this;
     var diacriticsMap = {
         A: /[\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F]/g,
         AA: /[\uA732]/g,
@@ -287,176 +287,186 @@ String.prototype.keyword = function () {
     return str;
 }
 
-var mlseconds=0;
+var mlseconds = 0;
 
-function TickTock(msj){
+function TickTock(msj) {
     var d_d_ = new Date();
     var n_n_ = d_d_.getTime();
-    var r=0;
-    if (mlseconds ==0){   
-        mlseconds=n_n_;
+    var r = 0;
+    if (mlseconds == 0) {
+        mlseconds = n_n_;
         r = mlseconds;
-    }else{
-        r=(n_n_-mlseconds);
-        if (msj){
+    } else {
+        r = (n_n_ - mlseconds);
+        if (msj) {
             console.log(r);
         }
-        mlseconds=0;
+        mlseconds = 0;
     }
     return r;
 }
 
 
-Array.prototype.unique= function(){
-    var a=this;
-    a=a.filter(function(item, pos) {
+Array.prototype.unique = function () {
+    var a = this;
+    a = a.filter(function (item, pos) {
         return a.indexOf(item) == pos;
-    });    
+    });
     return a;
 }
 
 var similarity = require("similarity");
 
 function intersect(a, b) {
-    if (b.length==0 || a.length==0){
+    if (b.length == 0 || a.length == 0) {
         return 0;
     }
     var t;
     if (b.length > a.length)
-    {t = b, b = a, a = t;} // indexOf to loop over shorter
+    {
+        t = b, b = a, a = t;
+    } // indexOf to loop over shorter
     return a.filter(function (e) {
-        for (var m=0; m<b.length; m++){
-           var sim= similarity(e, b[m]);
-           if (sim > 0.8){
-               b[m]="";
-               return true;
-           }
+        for (var m = 0; m < b.length; m++) {
+            var sim = similarity(e, b[m]);
+            if (sim > 0.8) {
+                b[m] = "";
+                return true;
+            }
         }
         return false;
     });
 }
 
-
-function Prio_IntA (tx, lsin){
-    var lsmat =[];
-    var txtl=tx ;
-    var txtl_= txtl.split(" ").unique().filter(function(d){return d!=="";});
-    var nu1=txtl_.length;
-    for (var i=0; i<lsin.length; i++) {
-        var txtl_2= lsin[i];
-        var nu2=txtl_2.length;
-        if (nu1>0 || nu2>0){
-            var vin = intersect(txtl_.slice(0),txtl_2.slice(0)).length / (nu1<nu2? nu1:nu2);
-            if (vin > 0.9 ){
-                lsmat.push(i%19);
-                lsin[i]=[];
+/*
+function Prio_IntA(tx, lsin) {
+    var lsmat = [];
+    var txtl = tx;
+    var txtl_ = txtl.split(" ").unique().filter(function (d) {
+        return d !== "";
+    });
+    var nu1 = txtl_.length;
+    for (var i = 0; i < lsin.length; i++) {
+        var txtl_2 = lsin[i];
+        var nu2 = txtl_2.length;
+        if (nu1 > 0 || nu2 > 0) {
+            var vin = intersect(txtl_.slice(0), txtl_2.slice(0)).length / (nu1 < nu2 ? nu1 : nu2);
+            if (vin > 0.9) {
+                lsmat.push(i % 19);
+                lsin[i] = [];
             }
         }
     }
     return lsmat;
 }
+*/
 
 
 
+/*
+
+function Prio(idc, cons, ord, pon, idi, e, f, t, lsi) {
 
 
+    var key = idc + '_' + JSON.stringify(cons) + '_' + JSON.stringify(ord) + '_' + pon + '_' + idi + '_' + JSON.stringify(lsi);
 
-function Prio (idc,cons, ord, pon, idi, e, f, t, lsi){
-    
-    
-    var key =idc+'_'+JSON.stringify(cons)+'_'+ JSON.stringify(ord)+'_'+pon+'_'+idi+'_'+JSON.stringify(lsi);
-    
     //console.log('key'+key);
-    
-    
-    var kwq= Cache.find({keyk:key.hashCode()}).fetch();
-    
-      var k=null;
-    
-    if(kwq.length ==0){
+
+
+   var kwq = Cache.find({keyk: key.hashCode()}).fetch();
+
+    var k = null;
+
+    if (kwq.length == 0) {
         TickTock(true);
-                if (ord !=null){
-                          k=Cache.find(cons, ord).fetch();
-                  }else{
-                      k=Cache.find(cons).fetch();
-                  }
+        if (ord != null) {
+            k = Cache.find(cons, ord).fetch();
+        } else {
+            k = Cache.find(cons).fetch();
+        }
 
-                  if (k.length ==0){
-                      return k;
-                  }
+        if (k.length == 0) {
+            return k;
+        }
+        
+        var cach=true;
 
-                            var rob={};
-                            for (var ii=0; ii< k.length; ii++){
-                                k[ii].score = Number(k[ii].score);
-                                var ponn=1;
-                                if (rob[k[ii].uri+''] != undefined){
-                                    ponn = rob[k[ii].uri+''];
-                                }else{
-                                    
-                                    if (k[ii].faceted[3].value != null &&  (k[ii].faceted[3].value == 'http://purl.org/net/nknouf/ns/bibtex#Mastersthesis' || k[ii].faceted[3].value == 'http://purl.org/ontology/bibo/Article') ){
-                                        //k[ii].score = k[ii].score * pon;
-                                        //console.log('type'+k[ii].uri+k[ii].score);
-                                        ponn+=pon-1;
-                                    }
-                                    if (k[ii].faceted[2].value != null &&  (k[ii].faceted[2].value == idi) ){
-                                        //k[ii].score = k[ii].score * 3;
-                                        //console.log('lang'+k[ii].uri+k[ii].score);
-                                        ponn+=2;
-                                    }
+        var rob = {};
+        for (var ii = 0; ii < k.length; ii++) {
+            k[ii].score = Number(k[ii].score);
+            var ponn = 1;
+            if (rob[k[ii].uri + ''] != undefined) {
+                ponn = rob[k[ii].uri + ''];
+            } else {
 
-                                    if (k[ii].sub!== null && k[ii].sub.length>0 ){
-                                        for (var tss=0; tss<lsi.length; tss++){
-                                            for (var tssz=0; tssz<k[ii].sub.length; tssz++){
-                                                if (lsi[tss] == k[ii].sub[tssz] ){
-                                                    //k[ii].score = k[ii].score * 2;
-                                                    ponn+=1;
-                                                    //console.log('inter'+k[ii].uri+k[ii].score); 
-                                                    break;
-                                                }
-                                            }
+                if (k[ii].faceted[3].value != null && (k[ii].faceted[3].value == 'http://purl.org/net/nknouf/ns/bibtex#Mastersthesis' || k[ii].faceted[3].value == 'http://purl.org/ontology/bibo/Article')) {
+                    //k[ii].score = k[ii].score * pon;
+                    //console.log('type'+k[ii].uri+k[ii].score);
+                    ponn += pon +2;
+                }
+                if (k[ii].faceted[2].value != null && (k[ii].faceted[2].value == idi)) {
+                    //k[ii].score = k[ii].score * 3;
+                    //console.log('lang'+k[ii].uri+k[ii].score);
+                    ponn += 2;
+                }
+                if (!Array.isArray(k[ii].sub)){
+                    cach=false;
+                }
 
-                                        }
-                                    }
-                                    rob[k[ii].uri+'']= ponn;
-                                    
-                                }
-                                k[ii].score = k[ii].score * ponn;
-                                
+                if (k[ii].sub !== null && Array.isArray(k[ii].sub) && k[ii].sub.length > 0) {
+                    for (var tss = 0; tss < lsi.length; tss++) {
+                        for (var tssz = 0; tssz < k[ii].sub.length; tssz++) {
+                            if (lsi[tss] == k[ii].sub[tssz]) {
+                                //k[ii].score = k[ii].score * 2;
+                                ponn += 3;
+                                console.log('inter ' + k[ii].uri +' '+ k[ii].score);
+                                break;
                             }
-                            k= _.sortBy(k, function(o) { return -1*o.score; })
-                            var r__={};
-                            var s__=0;
-                            for (var ii=0; ii< k.length; ii++){
-                                //console.log(k[ii].uri+'  '+k[ii].score);
-                                if (r__[''+k[ii].uri] == undefined){
-                                    r__[''+k[ii].uri] = s__;
-                                    s__++;
-                                }
-                                k[ii].nresult=r__[''+k[ii].uri];
-                            }
-                            //k=k.sort(function (a,b){ return a.nresult>b.nresult;});
-                            k= _.sortBy(k, function(o) { return o.nresult; })
-                            
-                            
-                            Cache.insert({keyk:key.hashCode(), result:k, ttl_date: new Date()});
-                            TickTock(true);
-                        }else{
-                           k= kwq[0].result;
-                       }
-                            if (t){
-                               k=k.filter (function (d){return d.nresult>= e && d.nresult< e+f; });
-                            }
-                            return k;
+                        }
+
+                    }
+                }
+                rob[k[ii].uri + ''] = ponn;
+
+            }
+            k[ii].score = k[ii].score * ponn;
+
+        }
+        k = _.sortBy(k, function (o) {
+            return -1 * o.score;
+        })
+        var r__ = {};
+        var s__ = 0;
+        for (var ii = 0; ii < k.length; ii++) {
+            //console.log(k[ii].uri+'  '+k[ii].score);
+            if (r__['' + k[ii].uri] == undefined) {
+                r__['' + k[ii].uri] = s__;
+                s__++;
+            }
+            k[ii].nresult = r__['' + k[ii].uri];
+        }
+        //k=k.sort(function (a,b){ return a.nresult>b.nresult;});
+        k = _.sortBy(k, function (o) {
+            return o.nresult;
+        })
+
+
+        if(cach){
+            Cache.insert({keyk: key.hashCode(), result: k, ttl_date: new Date()});
+        }
+        
+        TickTock(true);
+    } else {
+        k = kwq[0].result;
+    }
+    if (t) {
+        k = k.filter(function (d) {
+            return d.nresult >= e && d.nresult < e + f;
+        });
+    }
+    return k;
 }
-
-
-
-
-
-
-
-
-
+*/
 
 var num_auto=0;
 
@@ -476,6 +486,118 @@ var num_auto=0;
         return 0;
       }
     });
+    /*
+    SyncedCron.add({
+      name: 'ProfileBasedBoosting',
+      schedule: function(parser) {
+        // parser is a later.parse object
+        return parser.text('every 1 seconds');
+      },
+      job: function() {
+        var lsareintP = [];
+        var englsar = {"FoS_0": "Art",
+                            "FoS_1": "Biology",
+                            "FoS_2": "Business",
+                            "FoS_3": "Chemistry",
+                            "FoS_4": "Computer science",
+                            "FoS_5": "Economics",
+                            "FoS_6": "Engineering",
+                            "FoS_7": "Environmental science",
+                            "FoS_8": "Geography",
+                            "FoS_9": "Geology",
+                            "FoS_10": "History",
+                            "FoS_11": "Materials science",
+                            "FoS_12": "Mathematics",
+                            "FoS_13": "Medicine",
+                            "FoS_14": "Philosophy",
+                            "FoS_15": "Physics",
+                            "FoS_16": "Political science",
+                            "FoS_17": "Psychology",
+                            "FoS_18": "Sociology"};
+                        var esplsar = {"FoS_0": "Arte",
+                            "FoS_1": "Biología",
+                            "FoS_2": "Negocios",
+                            "FoS_3": "Química",
+                            "FoS_4": "Ciencias de la computación",
+                            "FoS_5": "Economía",
+                            "FoS_6": "Ingeniería",
+                            "FoS_7": "Ciencias medioambientales",
+                            "FoS_8": "Geografía",
+                            "FoS_9": "Geología",
+                            "FoS_10": "Historia",
+                            "FoS_11": "Ciencias de los materiales",
+                            "FoS_12": "Matemáticas",
+                            "FoS_13": "Medicina",
+                            "FoS_14": "Filosofía",
+                            "FoS_15": "Física",
+                            "FoS_16": "Ciencias políticas",
+                            "FoS_17": "Psicología",
+                            "FoS_18": "Sociología"};
+          
+          
+          
+          for (;;){
+              
+              var lsareintP=[];
+              var lsnn = [];
+                            for (var ik = 0; ik < 19; ik++) {
+                                lsareintP.push(englsar['FoS_' + ik]);
+                            }
+                            for (var ik = 0; ik < 19; ik++) {
+                                lsareintP.push(esplsar['FoS_' + ik]);
+                            }
+                            lsnn = lsareintP;
+                            for (var n = 0; n < lsnn.length; n++) {
+                                lsnn[n] = lsnn[n].removeDiacritics().keyword().trim().toLowerCase().split(" ").unique().filter(function (d) {
+                                    return d !== "";
+                                });
+                            }
+                            lsareintP = lsnn;
+              
+              var OnePri = Cache.findOne({keyp: {$exists: true}});
+              if (OnePri){
+                  var ky = OnePri.keyp;
+                  var resu= Cache.find({key:ky}).fetch();
+                  var r_Sub ={};
+                  for (var i=0; i<resu.length; i++){
+                      
+                      var v = resu[i].uri;
+                      var sub__=resu[i].sub;
+                      //console.log(sub__);
+                      var fSub=null;
+                      if (r_Sub["" + v] != undefined) {
+                        fSub = r_Sub["" + v];
+                      } else {
+                        if (sub__ != undefined && sub__ != null) {
+                                            var lsnn = sub__.removeDiacritics().keyword().trim().toLowerCase().split('#|#').unique().filter(function (d) {
+                                                return d !== "";
+                                            });
+                                            var rresy = [];
+                                            var lsareintPP = lsareintP.slice(0);
+                                            for (var kw = 0; kw < lsnn.length; kw++) {
+                                                var areinc = Prio_IntA(lsnn[kw], lsareintPP);
+                                                rresy = rresy.concat(areinc);
+                                            }
+                                            fSub = rresy.unique();
+                        }
+                        r_Sub["" + v] = fSub;
+                    }
+                    //Cache.update({keyl: sug.queue}, {$set: {value: unique.slice(0, 5), cacheable: false, ttl_date: new Date()}});
+                    Cache.update({'_id':resu[i]['_id']}, {$set: {sub:fSub}});
+                  }
+                  Cache.remove({keyp:ky});
+              }else{
+                  Meteor._sleepForMs(1000);
+              }
+          }
+          
+                
+          
+          
+      }
+    });
+    */
+    
     
     SyncedCron.add({
       name: 'UpdateSugg',
@@ -484,90 +606,92 @@ var num_auto=0;
         return parser.text('every 1 seconds');
       },
       job: function() {
-
-
 	var endp = Endpoints.find().fetch();
-	for (;;){
-	        var pend= Cache.find({queue:{ $exists: true }}, {sort: { qord: -1 },limit: 1}).fetch();
-		if (pend.length ==0){
-			endp = Endpoints.find().fetch();
-			Meteor._sleepForMs(500);
-			continue;
-		}
-		var sug = pend[0];	
-		if (sug.resp.length !=0){
-			var sidat=Cache.find({queue:{ $exists: true }, resp:{$size:0} }, {sort: { qord: -1 },limit: 1}).fetch();
-			if(sidat.length >0 ){
-				sug=sidat[0];
-			}
-		}
-		var query=sug.query;
-              	var clas_=sug.clas_;
-             	var lsend=sug.lsend;
-		var cont=sug.cont;
-		var resp = sug.resp;
-		var spar="select distinct ?p ?Score { (?e ?Score ?p) <http://jena.apache.org/text#query> (<---> '___' 3) } order by desc(?Score)";
-		spar=spar.replace(new RegExp("___", "g"), query);
-		var proper=[];
-                switch(clas_){
-                    case 'P':
-                        proper.push('http://xmlns.com/foaf/0.1/name');
-                        break;
-                    case 'D':
-                        proper.push('http://purl.org/dc/terms/subject');
-                        proper.push('http://purl.org/dc/terms/title');
-                        break;
-                    case 'C':
-                        proper.push('http://purl.org/dc/terms/description');
-                        break;
-                    case 'T':
-                        proper.push('http://xmlns.com/foaf/0.1/name');
-                        proper.push('http://purl.org/dc/terms/subject');
-                        proper.push('http://purl.org/dc/terms/description');
-                        proper.push('http://purl.org/dc/terms/title');
-                        break;
+        for (; ; ) {
+            var pend = Cache.find({queue: {$exists: true}}, {sort: {qord: -1}, limit: 1}).fetch();
+            if (pend.length == 0) {
+                endp = Endpoints.find().fetch();
+                Meteor._sleepForMs(500);
+                continue;
+            }
+            var sug = pend[0];
+            if (sug.resp.length != 0) {
+                var sidat = Cache.find({queue: {$exists: true}, resp: {$size: 0}}, {sort: {qord: -1}, limit: 1}).fetch();
+                if (sidat.length > 0) {
+                    sug = sidat[0];
                 }
-		if (lsend==null){
-			var foo = [];
-			for (var i = 0; i < endp.length; i++) {
-			   foo.push(i);
-			}
-			lsend=foo;
-		}
-		var endpoint_i= Math.floor(cont / proper.length);
-		var prope_i = cont % proper.length;
-		var endpoint = endp[lsend[endpoint_i]];
-		var _spar=spar.replace(new RegExp("---", "g"), proper[prope_i]);
-                var result = Meteor.call('doQueryCacheStats', {sparql: _spar, ep: endpoint.endpoint, gr: endpoint.graphURI});
-		var r = result.resultSet.value;
-                var lsp = JSON.parse(r).results.bindings;
-		for (var k=0; k<lsp.length; k++){
-	                resp.push({d: lsp[k].p.value, s: lsp[k].Score.value});
+            }
+            var query = sug.query;
+            var clas_ = sug.clas_;
+            var lsend = sug.lsend;
+            var cont = sug.cont;
+            var resp = sug.resp;
+            var spar = "select distinct ?p ?Score { (?e ?Score ?p) <http://jena.apache.org/text#query> (<---> '___' 3) } order by desc(?Score)";
+            spar = spar.replace(new RegExp("___", "g"), query);
+            var proper = [];
+            switch (clas_) {
+                case 'P':
+                    proper.push('http://xmlns.com/foaf/0.1/name');
+                    break;
+                case 'D':
+                    proper.push('http://purl.org/dc/terms/subject');
+                    proper.push('http://purl.org/dc/terms/title');
+                    break;
+                case 'C':
+                    proper.push('http://purl.org/dc/terms/description');
+                    break;
+                case 'T':
+                    proper.push('http://xmlns.com/foaf/0.1/name');
+                    proper.push('http://purl.org/dc/terms/subject');
+                    proper.push('http://purl.org/dc/terms/description');
+                    proper.push('http://purl.org/dc/terms/title');
+                    break;
+            }
+            if (lsend == null) {
+                var foo = [];
+                for (var i = 0; i < endp.length; i++) {
+                    foo.push(i);
                 }
-		var respo = resp.sort(function(a, b){ return b.s-a.s ; });
-                var resp2 = respo.map(function (d){ return d.d; });
-                var unique = resp2.filter(function(elem, index, self) {
-                    var indx=-1;
-                    for (var w=0; w<self.length; w++){
-                        if (self[w].removeDiacritics().toLowerCase() == elem.removeDiacritics().toLowerCase()){
-                            indx=w;
-                        }
+                lsend = foo;
+            }
+            var endpoint_i = Math.floor(cont / proper.length);
+            var prope_i = cont % proper.length;
+            var endpoint = endp[lsend[endpoint_i]];
+            var _spar = spar.replace(new RegExp("---", "g"), proper[prope_i]);
+            var result = Meteor.call('doQueryCacheStats', {sparql: _spar, ep: endpoint.endpoint, gr: endpoint.graphURI});
+            var r = result.resultSet.value;
+            var lsp = JSON.parse(r).results.bindings;
+            for (var k = 0; k < lsp.length; k++) {
+                resp.push({d: lsp[k].p.value, s: lsp[k].Score.value});
+            }
+            var respo = resp.sort(function (a, b) {
+                return b.s - a.s;
+            });
+            var resp2 = respo.map(function (d) {
+                return d.d;
+            });
+            var unique = resp2.filter(function (elem, index, self) {
+                var indx = -1;
+                for (var w = 0; w < self.length; w++) {
+                    if (self[w].removeDiacritics().toLowerCase() == elem.removeDiacritics().toLowerCase()) {
+                        indx = w;
                     }
-                    return index == indx;
-                });
-		if (cont==0){
-	                Cache.insert({keyl:sug.queue, value:unique.slice(0,5),cacheable:false,ttl_date: new Date()});    
-                }else{
-                        Cache.update({keyl:sug.queue},{$set: {value:unique.slice(0,5),cacheable:false,ttl_date: new Date()}}); 
                 }
-		if (lsend.length -1 == endpoint_i && prope_i == proper.length-1){
-			Cache.update({keyl:sug.queue},{$set: {cacheable:true}});  
-			Cache.remove({queue:sug.queue});
-		}else{
-			cont=cont+1;
-			Cache.update({queue:sug.queue},{$set: {cont:cont,resp:resp}}); 
-		}
-	}
+                return index == indx;
+            });
+            if (cont == 0) {
+                Cache.insert({keyl: sug.queue, value: unique.slice(0, 5), cacheable: false, ttl_date: new Date()});
+            } else {
+                Cache.update({keyl: sug.queue}, {$set: {value: unique.slice(0, 5), cacheable: false, ttl_date: new Date()}});
+            }
+            if (lsend.length - 1 == endpoint_i && prope_i == proper.length - 1) {
+                Cache.update({keyl: sug.queue}, {$set: {cacheable: true}});
+                Cache.remove({queue: sug.queue});
+            } else {
+                cont = cont + 1;
+                Cache.update({queue: sug.queue}, {$set: {cont: cont, resp: resp}});
+            }
+        }
 
 
         return 0;
@@ -595,6 +719,7 @@ var num_auto=0;
         Cache._ensureIndex({'key': 1}, { unique: true });
         Cache._ensureIndex({'keyl': 1}, { unique: true });
         Cache._ensureIndex({'keyk': 1});
+        Cache._ensureIndex({'keyp': 1});
         
         Cache._ensureIndex({'key': 1, 'nresult':1});
         Cache._ensureIndex({'ttl_date': 1}, {'expireAfterSeconds':1209600});
@@ -609,11 +734,10 @@ var num_auto=0;
         var parserInstance = new SparqlParser();
 
         Meteor.methods({
-           eventsOnHooksInit : function(){} ,
+            eventsOnHooksInit: function () {},
             updateStats: function () {
-               
-                var __mongo_stats = [];
 
+                var __mongo_stats = [];
                 var endp = Endpoints.find().fetch();
                 //Numero totales
                 var sparql_p = "select (count(*) AS ?P) ('__' AS ?EP) {?x a <http://xmlns.com/foaf/0.1/Person>}";
@@ -653,7 +777,6 @@ var num_auto=0;
                 }
                 //Statsc.insert({cod: 1, val: Stats1});
                 __mongo_stats.push({cod: 1, val: Stats1});
-
                 var Stats__ = Stats1;
                 //console.log(Stats1);
                 //Numero recursos totales
@@ -666,14 +789,10 @@ var num_auto=0;
                     var endpoint = endp[i];
                     var r = Meteor.call('doQueryCacheStats', {sparql: sparql_.replace(new RegExp("__", "g"), endpoint.name).replace(new RegExp("==", "g"), endpoint.endpoint)}).resultSet.value;
                     var Obj1 = JSON.parse(r).results.bindings;
-
-
                     var stopWords = ['cuenca-ecuador', 'ecuador', 'cuenca', 'azuay', 'tesis', 'quito', 'quito-ecuador', 'guayaquil'];
-
                     Obj1_ = Obj1.filter(function (a) {
                         return stopWords.indexOf(a.D.value.trim()) == -1;
                     });
-
                     lsKW.push({EP: endpoint.name, Data: Obj1_});
                 }
                 //Statsc.insert();
@@ -688,7 +807,6 @@ var num_auto=0;
                     sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
                     sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
                     sparql_ += '}}' + '\n';
-
                     if (i != endp.length - 1) {
                         sparql_ += 'union' + '\n';
                     }
@@ -697,20 +815,18 @@ var num_auto=0;
                 r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
                 //console.log(sparql_);
                 Obj = JSON.parse(r).results.bindings;
-
                 Stats1 = [];
                 for (var i = 0; i < endp.length; i++) {
                     var ls = Obj.filter(function (a) {
                         return a.EP.value == endp[i].name;
                     });
-
                     Stats1.push({EP: endp[i].name, val: ls});
                 }
                 //Statsc.insert();
                 __mongo_stats.push({cod: 3, val: Stats1});
-//Por tipo de documento
-//
-//Autores por tipo de contribucion
+        //Por tipo de documento
+        //
+        //Autores por tipo de contribucion
                 //sparql_td = "select ?p (count (*) as ?c) ('__' AS ?EP) {  select distinct ?a ?p {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a ?p ?v.    ?v a <http://purl.org/ontology/bibo/Document>  } } group by ?p ";
                 sparql_td = "select ?p ?c ('__' AS ?EP) { {select (count(*) as ?c) (IRI('http://rdaregistry.info/Elements/a/P50161') as ?p) {  select distinct ?a {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a <http://rdaregistry.info/Elements/a/P50161> [].  } }} union { select (count(*) as ?c) (IRI('http://rdaregistry.info/Elements/a/P50195') as ?p) {  select distinct ?a {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a <http://rdaregistry.info/Elements/a/P50195> [].  } }} }";
                 sparql_ = 'select * {\n';
@@ -719,7 +835,6 @@ var num_auto=0;
                     sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
                     sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
                     sparql_ += '}}' + '\n';
-
                     if (i != endp.length - 1) {
                         sparql_ += 'union' + '\n';
                     }
@@ -740,8 +855,8 @@ var num_auto=0;
                 }
                 //Statsc.insert();
                 __mongo_stats.push({cod: 4, val: Stats1});
-//Autores por tipo de contribucion
-//Top Autores
+        //Autores por tipo de contribucion
+        //Top Autores
                 var topKA = 20;
                 sparql_td = "select ?a (max (?n) as ?name) (max (?coun) as ?counter) ('__' AS ?EP) {   ?a <http://xmlns.com/foaf/0.1/name> ?n.   {      select ?a (count(*) as ?coun)      {         { ?a <http://rdaregistry.info/Elements/a/P50195> [] }union{ ?a <http://rdaregistry.info/Elements/a/P50161> []}     } group by (?a) order by desc (?coun) limit " + topKA + "    } } group by (?a) order by desc(?co)";
                 sparql_ = 'select * {\n';
@@ -750,7 +865,6 @@ var num_auto=0;
                     sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
                     sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
                     sparql_ += '}}' + '\n';
-
                     if (i != endp.length - 1) {
                         sparql_ += 'union' + '\n';
                     }
@@ -761,10 +875,10 @@ var num_auto=0;
                 Stats1 = Obj;
                 //Statsc.insert();
                 __mongo_stats.push({cod: 5, val: Stats1});
-//Top Autores
+        //Top Autores
 
 
-//Colecciones
+        //Colecciones
                 var topKC = 20000;
                 sparql_td = "select ?c (max(?n) as ?name) (count(*) as ?counter) ('__' AS ?EP) {    ?c a <http://purl.org/ontology/bibo/Collection>.    ?c <http://purl.org/dc/terms/description> ?n.   ?d <http://purl.org/dc/terms/isPartOf> ?c. } group by ?c order by desc (?co) limit " + topKC;
                 sparql_ = 'select * {\n';
@@ -773,7 +887,6 @@ var num_auto=0;
                     sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
                     sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
                     sparql_ += '}}' + '\n';
-
                     if (i != endp.length - 1) {
                         sparql_ += 'union' + '\n';
                     }
@@ -782,15 +895,13 @@ var num_auto=0;
                 r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
                 Obj = JSON.parse(r).results.bindings;
                 var StopWords2 = ['Tesis de Grado - ', 'Tesis en ', 'Carrera de ', 'Facultad de ', 'Tesis - Carrera de ', 'Tesis - ', 'Tesis de ', 'Instituto de ', 'Facultad ', 'Licenciatura en ', 'Tesis ', 'Escuela de ', 'Exámenes - '];
-
                 for (var i = 0; i < Obj.length; i++) {
                     for (var j = 0; j < StopWords2.length; j++) {
-                        if (!Obj[i].name){
-                        Obj[i].name={value: "No collections"};
-                        Obj[i].counter.value=1;
+                        if (!Obj[i].name) {
+                            Obj[i].name = {value: "No collections"};
+                            Obj[i].counter.value = 1;
                         }
                         Obj[i].name.value = Obj[i].name.value.replace(new RegExp(StopWords2[j], "g"), '');
-
                     }
                     //Obj[i].name.value = Obj[i].name.value.toLowerCase();
                 }
@@ -812,9 +923,8 @@ var num_auto=0;
                  }, {});
                  */
                 Stats1 = Obj;
-
                 __mongo_stats.push({cod: 6, val: Stats1});
-//Colecciones
+        //Colecciones
 
 
 
@@ -867,13 +977,12 @@ var num_auto=0;
                     }
                 }
                 return response;
-
             },
             doQueryCacheStats: function (a) {
                 var f = a.fast != undefined ? a.fast : false;
                 var g = a.timeout ? a.timeout : 30000;
                 var h = {};
-                var lr=false;
+                var lr = false;
                 h.statusCode = 200;
                 h.msg = void 0;
                 h.stack = void 0;
@@ -883,15 +992,15 @@ var num_auto=0;
                 if (!i) {
                     h.statusCode = 400;
                     h.msg = "Base Endpoint is not registered!";
-                } else{
+                } else {
                     try {
-			var aep= a.ep != undefined ? a.ep : i.endpoint;
-                        var agr= a.gr != undefined ? a.gr : i.graphURI;
-                        var j = (aep+agr+a.sparql).trim().hashCode();
+                        var aep = a.ep != undefined ? a.ep : i.endpoint;
+                        var agr = a.gr != undefined ? a.gr : i.graphURI;
+                        var j = (aep + agr + a.sparql).trim().hashCode();
                         var k = Cache.find({key: j}).fetch();
                         var l = {};
                         if (0 == k.length && !f) {
-                            lr=true;
+                            lr = true;
                             l = Meteor.call("runQuery", aep, agr, a.sparql, undefined, g);
                             Cache.insert({
                                 key: j,
@@ -902,7 +1011,7 @@ var num_auto=0;
                             });
                             k = Cache.find({key: j}).fetch();
                         }
-                        h.resultSet = (0 != k.length)? k[0] : {};
+                        h.resultSet = (0 != k.length) ? k[0] : {};
                     } catch (C) {
                         console.log(C.stack);
                         h.statusCode = 400;
@@ -910,9 +1019,9 @@ var num_auto=0;
                         h.stack = C.toString();
                     }
                 }
-                h.lr=lr; 
+                h.lr = lr;
                 return h;
-            }, 
+            },
             doQueryCache: function (a) {
                 var FacSe = a.Faceted ? a.Faceted : [];
                 var c = a.ApplyFilter ? a.ApplyFilter : false;
@@ -932,119 +1041,114 @@ var num_auto=0;
                     h.msg = "Base Endpoint is not registered!";
                 } else {
                     try {
-                        if (a.validateQuery){
-                            b.parse(a.sparql);}
-                        else{
-                            console.log("==Avoiding SPARQL validation on client");}
+                        if (a.validateQuery) {
+                            b.parse(a.sparql);
+                        } else {
+                            console.log("==Avoiding SPARQL validation on client");
+                        }
                         var j = a.sparql.trim().hashCode();
                         //console.log(j);
                         //Get profile
-                        var usr = Profile.findOne({idProfile:this.userId});
-                        var appPri=false;
+                        /*
+                        var usr = Profile.findOne({idProfile: this.userId});
+                        var appPri = false;
                         var pon = 1;
                         var idi = null;
-                        var lsareint=[];
-                        var lsareintP=[];
+                        var lsareint = [];
+                        var lsareintP = [];
                         //console.log(usr);
-                        
-                        var englsar={"FoS_0":"Art",
-                "FoS_1":"Biology",
-                "FoS_2":"Business",
-                "FoS_3":"Chemistry",
-                "FoS_4":"Computer science",
-                "FoS_5":"Economics",
-                "FoS_6":"Engineering",
-                "FoS_7":"Environmental science",
-                "FoS_8":"Geography",
-                "FoS_9":"Geology",
-                "FoS_10":"History",
-                "FoS_11":"Materials science",
-                "FoS_12":"Mathematics",
-                "FoS_13":"Medicine",
-                "FoS_14":"Philosophy",
-                "FoS_15":"Physics",
-                "FoS_16":"Political science",
-                "FoS_17":"Psychology",
-                "FoS_18":"Sociology"};
-            
-                var esplsar={"FoS_0":"Arte",
-                "FoS_1":"Biología",
-                "FoS_2":"Negocios",
-                "FoS_3":"Química",
-                "FoS_4":"Ciencias de la computación",
-                "FoS_5":"Economía",
-                "FoS_6":"Ingeniería",
-                "FoS_7":"Ciencias medioambientales",
-                "FoS_8":"Geografía",
-                "FoS_9":"Geología",
-                "FoS_10":"Historia",
-                "FoS_11":"Ciencias de los materiales",
-                "FoS_12":"Matemáticas",
-                "FoS_13":"Medicina",
-                "FoS_14":"Filosofía",
-                "FoS_15":"Física",
-                "FoS_16":"Ciencias políticas",
-                "FoS_17":"Psicología",
-                "FoS_18":"Sociología"};
-                        
-                        
-                       // console.log(this.userId);
-                        if (usr){
-                          //   console.log(usr);
-                            
-                            appPri=true;
-                            if (usr.levelAcademic==1){
-                                pon=2;
+
+                        var englsar = {"FoS_0": "Art",
+                            "FoS_1": "Biology",
+                            "FoS_2": "Business",
+                            "FoS_3": "Chemistry",
+                            "FoS_4": "Computer science",
+                            "FoS_5": "Economics",
+                            "FoS_6": "Engineering",
+                            "FoS_7": "Environmental science",
+                            "FoS_8": "Geography",
+                            "FoS_9": "Geology",
+                            "FoS_10": "History",
+                            "FoS_11": "Materials science",
+                            "FoS_12": "Mathematics",
+                            "FoS_13": "Medicine",
+                            "FoS_14": "Philosophy",
+                            "FoS_15": "Physics",
+                            "FoS_16": "Political science",
+                            "FoS_17": "Psychology",
+                            "FoS_18": "Sociology"};
+                        var esplsar = {"FoS_0": "Arte",
+                            "FoS_1": "Biología",
+                            "FoS_2": "Negocios",
+                            "FoS_3": "Química",
+                            "FoS_4": "Ciencias de la computación",
+                            "FoS_5": "Economía",
+                            "FoS_6": "Ingeniería",
+                            "FoS_7": "Ciencias medioambientales",
+                            "FoS_8": "Geografía",
+                            "FoS_9": "Geología",
+                            "FoS_10": "Historia",
+                            "FoS_11": "Ciencias de los materiales",
+                            "FoS_12": "Matemáticas",
+                            "FoS_13": "Medicina",
+                            "FoS_14": "Filosofía",
+                            "FoS_15": "Física",
+                            "FoS_16": "Ciencias políticas",
+                            "FoS_17": "Psicología",
+                            "FoS_18": "Sociología"};
+                        // console.log(this.userId);
+                        if (usr) {
+                            //   console.log(usr);
+
+                            appPri = true;
+                            if (usr.levelAcademic == 1) {
+                                pon = 2;
                             }
-                            if (usr.levelAcademic==2){
-                                pon=3;
-                            
+                            if (usr.levelAcademic == 2) {
+                                pon = 3;
                             }
-                            if (usr.areasInterest!=undefined &&  Array.isArray(usr.areasInterest) ){
-                                lsareint=usr.areasInterest;
+                            if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
+                                lsareint = usr.areasInterest;
                             }
-                            
-                            var lsnn=[];
-                            
-                            for (var ik=0; ik<19; ik++){
-                                lsareintP.push(englsar['FoS_'+ik]);
-                                
+
+                            var lsnn = [];
+                            for (var ik = 0; ik < 19; ik++) {
+                                lsareintP.push(englsar['FoS_' + ik]);
                             }
-                            for (var ik=0; ik<19; ik++){
-                                lsareintP.push(esplsar['FoS_'+ik]);  
-                                
+                            for (var ik = 0; ik < 19; ik++) {
+                                lsareintP.push(esplsar['FoS_' + ik]);
                             }
-                            
-                            lsnn=lsareintP;
-                            for (var n=0; n<lsnn.length;n++){
-                                lsnn[n] = lsnn[n].removeDiacritics().keyword().trim().toLowerCase().split(" ").unique().filter(function(d){return d!=="";});
+                            lsnn = lsareintP;
+                            for (var n = 0; n < lsnn.length; n++) {
+                                lsnn[n] = lsnn[n].removeDiacritics().keyword().trim().toLowerCase().split(" ").unique().filter(function (d) {
+                                    return d !== "";
+                                });
                             }
-                            lsareintP=lsnn;
-                            idi=usr.language;
+                            lsareintP = lsnn;
+                            idi = usr.language;
                         }
+                        */
                         //
                         //
                         ///Faceted
-                        if(FacSe.length !=0 ){
-                            var kFaceted = Cache.findOne({key: j});   
-                            if (kFaceted){
+                        if (FacSe.length != 0) {
+                            var kFaceted = Cache.findOne({key: j});
+                            if (kFaceted) {
                                 var all = [];
-                                
-                                for (var j_ = 0; j_ < FacSe.length; j_++){
-                                    
+                                for (var j_ = 0; j_ < FacSe.length; j_++) {
                                     var all_ = {}
                                     var fac = FacSe[j_];
-                                    if (fac.key == 'Year'){
-                                        var i__=fac.value[0];
-                                        var f__=fac.value[1];
-                                        all_= {$or: [{faceted: {$elemMatch: {key:'Year', value:{$gte:i__,$lte:f__}}} }, {faceted: {$elemMatch: {key:'Year', value:null}} }]};
-                                    }else{
-                                        var or_= [];
-                                        for (var q = 0; q < fac.value.length; q++){
-                                            or_.push({faceted: {$elemMatch: {key:fac.key, value:fac.value[q]}}});
+                                    if (fac.key == 'Year') {
+                                        var i__ = fac.value[0];
+                                        var f__ = fac.value[1];
+                                        all_ = {$or: [{faceted: {$elemMatch: {key: 'Year', value: {$gte: i__, $lte: f__}}}}, {faceted: {$elemMatch: {key: 'Year', value: null}}}]};
+                                    } else {
+                                        var or_ = [];
+                                        for (var q = 0; q < fac.value.length; q++) {
+                                            or_.push({faceted: {$elemMatch: {key: fac.key, value: fac.value[q]}}});
                                         }
-                                        if (or_.length >0){
-                                            all_={$or:or_};
+                                        if (or_.length > 0) {
+                                            all_ = {$or: or_};
                                         }
                                     }
                                     all.push(all_);
@@ -1052,12 +1156,12 @@ var num_auto=0;
                                 all.push({key: j});
                                 //console.log(JSON.stringify({$and : all }));
                                 var k = null;
-                                if (!appPri){
-                                    k=Cache.find({$and : all }, {sort:{nresult:1, firstResult:-1}}).fetch();
-                                }else{
-                                    k=Prio(j,{$and : all },{sort:{nresult:1, firstResult:-1}}, pon, idi, e, f,false, lsareint);
-                                }
-                                
+                             //   if (!appPri) {
+                                    k = Cache.find({$and: all}, {sort: {nresult: 1, firstResult: -1}}).fetch();
+                              ///  } else {
+                               //     k = Prio(j, {$and: all}, {sort: {nresult: 1, firstResult: -1}}, pon, idi, e, f, false, lsareint);
+                              //  }
+
                                 var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
                                 var y = {};
                                 var z = {};
@@ -1068,56 +1172,63 @@ var num_auto=0;
                                         z.results.bindings = [];
                                     }
                                 }
-                                
+
                                 var r = {};
                                 var s = 0;
-                                var FacetedResum_Years=[];
-                                var FacetedResum_Endpoints=[];
-                                var FacetedResum_Langs=[];
-                                var FacetedResum_Types=[];
-                                
+                                var FacetedResum_Years = [];
+                                var FacetedResum_Endpoints = [];
+                                var FacetedResum_Langs = [];
+                                var FacetedResum_Types = [];
                                 for (var t = 0; t < k.length; t++) {
                                     var FA = k[t].faceted;
-                                    if(k[t].firstResult){
-                                        var FacetedResum_Years2= FacetedResum_Years.filter(function(d){ return d.key == FA[0].value; });
-                                        if (FacetedResum_Years2.length >0){
-                                            var indx=FacetedResum_Years.indexOf(FacetedResum_Years2[0]);
-                                            FacetedResum_Years[indx].count = FacetedResum_Years[indx].count+1;
-                                        }else{
-                                            FacetedResum_Years.push({key:FA[0].value, count:1});
+                                    if (k[t].firstResult) {
+                                        var FacetedResum_Years2 = FacetedResum_Years.filter(function (d) {
+                                            return d.key == FA[0].value;
+                                        });
+                                        if (FacetedResum_Years2.length > 0) {
+                                            var indx = FacetedResum_Years.indexOf(FacetedResum_Years2[0]);
+                                            FacetedResum_Years[indx].count = FacetedResum_Years[indx].count + 1;
+                                        } else {
+                                            FacetedResum_Years.push({key: FA[0].value, count: 1});
                                         }
-                                        var FacetedResum_Endpoints2= FacetedResum_Endpoints.filter(function(d){ return d.key == FA[1].value; });
-                                        if (FacetedResum_Endpoints2.length >0){
-                                            var indx=FacetedResum_Endpoints.indexOf(FacetedResum_Endpoints2[0]);
-                                            FacetedResum_Endpoints[indx].count = FacetedResum_Endpoints[indx].count+1;
-                                        }else{
-                                            FacetedResum_Endpoints.push({key:FA[1].value, count:1});
+                                        var FacetedResum_Endpoints2 = FacetedResum_Endpoints.filter(function (d) {
+                                            return d.key == FA[1].value;
+                                        });
+                                        if (FacetedResum_Endpoints2.length > 0) {
+                                            var indx = FacetedResum_Endpoints.indexOf(FacetedResum_Endpoints2[0]);
+                                            FacetedResum_Endpoints[indx].count = FacetedResum_Endpoints[indx].count + 1;
+                                        } else {
+                                            FacetedResum_Endpoints.push({key: FA[1].value, count: 1});
                                         }
-                                        var FacetedResum_Langs2= FacetedResum_Langs.filter(function(d){ return d.key == FA[2].value; });
-                                        if (FacetedResum_Langs2.length >0){
-                                            var indx=FacetedResum_Langs.indexOf(FacetedResum_Langs2[0]);
-                                            FacetedResum_Langs[indx].count = FacetedResum_Langs[indx].count+1;
-                                        }else{
-                                            FacetedResum_Langs.push({key:FA[2].value, count:1});
+                                        var FacetedResum_Langs2 = FacetedResum_Langs.filter(function (d) {
+                                            return d.key == FA[2].value;
+                                        });
+                                        if (FacetedResum_Langs2.length > 0) {
+                                            var indx = FacetedResum_Langs.indexOf(FacetedResum_Langs2[0]);
+                                            FacetedResum_Langs[indx].count = FacetedResum_Langs[indx].count + 1;
+                                        } else {
+                                            FacetedResum_Langs.push({key: FA[2].value, count: 1});
                                         }
-                                        var FacetedResum_Types2= FacetedResum_Types.filter(function(d){ return d.key == FA[3].value; });
-                                        if (FacetedResum_Types2.length >0){
-                                            var indx=FacetedResum_Types.indexOf(FacetedResum_Types2[0]);
-                                            FacetedResum_Types[indx].count = FacetedResum_Types[indx].count+1;
-                                        }else{
-                                            FacetedResum_Types.push({key:FA[3].value, count:1});
+                                        var FacetedResum_Types2 = FacetedResum_Types.filter(function (d) {
+                                            return d.key == FA[3].value;
+                                        });
+                                        if (FacetedResum_Types2.length > 0) {
+                                            var indx = FacetedResum_Types.indexOf(FacetedResum_Types2[0]);
+                                            FacetedResum_Types[indx].count = FacetedResum_Types[indx].count + 1;
+                                        } else {
+                                            FacetedResum_Types.push({key: FA[3].value, count: 1});
                                         }
-                                }
+                                    }
                                     //
                                     var A = k[t].value;
                                     var B = JSON.parse(A.content);
                                     var v = k[t].nresult;
-                                    if (r["_" + v]!= undefined) {
+                                    if (r["_" + v] != undefined) {
                                     } else {
                                         r["_" + v] = s;
                                         s += 1;
                                     }
-                                    if (r["_" + v]>= e && r["_" + v]<e+f){
+                                    if (r["_" + v] >= e && r["_" + v] < e + f) {
                                         if (B.results) {
                                             if (B.results.bindings.length > 0) {
                                                 z.results.bindings.push(B.results.bindings[0]);
@@ -1127,44 +1238,65 @@ var num_auto=0;
                                         }
                                     }
                                 }
-                                FacetedResum_Years.sort(function (a,b) {  if (a.key < b.key)    return -1;  if (a.key > b.key)    return 1;  return 0; });
-                                FacetedResum_Types.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
-                                FacetedResum_Endpoints.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
-                                FacetedResum_Langs.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });            
-                                
-                                   h.facetedTotalsN={Years:FacetedResum_Years,Endpoints:FacetedResum_Endpoints,Langs:FacetedResum_Langs,Types:FacetedResum_Types};
-
-                                
+                                FacetedResum_Years.sort(function (a, b) {
+                                    if (a.key < b.key)
+                                        return -1;
+                                    if (a.key > b.key)
+                                        return 1;
+                                    return 0;
+                                });
+                                FacetedResum_Types.sort(function (a, b) {
+                                    if (a.count < b.count)
+                                        return 1;
+                                    if (a.count > b.count)
+                                        return -1;
+                                    return 0;
+                                });
+                                FacetedResum_Endpoints.sort(function (a, b) {
+                                    if (a.count < b.count)
+                                        return 1;
+                                    if (a.count > b.count)
+                                        return -1;
+                                    return 0;
+                                });
+                                FacetedResum_Langs.sort(function (a, b) {
+                                    if (a.count < b.count)
+                                        return 1;
+                                    if (a.count > b.count)
+                                        return -1;
+                                    return 0;
+                                });
+                                h.facetedTotalsN = {Years: FacetedResum_Years, Endpoints: FacetedResum_Endpoints, Langs: FacetedResum_Langs, Types: FacetedResum_Types};
                                 y.content = JSON.stringify(z);
                                 h.resultSet = y;
                                 h.resultCount = s;
-
                                 return h;
                             }
                         }
                         //Faceted
                         var k = null;
-                        if (!appPri){
-                            k=Cache.find({
+                      //  if (!appPri) {
+                            k = Cache.find({
                                 key: j,
                                 nresult: {
                                     $gte: e,
                                     $lt: e + f
                                 }
                             }, {
-                                    sort: {
-                                        nresult: +1
-                                    }
-                                }).fetch();
-                        }else{
-                            k=Prio(j,{key: j},null, pon, idi, e, f,true, lsareint);
-                        }
+                                sort: {
+                                    nresult: +1
+                                }
+                            }).fetch();
+                     //   } else {
+                      //      k = Prio(j, {key: j}, null, pon, idi, e, f, true, lsareint);
+                      //  }
                         /////
                         var l = "";
-                        var cacheo=false;
+                        var cacheo = false;
                         if (0 == k.length) {
-                            cacheo=true;
+                            cacheo = true;
                             l = Meteor.call("runQuery", i.endpoint, i.graphURI, a.sparql, undefined, g);
+                            //console.log(l.content);
                             var m = JSON.parse(l.content);
                             if (c) {
                                 var n = Math.max.apply(Math, m.results.bindings.map(function (a) {
@@ -1182,88 +1314,76 @@ var num_auto=0;
                             var r = {};
                             var r_Sub = {};
                             var s = 0;
-                            var timi=0.0;
-                            var bulk=[];
+                            var timi = 0.0;
+                            var bulk = [];
                             //TickTock(true);
                             for (var t = 0; t < q; t++) {
-                                var un=false;
+                                var un = false;
+                                //if (m.results.bindings[t]["" + d] == undefined){
+                                   // console.log(m.results.bindings[t]);
+                                    
+                                //}
+                                
                                 var v = m.results.bindings[t]["" + d].value;
-                                if (r["" + v]!= undefined) {
+                                if (r["" + v] != undefined) {
                                 } else {
-                                    un=true;
+                                    un = true;
                                     r["" + v] = s;
                                     s += 1;
                                 }
                                 var back = l.content;
                                 var JSONOut2 = {};
                                 var orgi = false;
-                                var fType=null;
-                                var fEndpoint=null;
-                                var fLang=null;
-                                var fYear=null;
-                                var fScore=0.0;
-                                var fSub=null;
+                                var fType = null;
+                                var fEndpoint = null;
+                                var fLang = null;
+                                var fYear = null;
+                                //var fScore = 0.0;
+                                //var fSub = null;
+                               // if (m.results.bindings[t].Score != undefined) {
+                                //    fScore = Number(m.results.bindings[t].Score.value);
+                              //  }
                                 
-                                
-                                
-                                if (m.results.bindings[t].Score != undefined){
-                                            fScore = Number(m.results.bindings[t].Score.value);
-                                }
+                               // if (m.results.bindings[t].Sub != undefined && m.results.bindings[t].Sub != null) {
+                              //      fSub=m.results.bindings[t].Sub.value;
+                              //  }
                                    
-                                if (true){
-                                    if (r_Sub["" + v]!= undefined){
-                                        fSub=r_Sub["" + v];
-                                    }else{
-                                        if (m.results.bindings[t].Sub != undefined && m.results.bindings[t].Sub != null ){
-                                                var lsnn = m.results.bindings[t].Sub.value.removeDiacritics().keyword().trim().toLowerCase().split('#|#').unique().filter(function(d){return d!=="";});
-                                                var rresy=[]; 
-                                                var lsareintPP= lsareintP.slice(0);
-                                                for (var kw=0; kw<lsnn.length; kw++){
-                                                    var areinc = Prio_IntA(lsnn[kw], lsareintPP);
-                                                    rresy= rresy.concat(areinc);
-                                                }       
-                                                fSub = rresy.unique();
-                                        }
-                                        r_Sub["" + v]=fSub;
 
-                                    }
-                                }
-                                
-                               // if (r_Type["" + v]!= undefined){
-                                 //   fType=r_Type["" + v];
+                                // if (r_Type["" + v]!= undefined){
+                                //   fType=r_Type["" + v];
                                 //}else{
-                                    if (m.results.bindings[t].Type != undefined){
-                                            fType = m.results.bindings[t].Type.value;
-                                    }
-                                  //  r_Type["" + v]=fType;
-                               // }
-                               // if (r_Endpoint["" + v] != undefined){
-                                 //   fEndpoint = r_Endpoint["" + v];
-                               // } else{
-                                    if (m.results.bindings[t].Endpoint != undefined){
-                                        fEndpoint = m.results.bindings[t].Endpoint.value;
-                                    }
-                                 //   r_Endpoint["" + v] = fEndpoint;
-                               // }
-                              //  if (r_Lang["" + v] != undefined){
+                                if (m.results.bindings[t].Type != undefined) {
+                                    fType = m.results.bindings[t].Type.value;
+                                }
+                                //  r_Type["" + v]=fType;
+                                // }
+                                // if (r_Endpoint["" + v] != undefined){
+                                //   fEndpoint = r_Endpoint["" + v];
+                                // } else{
+                                if (m.results.bindings[t].Endpoint != undefined) {
+                                    fEndpoint = m.results.bindings[t].Endpoint.value;
+                                }
+                                //   r_Endpoint["" + v] = fEndpoint;
+                                // }
+                                //  if (r_Lang["" + v] != undefined){
                                 //    fLang = r_Lang["" + v];
                                 //} else{
-                                    if (m.results.bindings[t].Lang != undefined){
-                                            fLang = m.results.bindings[t].Lang.value;
-                                    }
-                                 //   r_Lang["" + v] = fLang;
-                               // }
-                               // if (r_Year["" + v] != undefined){
+                                if (m.results.bindings[t].Lang != undefined) {
+                                    fLang = m.results.bindings[t].Lang.value;
+                                }
+                                //   r_Lang["" + v] = fLang;
+                                // }
+                                // if (r_Year["" + v] != undefined){
                                 //    fYear = r_Year["" + v];
-                               // } else{
-                                    if (m.results.bindings[t].Year != undefined){
-                                            fYear = m.results.bindings[t].Year.value;
-                                    }
+                                // } else{
+                                if (m.results.bindings[t].Year != undefined) {
+                                    fYear = m.results.bindings[t].Year.value;
+                                }
                                 //    r_Year["" + v] = fYear;
-                               // }
-                                
-                                
-                                
+                                // }
+
+
+
                                 if (t == 0) {
                                     var u = JSON.parse(l.content);
                                     u.results.bindings = [m.results.bindings[t]];
@@ -1287,39 +1407,41 @@ var num_auto=0;
                                     value: JSON.parse(JSON.stringify(JSONOut2)),
                                     ttl_date: new Date(),
                                     nresult: r["" + v],
-                                    score:Number(fScore),
-                                    uri:v,
-                                    sub:fSub,
-                                    faceted: [{key:'Year', value:Number(fYear) == 0 ? null:Number(fYear)  },{key:'Endpoint', value:fEndpoint},{key:'Lang', value:fLang},{key:'Type', value:fType}] ,
-                                    firstResult:un,
+                                   // score: Number(fScore),
+                                    uri: v,
+                                   // sub: fSub,
+                                    faceted: [{key: 'Year', value: Number(fYear) == 0 ? null : Number(fYear)}, {key: 'Endpoint', value: fEndpoint}, {key: 'Lang', value: fLang}, {key: 'Type', value: fType}],
+                                    firstResult: un,
                                     original: orgi
                                 });
                                 /*Cache.insert({
-                                    key: j,
-                                    value: JSONOut2,
-                                    ttl_date: new Date(),
-                                    nresult: r["" + v],
-                                    score:Number(fScore),
-                                    uri:v,
-                                    sub:fSub,
-                                    faceted: [{key:'Year', value:Number(fYear) == 0 ? null:Number(fYear)  },{key:'Endpoint', value:fEndpoint},{key:'Lang', value:fLang},{key:'Type', value:fType}] ,
-                                    firstResult:un,
-                                    original: orgi
-                                });*/
-                                
+                                 key: j,
+                                 value: JSONOut2,
+                                 ttl_date: new Date(),
+                                 nresult: r["" + v],
+                                 score:Number(fScore),
+                                 uri:v,
+                                 sub:fSub,
+                                 faceted: [{key:'Year', value:Number(fYear) == 0 ? null:Number(fYear)  },{key:'Endpoint', value:fEndpoint},{key:'Lang', value:fLang},{key:'Type', value:fType}] ,
+                                 firstResult:un,
+                                 original: orgi
+                                 });*/
+
                                 l.content = back;
                             }
-
-                            Cache.batchInsert(bulk);
+                            //Cache.insert({keyp: j});
+                            if (bulk.length>0){
+                                Cache.batchInsert(bulk);
+                            }
+                            
                             //TickTock(true);
                             //Limipiar
-                            r={};
-                            r_Sub={};
-                            m={};
-                            l={};
-                            bulk=[];
-                            
-                            if (!appPri){
+                            r = {};
+                            r_Sub = {};
+                            m = {};
+                            l = {};
+                            bulk = [];
+                          //  if (!appPri) {
                                 k = Cache.find({
                                     key: j,
                                     nresult: {
@@ -1331,10 +1453,10 @@ var num_auto=0;
                                         nresult: +1
                                     }
                                 }).fetch();
-                            }else{
-                                k=Prio(j,{key: j},null, pon, idi, e, f, true, lsareint);
-                            }
-                            
+                          //  } else {
+                         //       k = Prio(j, {key: j}, null, pon, idi, e, f, true, lsareint);
+                         //   }
+
                             //////
                             if (0 == q) {
                                 k = [{
@@ -1342,55 +1464,81 @@ var num_auto=0;
                                         value: l
                                     }];
                             }
-                        }else{
-                        }
-                        
-                        if (cacheo){
-                            //console.log('calculo facteted');
-                            //Facetas
-                            var years= Cache.distinct ('faceted.0.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Year'}}});
-                            var years2 = [];
-                            for (var s=0; s<years.length; s++){
-                                var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Year', value:years[s]}}}).count();
-                                years2.push({key:years[s], count: re_co});  
-                            }
-                            var endpoints= Cache.distinct ('faceted.1.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Endpoint'}}});
-                            var endpoints2 = [];
-                            for (var s=0; s<endpoints.length; s++){
-                                var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Endpoint', value:endpoints[s]}}}).count();
-                                endpoints2.push({key:endpoints[s], count: re_co});    
-                            }
-                            var langs= Cache.distinct ('faceted.2.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Lang'}}});
-                            var langs2 = [];
-                            for (var s=0; s<langs.length; s++){
-                                var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Lang', value:langs[s]}}}).count();
-                                langs2.push({key:langs[s], count: re_co});    
-                            }
-                            var types= Cache.distinct ('faceted.3.value',{key:j, firstResult:true,faceted:{$elemMatch:{key:'Type'}}});
-                            //console.log(types+"  "+j);
-                            var types2 = [];
-                            for (var s=0; s<types.length; s++){
-                                var re_co = Cache.find({key:j, firstResult:true, faceted:{$elemMatch:{key:'Type', value:types[s]}}}).count();
-                                types2.push({key:types[s], count: re_co});    
-                            }
-                            
-                            years2.sort(function (a,b) {  if (a.key < b.key)    return -1;  if (a.key > b.key)    return 1;  return 0; });
-                            types2.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
-                            endpoints2.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
-                            langs2.sort(function (a,b) {  if (a.count < b.count)    return 1;  if (a.count > b.count)    return -1;  return 0; });
-                            
-                            years2 = years2.filter(function (d){return d.count>0;});
-                            types2 = types2.filter(function (d){return d.count>0;});
-                            endpoints2 = endpoints2.filter(function (d){return d.count>0;});
-                            langs2 = langs2.filter(function (d){return d.count>0;});
-                            
-                            var k2_up = Cache.update({key: j, original: true}, {$set:{facetedTotals: {Years: years2, Endpoints: endpoints2, Langs: langs2, Types: types2}}});
+                        } else {
                         }
 
-                        
-                        
-                        
-                        //
+                        if (cacheo) {
+                            //console.log('calculo facteted');
+                            //Facetas
+                            var years = Cache.distinct('faceted.0.value', {key: j, firstResult: true, faceted: {$elemMatch: {key: 'Year'}}});
+                            var years2 = [];
+                            for (var s = 0; s < years.length; s++) {
+                                var re_co = Cache.find({key: j, firstResult: true, faceted: {$elemMatch: {key: 'Year', value: years[s]}}}).count();
+                                years2.push({key: years[s], count: re_co});
+                            }
+                            var endpoints = Cache.distinct('faceted.1.value', {key: j, firstResult: true, faceted: {$elemMatch: {key: 'Endpoint'}}});
+                            var endpoints2 = [];
+                            for (var s = 0; s < endpoints.length; s++) {
+                                var re_co = Cache.find({key: j, firstResult: true, faceted: {$elemMatch: {key: 'Endpoint', value: endpoints[s]}}}).count();
+                                endpoints2.push({key: endpoints[s], count: re_co});
+                            }
+                            var langs = Cache.distinct('faceted.2.value', {key: j, firstResult: true, faceted: {$elemMatch: {key: 'Lang'}}});
+                            var langs2 = [];
+                            for (var s = 0; s < langs.length; s++) {
+                                var re_co = Cache.find({key: j, firstResult: true, faceted: {$elemMatch: {key: 'Lang', value: langs[s]}}}).count();
+                                langs2.push({key: langs[s], count: re_co});
+                            }
+                            var types = Cache.distinct('faceted.3.value', {key: j, firstResult: true, faceted: {$elemMatch: {key: 'Type'}}});
+                            //console.log(types+"  "+j);
+                            var types2 = [];
+                            for (var s = 0; s < types.length; s++) {
+                                var re_co = Cache.find({key: j, firstResult: true, faceted: {$elemMatch: {key: 'Type', value: types[s]}}}).count();
+                                types2.push({key: types[s], count: re_co});
+                            }
+
+                            years2.sort(function (a, b) {
+                                if (a.key < b.key)
+                                    return -1;
+                                if (a.key > b.key)
+                                    return 1;
+                                return 0;
+                            });
+                            types2.sort(function (a, b) {
+                                if (a.count < b.count)
+                                    return 1;
+                                if (a.count > b.count)
+                                    return -1;
+                                return 0;
+                            });
+                            endpoints2.sort(function (a, b) {
+                                if (a.count < b.count)
+                                    return 1;
+                                if (a.count > b.count)
+                                    return -1;
+                                return 0;
+                            });
+                            langs2.sort(function (a, b) {
+                                if (a.count < b.count)
+                                    return 1;
+                                if (a.count > b.count)
+                                    return -1;
+                                return 0;
+                            });
+                            years2 = years2.filter(function (d) {
+                                return d.count > 0;
+                            });
+                            types2 = types2.filter(function (d) {
+                                return d.count > 0;
+                            });
+                            endpoints2 = endpoints2.filter(function (d) {
+                                return d.count > 0;
+                            });
+                            langs2 = langs2.filter(function (d) {
+                                return d.count > 0;
+                            });
+                            var k2_up = Cache.update({key: j, original: true}, {$set: {facetedTotals: {Years: years2, Endpoints: endpoints2, Langs: langs2, Types: types2}}});
+                        }
+
                         var w = Cache.find({
                             key: j
                         }, {
@@ -1406,7 +1554,7 @@ var num_auto=0;
                         var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
                         var y = {};
                         var z = {};
-                        var facetedTotals ={};
+                        var facetedTotals = {};
                         if (k2.length > 0) {
                             y = k2[0].value;
                             facetedTotals = k2[0].facetedTotals;
@@ -1452,7 +1600,6 @@ var num_auto=0;
                 response.statusCode = 200;
                 response.msg = undefined;
                 response.stack = undefined;
-
                 var endpointBase = endpoint;
                 //Endpoints.findOne({base: true});
 
@@ -1475,35 +1622,34 @@ var num_auto=0;
                     }
                 }
                 return response;
-
             },
             saveQuery: function (request) {
-                if (valAccess (this.userId , 1)) {
-                result = {};
-                result.statusCode = 200;
-                result.msg = 'OK';
-                try {
-                    var queryMod = Queries.findOne({_id: request._id_});
-                    if (queryMod) {
+                if (valAccess(this.userId, 1)) {
+                    result = {};
+                    result.statusCode = 200;
+                    result.msg = 'OK';
+                    try {
+                        var queryMod = Queries.findOne({_id: request._id_});
+                        if (queryMod) {
 
-                        if (request.del) {
-                            Queries.remove({_id: request._id_});
+                            if (request.del) {
+                                Queries.remove({_id: request._id_});
+                            } else {
+                                Queries.update({_id: request._id_}, {$set: {user: '', title: request.title, description: request.description,
+                                        jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData, commend: request.commend}});
+                                result.queryId = request._id_;
+                            }
                         } else {
-                            Queries.update({_id: request._id_}, {$set: {user: '', title: request.title, description: request.description,
-                                    jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData, commend: request.commend}});
-                            result.queryId = request._id_;
+                            var id = Queries.insert({user: '', title: request.title, description: request.description,
+                                jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData, commend: request.commend});
+                            result.queryId = id;
                         }
-                    } else {
-                        var id = Queries.insert({user: '', title: request.title, description: request.description,
-                            jsonGraph: JSON.stringify(request.jsonQuery), sparql: request.sparql, image: request.imageData, commend: request.commend});
-                        result.queryId = id;
+                    } catch (e) {
+                        console.log(e);
+                        result.statusCode = 500;
+                        result.msg = e
                     }
-                } catch (e) {
-                    console.log(e);
-                    result.statusCode = 500;
-                    result.msg = e
-                }
-                return result;
+                    return result;
                 } else {
                     return null;
                 }
@@ -1531,29 +1677,11 @@ var num_auto=0;
                         console.log('Error while getting Prefixes from service prefix.cc. Possible cause: ' + error);
                     }
                 });
-
             },
             runQuery: function (endpointURI, defaultGraph, query, format, timeout) {
                 format = _.isUndefined(format) ? 'application/sparql-results+json' : format;
                 timeout = _.isUndefined(timeout) ? '0' : timeout;
                 //return HTTP.get(endpointURI,
-                    return HTTP.post(endpointURI,
-                        {
-                            'params':
-                                    {
-                                        'default-graph-uri': defaultGraph,
-                                        'query': query,
-                                        'format': format,
-                                        'timeout': timeout
-                                    }
-                        });
-
-            },
-            runQueryDescr: function (endpointURI, defaultGraph, query, format, timeout) {
-                format = _.isUndefined(format) ? 'application/rdf+json' : format;
-                timeout = _.isUndefined(timeout) ? '0' : timeout;
-                console.log('Consulta' + endpointURI + '+' + query + '+' + format);
-               // return HTTP.get(endpointURI,
                 return HTTP.post(endpointURI,
                         {
                             'params':
@@ -1564,14 +1692,28 @@ var num_auto=0;
                                         'timeout': timeout
                                     }
                         });
-
+            },
+            runQueryDescr: function (endpointURI, defaultGraph, query, format, timeout) {
+                format = _.isUndefined(format) ? 'application/rdf+json' : format;
+                timeout = _.isUndefined(timeout) ? '0' : timeout;
+                console.log('Consulta' + endpointURI + '+' + query + '+' + format);
+                // return HTTP.get(endpointURI,
+                return HTTP.post(endpointURI,
+                        {
+                            'params':
+                                    {
+                                        'default-graph-uri': defaultGraph,
+                                        'query': query,
+                                        'format': format,
+                                        'timeout': timeout
+                                    }
+                        });
             },
             pingServer: function (endpointURI, defaultGraph) {
                 var response = {};
                 try {
                     var result = Meteor.call('runQuery', endpointURI, '', 'ask {graph <' + defaultGraph + '> {?s ?p ?o}}', undefined, 10000);
                     var content = EJSON.parse(result.content);
-
                     response.statusCode = result.statusCode;
                     if (result.statusCode != 200) {
                         response.msg = "Error trying to communicate with endpoint " + endpointURI;
@@ -1602,12 +1744,9 @@ var num_auto=0;
                     console.log(endpointsArray[i]);
                     var graph = endpointsArray[i].graphURI;
                     var endpoint = endpointsArray[i].endpoint;
-
-
                     try {
                         var result = Meteor.call('runQuery', endpoint, '', 'ASK { graph   <' + graph + '> { <' + resource + '> ?a ?b } }', undefined, 10000);
                         var content = EJSON.parse(result.content);
-
                         response.statusCode = result.statusCode;
                         if (result.statusCode != 200) {
                             response.msg = "Error trying to communicate with endpoint " + endpoint;
@@ -1617,8 +1756,6 @@ var num_auto=0;
                             response.content = true;
                             return response;
                             i = endpointsArray.length;
-
-
                         } else if (result.statusCode == 200 && content.boolean == false) {
                             response.statusCode = 404;
                             response.msg = "Graph <" + defaultGraph + "> does not exists on endpoint " + endpoint;
@@ -1633,75 +1770,71 @@ var num_auto=0;
 
                 }
                 return response;
-
             },
-            getSuggestions: function (text,clas_, lsend){
+            getSuggestions: function (text, clas_, lsend) {
                 this.unblock();
-                if (text==null || lsend!=null && lsend.length ==0 ){
-                    return {data:[], cacheable:true};
+                if (text == null || lsend != null && lsend.length == 0) {
+                    return {data: [], cacheable: true};
                 }
                 var text2 = text.removeDiacritics().keyword().trim().toLowerCase().replace(/[\.\+\/\\\|\*`\~,!@\#$%:^&\(\)\[\]\{\}\?\<\>\;=\'\"´-]+/g, " ");
-                if (text2===""){
-                    return {data:[], cacheable:true};
+                if (text2 === "") {
+                    return {data: [], cacheable: true};
                 }
-                var strend ='';
-                if(lsend !=null){
-                    for (var g=0; g<lsend.length; g++){
-                        strend+=lsend[g]+"__";
+                var strend = '';
+                if (lsend != null) {
+                    for (var g = 0; g < lsend.length; g++) {
+                        strend += lsend[g] + "__";
                     }
-                }else{
-                        strend="ALL__";
+                } else {
+                    strend = "ALL__";
                 }
-		var words = text2.split(" ").filter(function(d){return d!=="";});
-                    for (var i=0; i< words.length; i++){
-                        if (i == words.length-1){
-                            words[i]="("+words[i]+"* OR "+words[i]+"~ OR "+words[i]+")";
-                        }else{
-                                words[i]="("+words[i]+"~ OR "+words[i]+")";
-                        }
+                var words = text2.split(" ").filter(function (d) {
+                    return d !== "";
+                });
+                for (var i = 0; i < words.length; i++) {
+                    if (i == words.length - 1) {
+                        words[i] = "(" + words[i] + "* OR " + words[i] + "~ OR " + words[i] + ")";
+                    } else {
+                        words[i] = "(" + words[i] + "~ OR " + words[i] + ")";
                     }
-                    words.sort();
-                    var query="";
-                    for (var i=0; i< words.length; i++){
-                        query+=words[i];
-                        if (i != words.length-1){
-                            query+=" AND ";
-                        }
+                }
+                words.sort();
+                var query = "";
+                for (var i = 0; i < words.length; i++) {
+                    query += words[i];
+                    if (i != words.length - 1) {
+                        query += " AND ";
                     }
-                    query = "("+query+")";
-
-
-                var txtcach=query+clas_+strend;
-                var txtcachhsh= txtcach.hashCode();
-                var rca=Cache.find({keyl:txtcachhsh}).fetch();
-                
-                
-                if (rca.length > 0){
+                }
+                query = "(" + query + ")";
+                var txtcach = query + clas_ + strend;
+                var txtcachhsh = txtcach.hashCode();
+                var rca = Cache.find({keyl: txtcachhsh}).fetch();
+                if (rca.length > 0) {
                     //console.log('cache');
-                    rca=rca[0];
-                    return {data:rca.value, cacheable:rca.cacheable};
-                }else{
-                    rca=Cache.find({queue:txtcachhsh}).fetch();
-                    if (rca.length ==0){
+                    rca = rca[0];
+                    return {data: rca.value, cacheable: rca.cacheable};
+                } else {
+                    rca = Cache.find({queue: txtcachhsh}).fetch();
+                    if (rca.length == 0) {
                         //console.log('envio cache');
-			num_auto = (num_auto>10000)?0:num_auto+1;
-                        Cache.insert({queue:txtcachhsh,qord:num_auto, cont:0, resp:[] ,query:query, clas_:clas_, lsend:lsend});
+                        num_auto = (num_auto > 10000) ? 0 : num_auto + 1;
+                        Cache.insert({queue: txtcachhsh, qord: num_auto, cont: 0, resp: [], query: query, clas_: clas_, lsend: lsend});
                     }
-                    for (var w=0; w<10; w++){
-                        rca=Cache.find({keyl:txtcachhsh}).fetch();
-                        if (rca.length > 0){
-                            rca=rca[0];
-                            if (rca.value.length > 0){
-                                return {data:rca.value, cacheable:rca.cacheable};
+                    for (var w = 0; w < 10; w++) {
+                        rca = Cache.find({keyl: txtcachhsh}).fetch();
+                        if (rca.length > 0) {
+                            rca = rca[0];
+                            if (rca.value.length > 0) {
+                                return {data: rca.value, cacheable: rca.cacheable};
                             }
-                            
+
                         }
                         Meteor._sleepForMs(500);
-
                     }
-                    
+
                 }
-                
+
                 return {data: [], cacheable: false};
             }
             ,
@@ -1718,30 +1851,24 @@ var num_auto=0;
                 var muestra;
                 console.log('Entra1 ');
                 console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');
-
                 var result = Meteor.call('runQuery', endpointURI, defaultGraph,
                         'select distinct ?o where{ ?s a ?o . '
                         + 'BIND(STR(?s) AS ?strVal) '
                         + 'FILTER(STRLEN(?strVal) >= ' + defaultGraph.length + ' && SUBSTR(?strVal, 1, ' + defaultGraph.length + ' ) = "'
                         + defaultGraph + '")}'
                         );
-
                 var rsEntities = EJSON.parse(result.content);
-
                 var dataset = [];
                 var datasetRDF = {};
                 _.each(rsEntities.results.bindings, function (el, idx, list) {
                     var subject = el.o.value;
-
                     console.log('=>Obtaining subject properties of: ' + subject);
                     var rsMuestra = Meteor.call('runQuery', endpointURI, defaultGraph,
                             'select distinct ?s where{ ?s a <' + subject + '>} limit 10');
-
                     var rsMuestra = EJSON.parse(rsMuestra.content);
                     var predicateArray = {};
                     _.each(rsMuestra.results.bindings, function (el, idx, list) {
                         var entity = el.s.value;
-
                         console.log('==>Graph Entity sample: ' + entity);
                         var rsPredicate = Meteor.call('runQueryDescr', endpointURI, defaultGraph, 'describe <' + entity + '>');
                         //Cambios
@@ -1752,7 +1879,6 @@ var num_auto=0;
                             Suj = el;
                             var s = idx;
                             console.log('Este Sujeto:' + idx);
-
                             //if(el.s.value == entity) { //just process entity own properties
                             //	console.log ('Ob '+list[idx]+el+el.value);
                             //		var result = '';
@@ -1783,7 +1909,6 @@ var num_auto=0;
                             if (idx == entity) {
                                 var Obj2 = new Object
                                 console.log("Ini" + entity);
-
                                 _.each(Suj, function (el, idx, list) {
                                     // 	console.log ('Valor'+idx + 'val'+list[idx]+el.value+el[0].value+'*'+el[0].type);
 
@@ -1791,7 +1916,6 @@ var num_auto=0;
                                     var p = idx;
                                     var o = el[0];
                                     console.log('Sujeto' + s + 'Predicado' + p + 'Objeto' + o.value + '!' + o.type);
-
                                     //  _.each (Suj,function(el, idx, list) {
 
                                     //	console.log ('Valor'+idx + 'val'+list[idx]+el.value+el[0].value+'*'+el[0].type);
@@ -1810,7 +1934,6 @@ var num_auto=0;
                                     predicateObj.fullName = p;
                                     predicateObj.prefix = '';
                                     predicateObj.name = '';
-
                                     /////////////////////
 
                                     if (p == "http://rdaregistry.info/Elements/a/P50161") {
@@ -1822,15 +1945,12 @@ var num_auto=0;
                                         objectObj.objectEntity = {};
                                         objectObj.dataType = o.datatype;
                                         objectObj.sampleValue = isNaN(o.value) ? o.value.substring(0, 100) : o.value;
-
                                         if (o.type === 'uri' && subject != o.value) {
 
                                             console.log('==>Looking entity type for object <' + o.value + '>');
                                             var rsObjSubject = Meteor.call('runQuery', endpointURI, defaultGraph,
                                                     'select ?o where { <' + o.value + '> a ?o }');
-
                                             rsObjSubject = EJSON.parse(rsObjSubject.content);
-
                                             objectObj.objectEntity.fullName = null;
                                             objectObj.objectEntity.prefix = null;
                                             objectObj.objectEntity.name = null;
@@ -1859,10 +1979,7 @@ var num_auto=0;
                             }
 
                         });
-
                     });
-
-
                     var aux = {};
                     var cont = 0;
                     for (var predicate in predicateArray) {
@@ -1903,8 +2020,6 @@ var num_auto=0;
                                 + (_.isUndefined(objectObj.objectEntity.fullName) ? '' : (objectObj.objectEntity.fullName + ' prefix: ' + objectObj.objectEntity.prefix + ' property: ' + objectObj.objectEntity.name))
                                 + (objectObj.dataType ? objectObj.dataType : '')
                                 + '| SampleValue:' + objectObj.sampleValue);
-
-
                         var subjectItem = {fullName: subject, prefix: subjectPrefix.prefix, name: subjectPrefix.property};
                         if (_.isUndefined(datasetRDF[predicate])) {
                             datasetRDF[predicate] = {};
@@ -1918,7 +2033,6 @@ var num_auto=0;
                         }
                         datasetRDF[predicate].subjects.push(subjectItem);
                         datasetRDF[predicate].objectTypes.push(objectObj);
-
                     }
                     //processing group by predicate registers model
                     /*
@@ -1943,7 +2057,6 @@ var num_auto=0;
                      console.log('==> prueba ' + counter + ' ' + arrays['http://id.loc.gov/vocabulary/relators/aut']);
                      */
                 });
-
                 var cont = 0;
                 var str = '';
                 for (var x in datasetRDF) {
@@ -1955,16 +2068,12 @@ var num_auto=0;
                 console.log('==> contador == : ' + cont);
                 console.log('==> predicados == : ' + str);
                 return muestra;
-
             },
             fetchGraphSchema2: function (endpointURI, defaultGraph) {
                 console.log('ENtra 2')
                 console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');
-
                 var result = Meteor.call('runQuery', endpointURI, defaultGraph, 'select distinct ?o where{ ?s a ?o}');
-
                 var rsEntities = EJSON.parse(result.content);
-
                 var dataset = [];
                 var datasetRDF = {};
                 ///Cambios JS
@@ -1973,25 +2082,20 @@ var num_auto=0;
                     console.log('=>Obtaining subject properties of: ' + subject);
                     var rsMuestra = Meteor.call('runQuery', endpointURI, defaultGraph,
                             'select distinct ?s where{ ?s a <' + subject + '>} limit 5');
-
                     var rsMuestra = EJSON.parse(rsMuestra.content);
                     var predicateArray = {};
                     _.each(rsMuestra.results.bindings, function (el, idx, list) {
                         var entity = el.s.value;
-
                         console.log('==>Graph Entity sample: ' + entity);
                         var rsPredicate = Meteor.call('runQuery', endpointURI, defaultGraph, 'describe <' + entity + '>');
-
                         rsPredicate = EJSON.parse(rsPredicate.content);
                         _.each(rsPredicate.results.bindings, function (el, idx, list) {
                             console.log('-****Predicate: ' + el.p.value);
-
                             ////////////////////
                             var predicateObj = {};
                             predicateObj.fullName = el.p.value;
                             predicateObj.prefix = '';
                             predicateObj.name = '';
-
                             /////////////////////
 
                             if (_.isUndefined(predicateArray[el.p.value])) {
@@ -1999,15 +2103,12 @@ var num_auto=0;
                                 objectObj.objectEntity = {};
                                 objectObj.dataType = el.o.datatype;
                                 objectObj.sampleValue = isNaN(el.o.value) ? el.o.value.substring(0, 100) : el.o.value;
-
                                 if (el.o.type === 'uri' && subject != el.o.value) {
 
                                     console.log('==>Looking entity type for object <' + el.o.value + '>');
                                     var rsObjSubject = Meteor.call('runQuery', endpointURI, defaultGraph,
                                             'select ?o where { <' + el.o.value + '> a ?o }');
-
                                     rsObjSubject = EJSON.parse(rsObjSubject.content);
-
                                     objectObj.objectEntity.fullName = null;
                                     objectObj.objectEntity.prefix = null;
                                     objectObj.objectEntity.name = null;
@@ -2030,10 +2131,7 @@ var num_auto=0;
                              */
 
                         });
-
                     });
-
-
                     var aux = {};
                     var cont = 0;
                     var currentRegId = null;
@@ -2042,15 +2140,12 @@ var num_auto=0;
                         var responsePrefix = Meteor.call('findPrefix', predicate);
                         var objectObj = predicateArray[predicate];
                         var subjectPrefix = Meteor.call('findPrefix', subject);
-
                         console.log('===>SAVED: Subject: ' + subject + ' prefix: ' + subjectPrefix.prefix + ' property: ' + subjectPrefix.property
                                 + '| Predicate:' + predicate + ' prefix: ' + responsePrefix.prefix + ' property: ' + responsePrefix.property
                                 + '| Object:'
                                 + (_.isUndefined(objectObj.objectEntity.fullName) ? '' : (objectObj.objectEntity.fullName + ' prefix: ' + objectObj.objectEntity.prefix + ' property: ' + objectObj.objectEntity.name))
                                 + (objectObj.dataType ? objectObj.dataType : '')
                                 + '| SampleValue:' + objectObj.sampleValue);
-
-
                         var subjectItem = {fullName: subject, prefix: subjectPrefix.prefix, name: subjectPrefix.property};
                         if (_.isUndefined(datasetRDF[predicate])) {
                             datasetRDF[predicate] = {};
@@ -2061,7 +2156,6 @@ var num_auto=0;
                             datasetRDF[predicate].name = responsePrefix.property;
                             datasetRDF[predicate].subjects = [];
                             datasetRDF[predicate].objectTypes = [];
-
                             //first insertion
                             currentRegId = Properties.insert(datasetRDF[predicate]);
                         }
@@ -2072,7 +2166,6 @@ var num_auto=0;
                                         objectTypes: datasetRDF[predicate].objectTypes
                                     }
                         });
-
                     }
                     //processing group by predicate registers model
                     /*
@@ -2132,7 +2225,6 @@ var num_auto=0;
                 }
                 Meteor.call('updateStats');
                 return response;
-
             },
             updateBaseEndpoint: function (endpointURI, defaultGraph) {
                 var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
@@ -2159,153 +2251,155 @@ var num_auto=0;
                 var endpoint = Endpoints.findOne({endpoint: endpointURI, graphURI: defaultGraph});
                 console.log("Resp" + endpoint.opt);
                 return endpoint.opt;
-
             },
             findbase: function () {
-               // console.log(endpointURI + defaultGraph);
-                var endpoint = Endpoints.findOne({base : true});
-               // console.log("Resp" + endpoint.opt);
+                // console.log(endpointURI + defaultGraph);
+                var endpoint = Endpoints.findOne({base: true});
+                // console.log("Resp" + endpoint.opt);
                 return endpoint;
-
             },
             findAllEndpoints: function () {
-               // console.log(endpointURI + defaultGraph);
+                // console.log(endpointURI + defaultGraph);
                 var endpoint = Endpoints.find().fetch();
-               // console.log("Resp" + endpoint.opt);
+                // console.log("Resp" + endpoint.opt);
                 return endpoint;
-
             }
-            ,  findProfile: function (id) {
-               // console.log(endpointURI + defaultGraph);
-                var profile = Profile.findOne({idProfile : id});
-               // console.log("Resp" + endpoint.opt);
-              //   console.log ("Perfil");
-             //   console.log (profile);
-               
-         /*
+            , 
+            findProfile: function (id) {
+        // console.log(endpointURI + defaultGraph);
+                var profile = Profile.findOne({idProfile: id});
+                // console.log("Resp" + endpoint.opt);
+                //   console.log ("Perfil");
+                //   console.log (profile);
+
+                /*
 
                  if (!_.isUndefined(profile)) {
-                     return profile;
+                 return profile;
                  }else {
 
-                     return profile;var profilenull;
+                 return profile;var profilenull;
 
                  }*/
-                 return profile;
+                return profile;
+            }, SaveProfile: function (id, name, dir, level, area, lan, pass, mail, access) {
+                var profile = Profile.findOne({idProfile: id});
+                /* console.log ("Perfil");
+                 console.log (profile);*/
+                var obj = {idProfile: id, nameUser: name, direction: dir, levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail, accessLevel: access};
+                //   console.log (check(obj, ProfileSchema));
+                var isValid = Match.test(obj, ProfileSchema);
+                //   console.log ("Validado");
+                //    console.log (isValid);
+                // check({admin: true}, mySchema);
 
-            } ,  SaveProfile :function (id , name , dir , level , area , lan , pass, mail , access ){
-             var  profile = Profile.findOne({idProfile : id});
-            /* console.log ("Perfil");
-             console.log (profile);*/
-               var obj = {idProfile: id, nameUser: name, direction: dir , levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail , accessLevel: access};
-           //   console.log (check(obj, ProfileSchema));
-              var isValid = Match.test(obj, ProfileSchema);
-           //   console.log ("Validado");
-          //    console.log (isValid);
-             // check({admin: true}, mySchema);
+                if (this.userId == id && isValid) {
+                    if (!_.isUndefined(profile)) {
 
-             if ( this.userId == id && isValid ){
-             if (!_.isUndefined(profile)) {
-                
-             /*   console.log ("Almacenando");
-                console.log (Meteor.users.findOne({_id:id}));
-                console.log (access);*/
-                Meteor.users.update({_id:id}, {$set:{"profile":{ lang: lan ,  'access':access }}});
-                //Meteor.users.update({_id:id}, {$set:{"profile": {lang: lan} , "accessLevel": {"access":access}}});
-                console.log (Meteor.users.findOne({_id:id}));
-                Profile.update({idProfile: id}, {$set: {nameUser: name, direction: dir , levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail , accessLevel: access }});
-                  return "Actualizado";
-              } else {
-                //Meteor.users.update({_id:id}, {$set:{"profile": {lang: lan} , "accessLevel": {"access":access}}});
-                 Meteor.users.update({_id:id}, {$set:{"profile":{ lang: lan ,  'access':access }}});
-                Profile.insert({idProfile: id, nameUser: name, direction: dir , levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail , accessLevel: access});
-                return "Almacenado";
-              }
-               }else {
-                return "No es posible realizar cambios";
-               }
-              
-             } , actAccess: function (usercode , val){
-                 
-                  
-                     var obj = { idProfile: usercode , accessLevel: val };
-                     var isValid = Match.test(obj, UpdateProfileSchema);
-                 //    console.log ("Val Access");
-                 //    console.log (isValid);
+                        /*   console.log ("Almacenando");
+                         console.log (Meteor.users.findOne({_id:id}));
+                         console.log (access);*/
+                        Meteor.users.update({_id: id}, {$set: {"profile": {lang: lan, 'access': access}}});
+                        //Meteor.users.update({_id:id}, {$set:{"profile": {lang: lan} , "accessLevel": {"access":access}}});
+                        console.log(Meteor.users.findOne({_id: id}));
+                        Profile.update({idProfile: id}, {$set: {nameUser: name, direction: dir, levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail, accessLevel: access}});
+                        return "Actualizado";
+                    } else {
+        //Meteor.users.update({_id:id}, {$set:{"profile": {lang: lan} , "accessLevel": {"access":access}}});
+                        Meteor.users.update({_id: id}, {$set: {"profile": {lang: lan, 'access': access}}});
+                        Profile.insert({idProfile: id, nameUser: name, direction: dir, levelAcademic: level, areasInterest: area, language: lan, password: pass, secMail: mail, accessLevel: access});
+                        return "Almacenado";
+                    }
+                } else {
+                    return "No es posible realizar cambios";
+                }
+
+            }, actAccess: function (usercode, val) {
+
+
+                var obj = {idProfile: usercode, accessLevel: val};
+                var isValid = Match.test(obj, UpdateProfileSchema);
+                //    console.log ("Val Access");
+                //    console.log (isValid);
                 //     console.log (check(obj, UpdateProfileSchema));
-                  //   console.log (valAccess (this.userId, 2));
+                //   console.log (valAccess (this.userId, 2));
 
-                  if (valAccess (this.userId, 2) && isValid) {
+                if (valAccess(this.userId, 2) && isValid) {
 
-                 var usuario = Meteor.users.findOne({'_id' : usercode});
-                 var profile = Profile.findOne({ 'idProfile' : usercode});
-                //  console.log ("Profile");  
-                //  console.log (profile);
-               //   console.log (usuario);                    {$set:{"profile": {lang: usuario.profile.lang } , "accessLevel": {"access":val}}});
-               //   Meteor.users.update ({'_id' : usercode}, {$set: { "profile" :[  { lang: usuario.profile.lang } , { access: val } ]   }});
-                  Meteor.users.update ({'_id' : usercode}, {$set: { "profile" :  { lang: profile.language ,  access: val }   }});
-                //  Meteor.users.update ({'_id' : usercode}, {$set:{"profile": {lang: usuario.profile.lang } , "accessLevel": {"access":val}}});
-                  Profile.update({idProfile: usercode}, {$set: { accessLevel: val }});
-  
-                  return "Actualizado" ;
-                 }else {
-                  return "No se puede Actualizar";
-                } 
-             } ,  validar: function (opt) {
-                   var usr = Meteor.users.findOne({'_id':this.userId});
-              
-              //   console.log ("Usuario");
-                 
-             //if (!_.isUndefined(usr) && usr.profile[1].access > 1 ){
-                if (!_.isUndefined(usr) && ((usr.profile.access > 1 && opt== 1) || (usr.profile.access > 0 && opt== 0) ))
+                    var usuario = Meteor.users.findOne({'_id': usercode});
+                    var profile = Profile.findOne({'idProfile': usercode});
+                    //  console.log ("Profile");  
+                    //  console.log (profile);
+                    //   console.log (usuario);                    {$set:{"profile": {lang: usuario.profile.lang } , "accessLevel": {"access":val}}});
+                    //   Meteor.users.update ({'_id' : usercode}, {$set: { "profile" :[  { lang: usuario.profile.lang } , { access: val } ]   }});
+                    Meteor.users.update({'_id': usercode}, {$set: {"profile": {lang: profile.language, access: val}}});
+                    //  Meteor.users.update ({'_id' : usercode}, {$set:{"profile": {lang: usuario.profile.lang } , "accessLevel": {"access":val}}});
+                    Profile.update({idProfile: usercode}, {$set: {accessLevel: val}});
+                    return "Actualizado";
+                } else {
+                    return "No se puede Actualizar";
+                }
+            }, validar: function (opt) {
+                var usr = Meteor.users.findOne({'_id': this.userId});
+                //   console.log ("Usuario");
+
+                //if (!_.isUndefined(usr) && usr.profile[1].access > 1 ){
+                if (!_.isUndefined(usr) && ((usr.profile.access > 1 && opt == 1) || (usr.profile.access > 0 && opt == 0)))
                 {
-                 return true;
-                 } else {
-                return false ;
-                 } 
+                    return true;
+                } else {
+                    return false;
+                }
 
-          
-             
-             } , deleteuser : function (id){
-                //  console.log ("delete"+id);
-                if (valAccess (this.userId,2) ){
-                Profile.remove ({'idProfile':id});
-                Meteor.users.remove ({'_id':id});
-                return "Usuario Borrado";
-                }else {
+
+
+            }, deleteuser: function (id) {
+        //  console.log ("delete"+id);
+                if (valAccess(this.userId, 2)) {
+                    Profile.remove({'idProfile': id});
+                    Meteor.users.remove({'_id': id});
+                    return "Usuario Borrado";
+                } else {
                     return "Usuario no puede ser borrado";
                 }
 
-             } , savesearch : function (  searchw , source , filters  ) {
-                  var d = new Date();
-                 // var dateactual = d.toLocaleString();
-                 Searchs.insert({idUser: this.userId , searchword : searchw , sources : source , searchfilters : filters , timeaction: d });
-                 return "Almacenado";
-             } , 
-                 savefavresource: function (  uriresource , label) {
-                  var time =  Date();
+            }, savesearch: function (searchw, source, filters) {
+                var d = new Date();
+                // var dateactual = d.toLocaleString();
+                Searchs.insert({idUser: this.userId, searchword: searchw, sources: source, searchfilters: filters, timeaction: d});
+                return "Almacenado";
+            },
+            savefavresource: function (uriresource, label) {
+                var time = Date();
+                var Fav = Favresources.findOne({'idUser': this.userId, 'urifav': uriresource});
+                if (_.isUndefined(Fav)) {
+                    Favresources.insert({idUser: this.userId, urifav: uriresource, labelres: label, timeaction: time});
+                } else {
+                    Favresources.remove({'idUser': this.userId, 'urifav': uriresource});
+                }
+                return "Almacenado";
+            }, DeleteHist: function (idsearch) {
+                Searchs.remove({'idUser': this.userId, '_id': idsearch});
+                console.log(idsearch);
+                return "Eliminado";
+            }, Deletefav: function (idfav) {
+                Favresources.remove({'idUser': this.userId, '_id': idfav});
+                return "Eliminado";
+            },saveinterest: function  (URI) {
+                 var interest = InterestResources.findOne({ 'idUser': this.userId , 'URI' : URI });
+                   
+                   if (  _.isUndefined(interest)){
+                 
+                 InterestResources.insert({idUser: this.userId , 'URI' : URI });
+                 return "almacenado";
+                 }  
 
-                   var Fav = Favresources.findOne({ 'idUser': this.userId , 'urifav' : uriresource });
-                  if (  _.isUndefined(Fav)){
-                 Favresources.insert({idUser: this.userId , urifav : uriresource  , labelres: label , timeaction: time });
-                 } else {
-                 Favresources.remove ({ 'idUser': this.userId , 'urifav' : uriresource });
-                 }
-                 return "Almacenado";
-             }  , DeleteHist : function (idsearch ){
-                  Searchs.remove ({ 'idUser': this.userId , '_id' : idsearch });
-                  console.log (idsearch);
-                  return "Eliminado";
+                 return "Ya estaba almacenado";
 
-             }  , Deletefav : function (idfav) {
-                 Favresources.remove ({ 'idUser': this.userId , '_id' : idfav });
-                 return "Eliminado";
-
-             }
-
-             
-
-             
+              }
+              
+ 
+ 
         });
 
         //Update Prefixes schema on every server startup

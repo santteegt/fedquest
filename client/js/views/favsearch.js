@@ -16,6 +16,7 @@ this.FavSearchView = Backbone.View.extend({
      
     //loadProfile();
     //waitingDialog.show();
+    waitingDialog.show();
     return favthis;
      } else {
      window.open('/error',"_self" );
@@ -27,7 +28,9 @@ this.FavSearchView = Backbone.View.extend({
   } , 
   setEvents: function (divNode) {
 
- 
+    Meteor.subscribe('tasks', function onReady() {
+             waitingDialog.hide ();
+          });
    
 
 } 

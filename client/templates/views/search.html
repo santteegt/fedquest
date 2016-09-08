@@ -250,7 +250,9 @@ el proceso en la publicación de LOD. </p>
 		<a   class="opt-fuente" href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg2(event);" >{{ lang "view-source"}}</a>
 		</div>
 		<div class="col-md-4 opt-eldadiv">
-		<a  class="opt-elda" href="{{URI}}" target="_blank" >{{ lang "view-rdf"}}</a>
+				<!--<a  class="opt-elda" href="{{URI}}" target="_blank" id="RDFPAGE" >{{ lang "view-rdf"}}</a>
++		</div>-->
++		<a  class="opt-elda" href="#"   data-uri="{{URI}}" onclick="rdflink ('{{URI}}');" >{{ lang "view-rdf"}}</a>
 		</div>
 		<div class="col-md-4"  >
 		<a  class="opt-grafo"  href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg(event);" >{{ lang "view-graph"}}</a>

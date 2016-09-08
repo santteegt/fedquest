@@ -51,12 +51,13 @@
             {{ else}}
               {{#if currentUser}}  
               <li><a href="/profile"  draggable="false">{{lang "Profile"}}</a></li> 
+              <li><a href="/favsearch" data-toggle="modal"  draggable="false"> Consultas </a></li>
               {{ else}}
 
               {{/if}}
              {{/if}}
             <li><a href="#" data-toggle="modal" data-target="#myModal" draggable="false">{{lang "Help"}}</a></li>
-            <li><a href="/favsearch" data-toggle="modal"  draggable="false"> Consultas </a></li>
+            
           <!--  <li>  <div class="navbar-right"> {{> loginButtons}} </div></li> -->
           </ul>
            <ul class="nav navbar-nav navbar-right">
