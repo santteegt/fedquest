@@ -1447,7 +1447,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                                    // score: Number(fScore),
                                     uri: v,
                                    // sub: fSub,
-                                    faceted: [{key: 'Year', value: Number(fYear) == 0 ? null : Number(fYear)}, {key: 'Endpoint', value: fEndpoint}, {key: 'Lang', value: fLang}, {key: 'Type', value: fType}],
+                                    faceted: [{key: 'Year', value: Number(fYear) == 0 || isNaN(Number(fYear)) ? null : Number(fYear)}, {key: 'Endpoint', value: fEndpoint}, {key: 'Lang', value: fLang}, {key: 'Type', value: fType}],
                                     firstResult: un,
                                     original: orgi
                                 });

@@ -4,7 +4,9 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/cedia/Ext/merge/sparql-fedquest/client/js/views/search.js</file>
+            <file>file:/home/cedia/Ext/merge/sparql-fedquest/client/js/main.js</file>
             <file>file:/home/cedia/Ext/merge/sparql-fedquest/server/server.js</file>
+            <file>file:/home/cedia/Ext/merge/sparql-fedquest/client/templates/views/search.html</file>
         </group>
     </open-files>
 </project-private>

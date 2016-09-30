@@ -1752,6 +1752,7 @@ if (Meteor.isClient) {
         facetedOptions: function () {
             //$("#fac").empty();
             var n = Session.get("facetedTotals");
+            //console.log(n);
             var nn = Session.get("facetedTotalsN");
             if (n == null || n == null && nn == null) {
                 return [];
