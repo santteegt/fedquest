@@ -372,7 +372,16 @@ this.SearchView = Backbone.View.extend({
         });
 
 
-
+        function AndStr(str) {
+            var sp = str.trim().split(' ').filter(function (d) {
+                    return d !== "";
+                });
+                var rs='';
+                for (var n=0; n<sp.length; n++){
+                    rs+=sp[n]+((n==sp.length-1)?'':' AND ');
+                }
+                return rs;
+        }
 
 
         $('input.runSearch').on('click', function (ev) {
@@ -473,8 +482,8 @@ this.SearchView = Backbone.View.extend({
                     if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
                         var inte= usr.areasInterest;
                         for (var sd=0; sd<inte.length; sd++){
-                            int +=lang.getDictionnary('es')['FoS_'+inte[sd]]+' ';
-                            int +=lang.getDictionnary('en')['FoS_'+inte[sd]]+' ';
+                            int +='('+AndStr(lang.getDictionnary('es')['FoS_'+inte[sd]])+') OR ';
+                            int +='('+AndStr(lang.getDictionnary('en')['FoS_'+inte[sd]])+')'+ ((sd!=inte.length-1)?' OR ':'');
                         }
                     }
                 }
@@ -785,8 +794,8 @@ var usr = Profile.findOne({idProfile: Meteor.userId() });
                     if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
                         var inte= usr.areasInterest;
                         for (var sd=0; sd<inte.length; sd++){
-                            int +=lang.getDictionnary('es')['FoS_'+inte[sd]]+' ';
-                            int +=lang.getDictionnary('en')['FoS_'+inte[sd]]+' ';
+                            int +='('+AndStr(lang.getDictionnary('es')['FoS_'+inte[sd]])+') OR ';
+                            int +='('+AndStr(lang.getDictionnary('en')['FoS_'+inte[sd]])+')'+ ((sd!=inte.length-1)?' OR ':'');
                         }
                     }
                 }

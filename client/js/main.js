@@ -54,6 +54,7 @@ if (Meteor.isClient) {
     this.Searchs = new Meteor.Collection("searchs");
     this.Favresources = new Meteor.Collection("favresources");
     this.App.resultCollection = new Meteor.Collection(null);
+    this.App.resultCollectionSL = new Meteor.Collection(null);
     this.App.resultCollection2 = new Meteor.Collection(null);
     this.App.resultCollection3 = new Meteor.Collection(null);
     this.App.FindRepository = (function (uri) {
@@ -1077,7 +1078,7 @@ if (Meteor.isClient) {
         settings: function () {
             return {
                 //   rowsPerPage: 10,
-                rowsPerPage: 10,
+                rowsPerPage: 7,
                 showFilter: true,
                 //showNavigation: 'auto',
                 //showColumnToggles: true,
@@ -1099,9 +1100,13 @@ if (Meteor.isClient) {
     // JS
     Template.favsearch.helpers({
         histsearch: function () {
-            var s = Searchs.find({ idUser: Meteor.userId()}).fetch();
-            waitingDialog.hide ();
-            return s;
+            Meteor.subscribe('favresources', function onReady() {
+           //Session.set('tasksLoaded', true);
+             waitingDialog.hide ();
+             });
+             var s = Searchs.find({ idUser: Meteor.userId()}).fetch();
+            // waitingDialog.hide ();
+             return s;
         },
         settingshist: function () {
             return {
@@ -1668,7 +1673,80 @@ if (Meteor.isClient) {
         return 0;
     });
 
+    Template.nlsearch.helpers({
+        endpointsAvailable: function () {
+            return Endpoints.find({status: 'A'}).fetch();
+        },
+        resultQuery: function () {
+            var response = App.resultCollectionSL.findOne();
+            var resp = response ? JSON.parse(response.content).results.bindings : [];
+            for (var x = 0; x < resp.length; x++) {
+                resp[x].num = x + 1;
+            }
+            return resp;
+        },
+        resultQueryN: function () {
+            var response = App.resultCollectionSL.findOne();
+            return response != undefined && response != null;
+        },
+        settings: function () {
+            var response = App.resultCollectionSL.findOne();
+            if (response) {
+                var prefixService = Prefixes.find().fetch();
+                var endpoints = Endpoints.find().fetch();
+                var fields = JSON.parse(response.content).head.vars;
+                var dataField = [];
+//JO
+//Adding row number column
+                var item = {};
+                item.key = "cont.value";
+                item.label = "#";
+                item.fn = function (data, object) {
+                    var html = '<p> ' + pad(object.num, 4) + '</p>';
+                    return new Spacebars.SafeString(html);
+                };
+                item.sortOrder = 0;
+                //dataField.push(item);
+//JO*
+                _.forEach(fields, function (field) {
+                    var item = {};
+                    item.key = field + ".value";
+                    item.label = field;
+                    item.fn = function (data, object) {
+                        var typeObject = object[field].type;
+                        if (typeObject == 'uri') {
+                            var prefix = _.find(prefixService, function (obj) {
+                                return object[field].value.indexOf(obj.URI) == 0
+                            });
+                            var showValue;
+                            if (!prefix) { //find endpoint name as prefix
+                                var endpoint = _.find(endpoints, function (obj) {
+                                    return object[field].value.indexOf(obj.graphURI) == 0
+                                });
+                                showValue = endpoint ? (endpoint.name + ':' + object[field].value.substring(endpoint.graphURI.length)) : object[field].value;
+                            } else {
+                                showValue = prefix.prefix + ':' + object[field].value.substring(prefix.URI.length);
+                            }
+                            //var showValue = prefix ? (prefix.prefix+':'+object.value.substring(prefix.URI.length)):object.value;
+                            var html = '<a href="' + object[field].value + '">' + showValue + '</a>';
+                        } else {
+                            var html = '<p> ' + object[field].value + '</p>';
+                        }
+                        return new Spacebars.SafeString(html);
+                    };
+                    dataField.push(item);
+                });
 
+                return {
+                    rowsPerPage: 5,
+                    showFilter: false,
+                    showNavigation: 'auto',
+                    showColumnToggles: false,
+                    fields: dataField,
+                };
+            }
+        }
+    });
 
     Template.search.helpers({
         facetedOptions: function () {
@@ -2230,9 +2308,25 @@ if (Meteor.isClient) {
         return str.indexOf(prefix) === 0;
     }
 
+
+function logRenders () {
+    _.each(Template, function (template, name) {
+      var oldRender = template.rendered;
+      var counter = 0;
+ 
+      template.rendered = function () {
+        console.log(name, "render count: ", ++counter);
+        oldRender && oldRender.apply(this, arguments);
+      };
+    });
+  }
+
     function language() {
 
         var idiomEng = {
+            "semantic-search": "Semantic search",
+            "choose-repositories": "Choose the repositories to query with the search engine:",//Seleccione los repositorios sobre los cuales se ejecutaran las búsquedas:
+            "start-search-engine": "Start search engine",//Iniciar motor de consulta
             "lblRange": "Range",
             "lblYears": "Years",
             "lblTypes": "Types",
@@ -2406,6 +2500,9 @@ if (Meteor.isClient) {
         };
 
         var idiomEsp = {
+            "semantic-search": "Búsqueda Semántica",
+            "choose-repositories": "Seleccione los repositorios sobre los cuales se ejecutaran las búsquedas:",
+            "start-search-engine": "Iniciar motor de consulta",
             "lblRange": "Rango",
             "lblYears": "Años",
             "lblTypes": "Tipos",

@@ -15,7 +15,7 @@
 </head>
 
 <body>
-  <header hidden>
+  <header>
     <h2 class="texte lang-en">Sparklis - <small><em>Complex queries and exploratory search on SPARQL endpoints at your fingertips!</em></small></h2>
     <h2 class="texte lang-fr">Sparklis - <small><em>Requêtes complexes et recherche exploratoire du bout des doigts!</em></small></h2>
     <h2 class="texte lang-es">Sparklis - <small><em>Consultas complejas y búsqueda exploratoria sobre SPARQL endpoints en la punta de tus dedos!</em></small></h2>
@@ -27,7 +27,7 @@
     </span>
   </header>
 
-  <div id="external-links" style="margin-left:auto;margin-right:0px; display: none" >
+  <div id="external-links" style="margin-left:auto;margin-right:0px">
     <a target="_blank" href="http://youtu.be/O999FVXn8Qc">
       <span class="texte lang-en">Demo/Tutorial</span>
       <span class="texte lang-fr">Démo/Tutoriel</span>
@@ -47,7 +47,7 @@
     </a>
   </div>
 
-  <div id="control-navig"  style="display:none">
+  <div id="control-navig">
     <span class="tooltiped">
       <span class="tooltip lang-en">Click to reset the query</span>
       <span class="tooltip lang-fr">Cliquer pour réinitialiser la requête</span>
@@ -89,7 +89,16 @@
 	<span class="tooltip lang-fr">Sélectionner un point d'accès SPARQL dans cette liste</span>
 	<span class="tooltip lang-es">Seleccionar un SPARQL endpoint de la lista</span>
 	<select id="sparql-endpoint-select">
-	  
+	  <option value="http://servolis.irisa.fr:3030/dbpedia/sparql">Core English DBpedia</option>
+	  <option value="http://dbpedia.org/sparql">DBpedia</option>
+	  <option value="http://live.dbpedia.org/sparql">Live DBpedia</option>
+	  <option value="http://servolis.irisa.fr:3232/mondial/sparql">Mondial</option>
+	  <option value="http://data.nobelprize.org/sparql">Nobel prizes</option>
+	  <option value="http://lod.euscreen.eu/sparql">European Television Heritage</option>
+<!--	<option value="http://bnb.data.bl.uk/sparql">British National Bibliography</option> -->
+	  <option value="http://rdf.insee.fr/sparql">INSEE</option>
+	  <option value="http://datos.bcn.cl/sparql">Chile government</option>
+<!--	<option value="http://data.ox.ac.uk/sparql/">University of Oxford</option> -->
 	  <option value="">...</option>
 	</select>
       </span>
@@ -98,7 +107,7 @@
 	<span class="tooltip lang-fr">Entrer ici l'URL du point d'accès SPARQL souhaité</span>
 	<span class="tooltip lang-es">Ingrese aquí la URL del SPARQL endpoint requerido</span>
 	<input id="sparql-endpoint-input" type="url"
-	       value="">  <!-- Edit to change default endpoint -->
+	       value="http://servolis.irisa.fr:3030/dbpedia/sparql">  <!-- Edit to change default endpoint -->
       </span>
       <span class="tooltiped">
 	<span class="tooltip lang-en">Click to connect to the entered SPARQL endpoint</span>
@@ -175,7 +184,7 @@
       </li>
       <li>
 	<div id="config-caching" class="config-param">
-	  <input id="input-caching" type="checkbox" > <!-- Edit to change default value -->
+	  <input id="input-caching" type="checkbox" checked> <!-- Edit to change default value -->
 	  <span class="texte lang-en">Caching SPARQL query results (uncheck for frequently changing data)</span>
 	  <span class="texte lang-fr">Mettre en cache les résultats des requêtes SPARQL (décocher pour des données changeant fréquemment)</span>
 	  <span class="texte lang-es">Almacenar en caché los resultados de las consultas SPARQL (deseleccionar para datos continuamente cambiantes)</span>
@@ -193,7 +202,7 @@
       </li>
       <li>
 	<div id="config-intentional-init-concepts" class="config-param">
-	  <input id="input-intentional-init-concepts" type="checkbox" >
+	  <input id="input-intentional-init-concepts" type="checkbox" checked>
 	  <span class="texte lang-en">Get initial concepts as instances of <code>rdfs:Class</code>, <code>owl:Class</code>, <code>rdf:Property</code>, <code>owl:ObjectProperty</code>, and <code>owl:DatatypeProperty</code> (more efficient), instead of from fact triples (more accurate)</span>
 	  <span class="texte lang-fr">Obtenir les concepts initiaux en tant qu'instances de <code>rdfs:Class</code>, <code>owl:Class</code>, <code>rdf:Property</code>, <code>owl:ObjectProperty</code> et <code>owl:DatatypeProperty</code> (plus efficace), plutôt qu'à partir des triplets de faits (plus précis)</span>
 	  <span class="texte lang-es">Obtener los conceptos iniciales como instancias de <code>rdfs:Class</code>, <code>owl:Class</code>, <code>rdf:Property</code>, <code>owl:ObjectProperty</code>, y <code>owl:DatatypeProperty</code> (más eficiente), en lugar de a partir de las triples de datos (más preciso)</span>
@@ -204,7 +213,7 @@
 	  <span class="texte lang-en">Compute at most </span>
 	  <span class="texte lang-fr">Calculer au plus </span>
 	  <span class="texte lang-es">Calcular máximo </span>
-	  <input id="input-max-results" type="number" value="100"> <!-- Edit to change default value -->
+	  <input id="input-max-results" type="number" value="200"> <!-- Edit to change default value -->
 	  <span class="texte lang-en"> query results</span>
 	  <span class="texte lang-fr"> résultats à la requête</span>
 	  <span class="texte lang-es"> resultados de la consulta</span>
@@ -215,7 +224,7 @@
 	  <span class="texte lang-en">Suggest at most </span>
 	  <span class="texte lang-fr">Suggérer au plus </span>
 	  <span class="texte lang-es">Sugerir máximo </span>
-	  <input id="input-max-classes" type="number" value="50"> <!-- Edit to change default value -->
+	  <input id="input-max-classes" type="number" value="200"> <!-- Edit to change default value -->
 	  <span class="texte lang-en"> <span class="classURI">classes</span></span>
 	  <span class="texte lang-fr"> <span class="classURI">classes</span></span>
 	  <span class="texte lang-es"> <span class="classURI">clases</span></span>
@@ -226,7 +235,7 @@
 	  <span class="texte lang-en">Suggest at most </span>
 	  <span class="texte lang-fr">Suggérer au plus </span>
 	  <span class="texte lang-es">Sugerir máximo </span>
-	  <input id="input-max-properties" type="number" value="50"> <!-- Edit to change default value -->
+	  <input id="input-max-properties" type="number" value="200"> <!-- Edit to change default value -->
 	  <span class="texte lang-en"> <span class="propURI">properties</span></span>
 	  <span class="texte lang-fr"> <span class="propURI">propriétés</span></span>
 	  <span class="texte lang-es"> <span class="propURI">propiedades</span></span>
@@ -386,12 +395,12 @@
     <div class="heading">
       <span class="texte lang-en">Your query and its <span class="highlighted">current focus</span></span>
       <span class="texte lang-fr">Votre requête et son <span class="highlighted">focus actuel</span></span>
-      <span class="texte lang-es">Tu consulta y su <span class="highlighted">foco actual</span></span>
+      <span class="texte lang-es">Tu consulta y su <span class="highlighted">foque actual</span></span>
       <span class="tooltiped">
 	<span class="tooltip lang-en">Click to display the permanent link to the current view</span>
 	<span class="tooltip lang-fr">Cliquer pour afficher le lien permanent vers la vue actuelle</span>
 	<span class="tooltip lang-es">Haga clic para mostrar el enlace permanente en la vista actual</span>
-	<button id="permalink" hidden>
+	<button id="permalink">
 	  permalink
 	</button>
       </span>
@@ -407,7 +416,7 @@
 
   <div id="increments">
     <div class="heading">
-      <button id="show-hide-increments" hidden>-</button>
+      <button id="show-hide-increments">-</button>
       <span class="texte lang-en">Sparklis suggestions to refine your query</span>
       <span class="texte lang-fr">Suggestions de Sparklis pour affiner votre requête</span>
       <span class="texte lang-es">Sugerencias de Sparklis para refinar tu consulta</span>
@@ -522,9 +531,9 @@
     </div>
   </div>
 
-  <div id="results" style="display:none">
+  <div id="results">
     <div class="heading">
-        <button id="show-hide-results" hidden>-</button>
+      <button id="show-hide-results">-</button>
       <span class="texte lang-en">Results of your query</span>
       <span class="texte lang-fr">Résultats de votre requête</span>
       <span class="texte lang-es">Resultados de tu consulta</span>
@@ -624,7 +633,7 @@
   <div id="sparklis-yasgui"></div>
 </div>
 
-  <footer hidden>
+  <footer>
     <hr/>
     <span class="texte lang-en">Created by </span>
     <span class="texte lang-fr">Créé par </span>
@@ -656,3 +665,4 @@
 
 <!-- Mirrored from www.irisa.fr/LIS/ferre/sparklis/osparklis.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 12 Sep 2016 16:00:39 GMT -->
 </html>
+

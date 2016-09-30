@@ -4,6 +4,12 @@ import {
 from
 'meteor/meteor';
 if (Meteor.isServer) {
+    
+    
+    var Api = new Restivus({
+        useDefaultAuth: true,
+        prettyJson: true
+    });
 
 ProfileSchema = new SimpleSchema({
 idProfile: {
@@ -732,6 +738,37 @@ var num_auto=0;
 
         var SparqlParser = Meteor.npmRequire('sparqljs').Parser;
         var parserInstance = new SparqlParser();
+        
+        
+Api.addRoute('sparql', {authRequired: false}, {
+    post:function (){
+    
+    
+        var Body=this.request.body.query;
+        var Headers=this.request.headers;
+        
+        //console.log(Body);
+        //console.log(Headers);
+        var endpointBase = Endpoints.findOne({base: true}).endpoint;
+        var j = Body.trim().hashCode();
+        var k = Cache.find({key: j}).fetch();
+        var l = {};
+       // if (0 == k.length){
+            var w = HTTP.post(endpointBase, {params: {query: Body}, headers: {'Accept': 'application/sparql-results+xml','content-type': 'application/x-www-form-urlencoded'}});
+            console.log(w.content);
+            this.response.write(w.content+'');
+            this.done();
+           
+       // }
+        
+        
+
+        
+    }
+});
+
+
+
 
         Meteor.methods({
             eventsOnHooksInit: function () {},

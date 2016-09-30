@@ -15,7 +15,7 @@
 </head>
 
 <body>
-  <header hidden>
+  <header >
     <h2 class="texte lang-en">Sparklis - <small><em>Complex queries and exploratory search on SPARQL endpoints at your fingertips!</em></small></h2>
     <h2 class="texte lang-fr">Sparklis - <small><em>Requêtes complexes et recherche exploratoire du bout des doigts!</em></small></h2>
     <h2 class="texte lang-es">Sparklis - <small><em>Consultas complejas y búsqueda exploratoria sobre SPARQL endpoints en la punta de tus dedos!</em></small></h2>
@@ -47,7 +47,7 @@
     </a>
   </div>
 
-  <div id="control-navig"  style="display:none">
+  <div id="control-navig" >
     <span class="tooltiped">
       <span class="tooltip lang-en">Click to reset the query</span>
       <span class="tooltip lang-fr">Cliquer pour réinitialiser la requête</span>
@@ -123,7 +123,7 @@
     </span>
   </div>
 
-  <div id="config-panel" style="display:none">
+  <div id="config-panel" hidden>
     <div class="heading">
       <span class="texte lang-en">Configuration panel</span>
       <span class="texte lang-fr">Panneau de configuration</span>
@@ -175,7 +175,7 @@
       </li>
       <li>
 	<div id="config-caching" class="config-param">
-	  <input id="input-caching" type="checkbox" > <!-- Edit to change default value -->
+	  <input id="input-caching" type="checkbox" checked> <!-- Edit to change default value -->
 	  <span class="texte lang-en">Caching SPARQL query results (uncheck for frequently changing data)</span>
 	  <span class="texte lang-fr">Mettre en cache les résultats des requêtes SPARQL (décocher pour des données changeant fréquemment)</span>
 	  <span class="texte lang-es">Almacenar en caché los resultados de las consultas SPARQL (deseleccionar para datos continuamente cambiantes)</span>
@@ -386,12 +386,12 @@
     <div class="heading">
       <span class="texte lang-en">Your query and its <span class="highlighted">current focus</span></span>
       <span class="texte lang-fr">Votre requête et son <span class="highlighted">focus actuel</span></span>
-      <span class="texte lang-es">Tu consulta y su <span class="highlighted">foco actual</span></span>
+      <span class="texte lang-es">Tu consulta y su <span class="highlighted">foque actual</span></span>
       <span class="tooltiped">
 	<span class="tooltip lang-en">Click to display the permanent link to the current view</span>
 	<span class="tooltip lang-fr">Cliquer pour afficher le lien permanent vers la vue actuelle</span>
 	<span class="tooltip lang-es">Haga clic para mostrar el enlace permanente en la vista actual</span>
-	<button id="permalink" hidden>
+	<button id="permalink" >
 	  permalink
 	</button>
       </span>
@@ -407,7 +407,7 @@
 
   <div id="increments">
     <div class="heading">
-      <button id="show-hide-increments" hidden>-</button>
+      <button id="show-hide-increments" >-</button>
       <span class="texte lang-en">Sparklis suggestions to refine your query</span>
       <span class="texte lang-fr">Suggestions de Sparklis pour affiner votre requête</span>
       <span class="texte lang-es">Sugerencias de Sparklis para refinar tu consulta</span>
@@ -522,9 +522,9 @@
     </div>
   </div>
 
-  <div id="results" style="display:none">
+  <div id="results" hidden>
     <div class="heading">
-        <button id="show-hide-results" hidden>-</button>
+        <button id="show-hide-results" >-</button>
       <span class="texte lang-en">Results of your query</span>
       <span class="texte lang-fr">Résultats de votre requête</span>
       <span class="texte lang-es">Resultados de tu consulta</span>
@@ -614,7 +614,7 @@
   </div>
 </div>
 
-<div id="yasgui-view" style="display:none">
+<div id="yasgui-view" hidden>
   <div class="heading">
     <span class="texte lang-en">Your query in SPARQL + results (with YASGUI)</span>
     <span class="texte lang-fr">Votre requête en SPARQL + résultats (avec YASGUI)</span>
@@ -624,7 +624,7 @@
   <div id="sparklis-yasgui"></div>
 </div>
 
-  <footer hidden>
+  <footer >
     <hr/>
     <span class="texte lang-en">Created by </span>
     <span class="texte lang-fr">Créé par </span>
