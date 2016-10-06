@@ -31,12 +31,24 @@ html {
 
     .listquerys  {
       margin-top: 50px;
-      color: #000;
+      /* color: #000;
       margin-bottom: 5px;
-      font-size: 70px;
-      letter-spacing: -4px;
-      font-weight: 100;
+      margin-bottom: 5px;*/
+      /*font-size: 70px;*/
+     /* font-size: 70px; */
+     /* letter-spacing: -4px;*/
+     /* letter-spacing: -4px;*/
+    /*  font-weight: 100;*/
+     /* font-weight: 100;*/
+    
     }
+    .generatedquery {
+     width: 90%;
+     margin: auto;
+     background: white;
+     padding: 30px;
+     box-shadow: 2px 2px 0px 0px #848484;
+     }
 
     h1 span {
       font-size: 26px;

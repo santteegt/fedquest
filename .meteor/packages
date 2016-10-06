@@ -39,3 +39,6 @@ steeve:jquery-qrcode
 mrt:jquery-ui
 robvgroenewoud:awesomplete
 percolate:synced-cron
+mrt:mongodb-aggregation
+mikowals:batch-insert
+nimble:restivus

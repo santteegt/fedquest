@@ -267,6 +267,12 @@ border-radius: 5px;
 
 }
 
+#expandfac {
+left: 25%;
+top: 2px;
+cursor: pointer;
+}
+
 #expandsugg {
 left: 50%;
 top: 2px;

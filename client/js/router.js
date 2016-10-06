@@ -21,6 +21,7 @@ this.Router = Backbone.Router.extend({
     'graph/:uri/:endpoint/:graphuri':'graph',
     'search/:term/:type/:endpoint':'search',
     'search':'search',
+    'nlsearch':'nlsearch',
      'login':'login',
       'profile':'profile',
       'adminpanel':'adminpanel',
@@ -97,6 +98,12 @@ new IndexView().render();
     $('div.navbar .collapse li a#options').css('pointer-events','none');
     console.log('entra a search');
     new SearchView(decodeURIComponent(s1),decodeURIComponent(s2), decodeURIComponent(s3)).render();        
+  },
+  nlsearch: function( ) {
+    $('div.navbar .collapse li a#options').hide();
+    $('div.navbar .collapse li a#options').css('pointer-events','none');
+    
+    new NLSearchView().render();        
   },
   stats: function() {
    $('div.navbar .collapse li a#options').hide();
