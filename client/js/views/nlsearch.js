@@ -25,13 +25,13 @@ this.NLSearchView = Backbone.View.extend({
             var p2_ = e.search(/SELECT(?! DISTINCT)/);
         
             if(p1_!=-1 && p2_!=-1 && p1_<p2_ || p1_!=-1 && p2_==-1){
-                e=e.replace(/SELECT DISTINCT/, "SELECT DISTINCT ?ENDP ");
+                e=e.replace(/SELECT DISTINCT/, "SELECT DISTINCT ?Source ");
             }else{   
-                e=e.replace(/SELECT(?! DISTINCT)/, "SELECT ?ENDP ");
+                e=e.replace(/SELECT(?! DISTINCT)/, "SELECT ?Source ");
             }
             var jsonRequest = {"sparql": e, "validateQuery": false};
             //waitingDialog.show();
-            Meteor.call('doQuery', jsonRequest, function (error, result) {
+            Meteor.call('doQuery2', jsonRequest, function (error, result) {
                 if (result.resultSet) {
                     App.resultCollectionSL.remove({});
                     App.resultCollectionSL.insert(result.resultSet);
@@ -106,8 +106,14 @@ Init_SPARKLIS = function (e) {
     }
     btnhome.setAttribute("endpoints", JSON.stringify(dat));
     var endp= w.getElementById('sparql-endpoint-input');
-    var endb = Endpoints.findOne({base: true});
-    endp.value = endb.endpoint;
+    //var endb = Endpoints.findOne({base: true});
+    
+    var rr=location.protocol + "//" + location.host+'/api/sparql';
+    
+    endp.value = rr;
+    
+    
+    
     var botp= w.getElementById('sparql-endpoint-button');
     botp.click();
     

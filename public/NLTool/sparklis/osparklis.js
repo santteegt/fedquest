@@ -15828,9 +15828,9 @@
         var p2_ = hckTim.search(/SELECT(?! DISTINCT)/);
         
         if(p1_!=-1 && p2_!=-1 && p1_<p2_ || p1_!=-1 && p2_==-1){
-            hckTim=hckTim.replace(/SELECT DISTINCT/, "SELECT DISTINCT ('@0@' as ?ENDP) ");
+            hckTim=hckTim.replace(/SELECT DISTINCT/, "SELECT DISTINCT ('@0@' as ?Source) ");
         }else{   
-            hckTim=hckTim.replace(/SELECT(?! DISTINCT)/, "SELECT ('@0@' as ?ENDP) ");
+            hckTim=hckTim.replace(/SELECT(?! DISTINCT)/, "SELECT ('@0@' as ?Source) ");
         }      
         
         var query = hckTim;
@@ -15844,7 +15844,7 @@
             
             
             
-            select=select.replace("('@0@' as ?ENDP)", "");
+            select=select.replace("('@0@' as ?Source)", "");
             var select2= select.match(/\((.*)AS(.*)\)/);
             //Limpiar funciones de agrupacion
             if(select2 !=null && select2.length > 0){

@@ -1728,7 +1728,7 @@ if (Meteor.isClient) {
                                 showValue = prefix.prefix + ':' + object[field].value.substring(prefix.URI.length);
                             }
                             //var showValue = prefix ? (prefix.prefix+':'+object.value.substring(prefix.URI.length)):object.value;
-                            var html = '<a href="' + object[field].value + '">' + showValue + '</a>';
+                            var html = '<a target="_blank" href="' + object[field].value + '">' + showValue + '</a>';
                         } else {
                             var html = '<p> ' + object[field].value + '</p>';
                         }

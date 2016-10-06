@@ -664,7 +664,14 @@ var num_auto=0;
             var prope_i = cont % proper.length;
             var endpoint = endp[lsend[endpoint_i]];
             var _spar = spar.replace(new RegExp("---", "g"), proper[prope_i]);
-            var result = Meteor.call('doQueryCacheStats', {sparql: _spar, ep: endpoint.endpoint, gr: endpoint.graphURI});
+            var objQuery={sparql: _spar, ep: endpoint.endpoint, gr: endpoint.graphURI};
+            var result = Meteor.call('doQueryCacheStats', objQuery);
+            
+            if (result == null || result == undefined || result.resultSet == null || result.resultSet== undefined || result.resultSet.value == null || result.resultSet.value== undefined )
+            {
+                console.log('Error Sugg_ '+JSON.stringify(objQuery));
+                continue;
+            }
             var r = result.resultSet.value;
             var lsp = JSON.parse(r).results.bindings;
             for (var k = 0; k < lsp.length; k++) {
@@ -688,14 +695,14 @@ var num_auto=0;
             if (cont == 0) {
                 Cache.insert({keyl: sug.queue, value: unique.slice(0, 5), cacheable: false, ttl_date: new Date()});
             } else {
-                Cache.update({keyl: sug.queue}, {$set: {value: unique.slice(0, 5), cacheable: false, ttl_date: new Date()}});
+                Cache.update({keyl: sug.queue}, {$set: {value: unique.slice(0, 5), cacheable: false, ttl_date: new Date()}}, {multi:true});
             }
             if (lsend.length - 1 == endpoint_i && prope_i == proper.length - 1) {
-                Cache.update({keyl: sug.queue}, {$set: {cacheable: true}});
+                Cache.update({keyl: sug.queue}, {$set: {cacheable: true}}, {multi:true});
                 Cache.remove({queue: sug.queue});
             } else {
                 cont = cont + 1;
-                Cache.update({queue: sug.queue}, {$set: {cont: cont, resp: resp}});
+                Cache.update({queue: sug.queue}, {$set: {cont: cont, resp: resp}}, {multi:true});
             }
         }
 
@@ -722,15 +729,13 @@ var num_auto=0;
         Cache._ensureIndex({'key': 1, 'original':-1});
         Cache._ensureIndex({'key': 1, 'firstResult':-1, 'faceted.key':1, 'faceted.value':1});
         Cache._ensureIndex({'key': 1, 'faceted.key':1, 'faceted.value':1});
-        Cache._ensureIndex({'key': 1}, { unique: true });
-        Cache._ensureIndex({'keyl': 1}, { unique: true });
-        Cache._ensureIndex({'keyk': 1});
-        Cache._ensureIndex({'keyp': 1});
+        Cache._ensureIndex({'key': 1} );
+        Cache._ensureIndex({'keyl': 1});
         
         Cache._ensureIndex({'key': 1, 'nresult':1});
         Cache._ensureIndex({'ttl_date': 1}, {'expireAfterSeconds':1209600});
         Cache._ensureIndex({'queue': 1,'qord':-1});
-        Cache._ensureIndex({'queue': 1}, { unique: true });
+        Cache._ensureIndex({'queue': 1});
         
         // code to run on server at startup
         //Meteor.call('getEndpointStructure', 'http://190.15.141.102:8890/sparql', 'http://dspace.ucuenca.edu.ec/resource/');
@@ -751,19 +756,28 @@ Api.addRoute('sparql', {authRequired: false}, {
         //console.log(Headers);
         var endpointBase = Endpoints.findOne({base: true}).endpoint;
         var j = Body.trim().hashCode();
-        var k = Cache.find({key: j}).fetch();
+        var k = Cache.findOne({key: j});
         var l = {};
-       // if (0 == k.length){
+        
+        if (!k){
+            console.log('Consulta');
             var w = HTTP.post(endpointBase, {params: {query: Body}, headers: {'Accept': 'application/sparql-results+xml','content-type': 'application/x-www-form-urlencoded'}});
-            console.log(w.content);
-            this.response.write(w.content+'');
+            l=w.content;
+            Cache.insert({key:j, data:l, ttl_date: new Date()});
+        }else{
+            l=k.data;
+            console.log('Cache');
+        }
+            this.response.setHeader("Access-Control-Allow-Origin", "*");
+            this.response.setHeader("Content-Type", "application/sparql-results+xml");
+            this.response.setHeader("Transfer-Encoding", "chunked");
+            
+            this.response.write(l+'');
             this.done();
-           
-       // }
         
         
 
-        
+     //return "Esto es un string";   
     }
 });
 
@@ -983,6 +997,40 @@ Api.addRoute('sparql', {authRequired: false}, {
                     response.statusCode = 400;
                     response.msg = 'Error parsing SPARQL Query';
                     response.stack = e.toString();
+                }
+                return response;
+            },doQuery2: function (jsonRequest) {
+                var timeout = jsonRequest.timeout ? jsonRequest.timeout : 30000
+                var response = {}
+                response.statusCode = 200;
+                response.msg = undefined;
+                response.stack = undefined;
+                var endpointBase = Endpoints.findOne({base: true});
+                if (!endpointBase) {
+                    response.statusCode = 400;
+                    response.msg = "Base Endpoint is not registered!";
+                } else {
+                    try {
+                        if (jsonRequest.validateQuery) {
+                            parserInstance.parse(jsonRequest.sparql);
+                        } else {
+                            console.log('==Avoiding SPARQL validation on client');
+                        }
+                        var j = (jsonRequest.sparql+'Query2').trim().hashCode();
+                        var k = Cache.findOne({key: j});
+                        if(!k){
+                            response.resultSet = Meteor.call('runQuery', endpointBase.endpoint, endpointBase.graphURI, jsonRequest.sparql, undefined, timeout);
+                            Cache.insert({key:j, data:response.resultSet, ttl_date: new Date() });
+                        }else{
+                            response.resultSet=k.data;
+                        }
+                        
+                    } catch (e) {
+                        console.log(e);
+                        response.statusCode = 400;
+                        response.msg = "Error executing SPARQL Query: See console for details";
+                        response.stack = e.toString();
+                    }
                 }
                 return response;
             },
