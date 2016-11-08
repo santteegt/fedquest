@@ -39,6 +39,7 @@ this.WelcomeView = Backbone.View.extend({
      //console.log (window_height);
     // $(".lavel-up-header, .lavel-up-color-overlay").css('min-height', window_height);
    //  $(window).bind('resize', level_up_min_height);
+   
 
     return this;
   } , 
@@ -101,6 +102,15 @@ search_query = function (e) {
     });
 };
 
-
+Template.welcomePage.helpers({
+   user_access: function() {
+  if (!_.isNull(Meteor.user())&& !_.isUndefined(Meteor.user())) {
+        
+         return true;
+    } else {
+    return false;
+    }
+   
+  } });
 
 

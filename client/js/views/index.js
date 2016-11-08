@@ -14,6 +14,8 @@ this.IndexView = Backbone.View.extend({
   render: function() {
     Blaze.render(Template.welcomePage, $('div.main-ops')[0]);
     this.setEvents($('#sparql-content'));
+   // loadreco ();
+
     return this;
   } , setEvents: function (divNode) {
 
@@ -86,6 +88,9 @@ this.IndexView = Backbone.View.extend({
                     actu = {};
     var val = 'documentos';
     prev = selec (prev , val) ;
+
+//alert ("hola");
+
   
   });
   
@@ -153,4 +158,20 @@ $("#lang-en").click(function () {
     }
     return prev;
  }
+
+
+ function loadreco () {
+  Meteor.call('RecomendationItems', function(error, result) { 
+     console.log (result);
+   });
+ }
  
+/* Template.welcomePage.helpers({ 
+  recoavailable : function () {
+    Meteor.call('RecomendationItems', function(error, result) { 
+     console.log (result);
+     return result;
+   });
+  }
+
+ });*/

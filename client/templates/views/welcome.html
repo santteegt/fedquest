@@ -56,7 +56,19 @@
         </div>
               </form>
         </div>
+        {{#if user_access }} 
+          <div class="mostrar_reco" display = "none" > 
+     
+        {{#each recoavailable}}
+        <p>Recomendación: <img src={{icon}} width = {{sizeicon}} class="docrecomend" style="margin-top: -2px"> <a href={{uri}} target="_blank">{{title}}</a></p>       
+        {{/each}}
+         
+
+        </div> 
+        {{/if}}
+
          </div>
+      
    
 
     </section>

@@ -39,6 +39,7 @@ if (Meteor.isClient) {
         Meteor.subscribe("profile");
         Meteor.subscribe("searchs");
         Meteor.subscribe("favresources");
+        Meteor.subscribe("recomendation");
         // Meteor.subscribe("cache");
 
     });
@@ -52,6 +53,7 @@ if (Meteor.isClient) {
     this.Queries = new Meteor.Collection("queries");
     this.Profile = new Meteor.Collection("profile");
     this.Searchs = new Meteor.Collection("searchs");
+    this.Recomendation = new Meteor.Collection("recomendation");
     this.Favresources = new Meteor.Collection("favresources");
     this.App.resultCollection = new Meteor.Collection(null);
     this.App.resultCollectionSL = new Meteor.Collection(null);
@@ -1747,6 +1749,57 @@ if (Meteor.isClient) {
             }
         }
     });
+
+     Template.welcomePage.helpers({ 
+  recoavailable : function () {
+    var presentar ;
+      var Recomend2 =  Recomendation.find({ 'userid': Meteor.userId(), 'type': '2' }).fetch();
+      var Recomend1 =  Recomendation.find({'type': '1', 'userid' : Meteor.userId() } , {$sort: {"score": -1}, limit: 20 }).fetch();
+     // presentar = Recomend2 ;
+      presentar  = Recomend2.concat (Recomend1);
+       var selecc = [] ; 
+       var i ;
+       var ranum = [];
+      if (presentar.length > 4) {
+        console.log (presentar);
+      for ( i =0 ; i< 5;i++) {
+        var rand ;
+         do {
+        rand = Math.round(Math.random ()*(presentar.length-1));
+        console.log (_.contains (ranum, rand));
+        
+        } while ( _.contains (ranum, rand));
+        ranum.push (rand);
+        console.log ("Dim"+presentar.length);
+        console.log ("ran"+rand);
+        console.log (presentar [rand]);
+        
+         var classoftype = presentar[rand].typeofclass;
+             
+         if (classoftype.includes ("Person")) {
+          presentar[rand].icon = "images/authorcol.png" ;
+          presentar[rand].sizeicon = "25 px;" ;
+         }else if (classoftype.includes ("Collection")) {
+            presentar[rand].icon = "images/collection.png";
+            presentar[rand].sizeicon = "25 px;" ;
+         } else {
+
+            presentar[rand].icon = "images/documento.png";
+            presentar[rand].sizeicon = "12 px;" ;
+         }
+        selecc[i] = presentar[rand];
+        console.log (presentar[rand].typeofclass);
+
+         }
+        // presentar[Math.round(Math.random ()*presentar.length())];
+      }
+     // selecc = presentar;
+    // db.recomendation.find({'type':'2', "userid" : "P3u8C9GM6NS6jYuJ4"}).sort({"score":-1}).limit (5)
+    return selecc;
+    // return Recomendation.find({ 'userid': Meteor.userId() }).fetch();
+  
+  }
+ });
 
     Template.search.helpers({
         facetedOptions: function () {

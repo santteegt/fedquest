@@ -1,7 +1,17 @@
 /*
  View logic for the query samples list component
  */
-
+  function AndStr(str) {
+            var sp = str.trim().split(' ').filter(function (d) {
+                    return d !== "";
+                });
+                var rs='';
+                for (var n=0; n<sp.length; n++){
+                    rs+=sp[n]+((n==sp.length-1)?'':' AND ');
+                }
+                return rs;
+        }
+        
 String.prototype.keyword = function () {
     var x;
     var y;
@@ -372,16 +382,7 @@ this.SearchView = Backbone.View.extend({
         });
 
 
-        function AndStr(str) {
-            var sp = str.trim().split(' ').filter(function (d) {
-                    return d !== "";
-                });
-                var rs='';
-                for (var n=0; n<sp.length; n++){
-                    rs+=sp[n]+((n==sp.length-1)?'':' AND ');
-                }
-                return rs;
-        }
+      
 
 
         $('input.runSearch').on('click', function (ev) {

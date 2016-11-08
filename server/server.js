@@ -2481,6 +2481,19 @@ Api.addRoute('sparql', {authRequired: false}, {
 
                  return "Ya estaba almacenado";
 
+              } ,
+
+              RecomendationItems: function  () {
+                 var reco = Recomendation.find({ 'userid': this.userId }).fetch();
+                   
+                   if ( !_.isUndefined(reco)){
+                 //console.log (reco);
+                // InterestResources.insert({idUser: this.userId , 'URI' : URI });
+                 return reco;
+                 }  
+
+                 return "Error";
+
               }
               
  
