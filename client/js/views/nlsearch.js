@@ -19,15 +19,15 @@ this.NLSearchView = Backbone.View.extend({
         return this;
     },
     setEvents: function (divNode) {
-       
-        window.QueryEvent=(function (e){
+
+        window.QueryEvent = (function (e, h) {
             var p1_ = e.search(/SELECT DISTINCT/);
             var p2_ = e.search(/SELECT(?! DISTINCT)/);
-        
-            if(p1_!=-1 && p2_!=-1 && p1_<p2_ || p1_!=-1 && p2_==-1){
-                e=e.replace(/SELECT DISTINCT/, "SELECT DISTINCT ?Source ");
-            }else{   
-                e=e.replace(/SELECT(?! DISTINCT)/, "SELECT ?Source ");
+
+            if (p1_ != -1 && p2_ != -1 && p1_ < p2_ || p1_ != -1 && p2_ == -1) {
+                e = e.replace(/SELECT DISTINCT/, "SELECT DISTINCT ?Source ");
+            } else {
+                e = e.replace(/SELECT(?! DISTINCT)/, "SELECT ?Source ");
             }
             var jsonRequest = {"sparql": e, "validateQuery": false};
             //waitingDialog.show();
@@ -36,11 +36,12 @@ this.NLSearchView = Backbone.View.extend({
                     App.resultCollectionSL.remove({});
                     App.resultCollectionSL.insert(result.resultSet);
                 }
-                
-            //waitingDialog.hide();
+
+                //waitingDialog.hide();
             });
 
         });
+        $('#DSSL')[0].height = h + 20;
     }
 });
 
@@ -64,7 +65,8 @@ function get_checkList_values(CheckName) {
         }
     }
     return values;
-};
+}
+;
 
 
 
@@ -73,52 +75,52 @@ function get_checkList_values(CheckName) {
 Init_SPARKLIS = function (e) {
     $('#DataSource').show();
     $('#InConfig').hide();
-    
-    var w= $('#DSSL')[0].contentDocument;
+
+    var w = $('#DSSL')[0].contentDocument;
     w.getElementById('config-control').click();
-    var lang =2;
-    var elang='es';
-    var usr = Profile.findOne({idProfile: Meteor.userId() });
-    if(usr){
-        lang = usr.language == 'es' ?2:0;
-        elang=usr.language;
+    var lang = 2;
+    var elang = 'es';
+    var usr = Profile.findOne({idProfile: Meteor.userId()});
+    if (usr) {
+        lang = usr.language == 'es' ? 2 : 0;
+        elang = usr.language;
     }
-    
+
     //w.getElementById("lang-select").selectedIndex = 0;
     //w.getElementById('config-control').click();
-   
-  // w.getElementById('config-control').click();
+
+    // w.getElementById('config-control').click();
     w.getElementById("lang-select").selectedIndex = lang;
     //console.log(elang);
     //console.log(lang);
     w.getElementById("lang-select").onchange(elang);
     w.getElementById('config-control').click();
-   
-   
+
+
     ///
-    var dd= get_checkList_values('repositoriesList');
-    var btnhome= w.getElementById('home');
-    var dat=[];
-    for (var i=0; i<dd.length; i++){
+    var dd = get_checkList_values('repositoriesList');
+    var btnhome = w.getElementById('home');
+    var dat = [];
+    for (var i = 0; i < dd.length; i++) {
         var Service = dd[i].attributes['data-endpoint'].value;
         var ServiceName = dd[i].attributes['data-name'].value;
-        dat.push({E:Service, N:ServiceName});
+        dat.push({E: Service, N: ServiceName});
     }
     btnhome.setAttribute("endpoints", JSON.stringify(dat));
-    var endp= w.getElementById('sparql-endpoint-input');
+    var endp = w.getElementById('sparql-endpoint-input');
     //var endb = Endpoints.findOne({base: true});
-    
-    var rr=location.protocol + "//" + location.host+'/api/sparql';
-    
+
+    var rr = location.protocol + "//" + location.host + '/api/sparql';
+
     endp.value = rr;
-    
-    
-    
-    var botp= w.getElementById('sparql-endpoint-button');
+
+
+
+    var botp = w.getElementById('sparql-endpoint-button');
     botp.click();
-    
-    
-    
+
+
+
 };
 
 

@@ -15890,7 +15890,8 @@
         query=query.replace(new RegExp('""""', 'g'),'" """');
         
         if ( ____c!=0){
-            window.parent.QueryEvent(query);
+            var height = document.body.scrollHeight;
+            window.parent.QueryEvent(query, height);
             //console.log(query);
             
         }
