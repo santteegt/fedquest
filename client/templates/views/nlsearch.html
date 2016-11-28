@@ -37,17 +37,30 @@
                 </button>
             </div>
             
-            <div id="DataSource" style="display: none">
-                <object id ='DSSL' type="text/html" data="/NLTool/sparklis/osparklis.html" width="100%" height="400px" >
+            <!--
+            <object id ='DSSL' type="text/html" data="/NLTool/sparklis/osparklis.html" width="100%" height="400px" >
                 </object>
+            -->
+            
+            <div id="DataSource" style="display: none">
+                <iframe id ='DSSL' src="/NLTool/sparklis/osparklis.html" width="100%" height="400px">
+                    
+                </iframe> 
             </div>    
             
             
             
             <div  style="overflow-x:scroll; text-align:left">
                 
+                {{#if Loading}}
+                <p ><img width="15px" height="15px"  src="images/loader.gif" alt="cedia"> <strong>Loading ... Please wait.</strong></p>
+                {{/if}}
+                
                 {{#if resultQueryN}}
-                <p >Resultados:</p>
+                <div class="heading">
+                    <p >Resultados:</p>
+                </div>
+                
                 {{> reactiveTable collection=resultQuery settings=settings }}
                 {{/if}}
               </div>

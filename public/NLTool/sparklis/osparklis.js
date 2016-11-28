@@ -15907,7 +15907,7 @@
             var str__=m(p, m(Ho, v(w))).toString();
             n.open(nJ, str__, fZ);
             n[mT] = !!j(k(hp, A, 378), hp);
-            n.setRequestHeader(vN, tm)
+            n.setRequestHeader(vN, tm)            
         } else {
             n.open(gB, p.toString(), fZ);
             n[mT] = !!j(k(hp, A, 403), hp);
@@ -15919,10 +15919,13 @@
         z(a) {
             return 0
         }
+        
+        
         n.onreadystatechange = kC(function(a) {
             switch (n.readyState) {
                 case
                 2:
+                
                     if (!iG) return z(0);
                     break;
                 case
@@ -15931,6 +15934,11 @@
                     break;
                 case
                 4:
+                    if (n.responseURL.includes("sparql")){
+                        //console.log(n);
+                        window.parent.EndQuery();
+                    }
+
                     ai(qP, d);
                     l(k(e, -781701981, 381), e, n);
                     ai(j(k(e, -782346894, 382), e), d);
@@ -15988,7 +15996,20 @@
             return 0
         });
         ai(GX, d);
-        return j(k(cB, A, 399), cB) ? n.send(bD) : n.send(cy(v(w).toString()))
+        
+        
+        var ___q="";
+        if (j(k(cB, A, 399), cB)){
+            ___q=bD;
+        }else{
+            ___q=cy(v(w).toString());
+        }
+        if (___q.includes("sparql")){
+            window.parent.StartQuery();
+        }
+        //console.log(n);
+        //console.log(___q);
+        return  n.send(___q) ;
     }
 
     function

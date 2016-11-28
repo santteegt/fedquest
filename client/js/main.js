@@ -1,5 +1,7 @@
 if (Meteor.isClient) {
 
+    Session.set('AuxCargS', 0);
+
     var _logout = Meteor.logout;
     Meteor.logout = function customLogout() {
         // Do your thing here
@@ -1676,6 +1678,9 @@ if (Meteor.isClient) {
     });
 
     Template.nlsearch.helpers({
+        Loading: function () {
+            return Session.get('AuxCargS')>0;
+        },
         endpointsAvailable: function () {
             return Endpoints.find({status: 'A'}).fetch();
         },

@@ -1,3 +1,5 @@
+
+
 this.NLSearchView = Backbone.View.extend({
     tagName: "div",
     id: "nlsearch",
@@ -20,6 +22,18 @@ this.NLSearchView = Backbone.View.extend({
     },
     setEvents: function (divNode) {
 
+        Session.set('AuxCargS', 0);
+        
+        window.StartQuery = (function () {
+            Session.set('AuxCargS', Session.get('AuxCargS')+1);
+            
+        });
+        
+        window.EndQuery = (function () {
+            Session.set('AuxCargS', Session.get('AuxCargS')-1);
+        });
+
+
         window.QueryEvent = (function (e, h) {
             var p1_ = e.search(/SELECT DISTINCT/);
             var p2_ = e.search(/SELECT(?! DISTINCT)/);
@@ -39,9 +53,9 @@ this.NLSearchView = Backbone.View.extend({
 
                 //waitingDialog.hide();
             });
-
+            $('#DSSL')[0].height = h + 20;
         });
-        $('#DSSL')[0].height = h + 20;
+        
     }
 });
 
@@ -76,7 +90,7 @@ Init_SPARKLIS = function (e) {
     $('#DataSource').show();
     $('#InConfig').hide();
 
-    var w = $('#DSSL')[0].contentDocument;
+    var w = $('#DSSL')[0].contentDocument || $('#DSSL')[0].contentWindow.document;
     w.getElementById('config-control').click();
     var lang = 2;
     var elang = 'es';
