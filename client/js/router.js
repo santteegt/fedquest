@@ -27,6 +27,7 @@ this.Router = Backbone.Router.extend({
       'adminpanel':'adminpanel',
       'error':'error' ,
       'favsearch':'favsearch' ,
+      'help':'help' ,
  //   'search/:lan':'search2',
     '': 'index',
    // ':lan': 'index',
@@ -139,6 +140,9 @@ new IndexView().render();
   } , error : function () {
      $('div.navbar .collapse li a#options').hide();
     new errorpagView().render(); 
+  } ,  help : function () {
+     $('div.navbar .collapse li a#options').hide();
+    new helpagView().render(); 
   } , favsearch : function (){ 
     $('div.navbar .collapse li a#options').hide();
     new FavSearchView().render();

@@ -458,6 +458,13 @@ margin-top: 10px;
 .mensaje {
     margin-top: 20%;
 }
+
+.HelpTitle {
+    margin-top: 80px;
+}
+.HelpTitle2 {
+    margin-top: 50px;
+}
 /*
 #login-buttons .login-link-and-dropdown-list {
     position: absolute;

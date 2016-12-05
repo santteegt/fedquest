@@ -1,4 +1,4 @@
-this.errorpagView = Backbone.View.extend({
+this.helpagView = Backbone.View.extend({
   tagName: "div",
   id: "helpag",
 
