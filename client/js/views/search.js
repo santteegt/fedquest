@@ -1,17 +1,17 @@
 /*
  View logic for the query samples list component
  */
-  function AndStr(str) {
-            var sp = str.trim().split(' ').filter(function (d) {
-                    return d !== "";
-                });
-                var rs='';
-                for (var n=0; n<sp.length; n++){
-                    rs+=sp[n]+((n==sp.length-1)?'':' AND ');
-                }
-                return rs;
-        }
-        
+function AndStr(str) {
+    var sp = str.trim().split(' ').filter(function (d) {
+        return d !== "";
+    });
+    var rs = '';
+    for (var n = 0; n < sp.length; n++) {
+        rs += sp[n] + ((n == sp.length - 1) ? '' : ' AND ');
+    }
+    return rs;
+}
+
 String.prototype.keyword = function () {
     var x;
     var y;
@@ -382,7 +382,7 @@ this.SearchView = Backbone.View.extend({
         });
 
 
-      
+
 
 
         $('input.runSearch').on('click', function (ev) {
@@ -468,29 +468,29 @@ this.SearchView = Backbone.View.extend({
 
 
             //}
-                var usr = Profile.findOne({idProfile: Meteor.userId() });
-                var idi ='none';
-                var ty = '1';
-                var int='';
-                if(usr){
-                    idi = usr.language;
-                    if (usr.levelAcademic == 1) {
-                        ty = 2;
-                    }
-                    if (usr.levelAcademic == 2) {
-                        ty = 3;
-                    }
-                    if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
-                        var inte= usr.areasInterest;
-                        for (var sd=0; sd<inte.length; sd++){
-                            int +='('+AndStr(lang.getDictionnary('es')['FoS_'+inte[sd]])+') OR ';
-                            int +='('+AndStr(lang.getDictionnary('en')['FoS_'+inte[sd]])+')'+ ((sd!=inte.length-1)?' OR ':'');
-                        }
+            var usr = Profile.findOne({idProfile: Meteor.userId()});
+            var idi = 'none';
+            var ty = '1';
+            var int = '';
+            if (usr) {
+                idi = usr.language;
+                if (usr.levelAcademic == 1) {
+                    ty = 2;
+                }
+                if (usr.levelAcademic == 2) {
+                    ty = 3;
+                }
+                if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
+                    var inte = usr.areasInterest;
+                    for (var sd = 0; sd < inte.length; sd++) {
+                        int += '(' + AndStr(lang.getDictionnary('es')['FoS_' + inte[sd]]) + ') OR ';
+                        int += '(' + AndStr(lang.getDictionnary('en')['FoS_' + inte[sd]]) + ')' + ((sd != inte.length - 1) ? ' OR ' : '');
                     }
                 }
-                if (int == ''){
-                    int ='_';
-                }
+            }
+            if (int == '') {
+                int = '_';
+            }
             //
             var Query = "prefix text:<http://jena.apache.org/text#>\n";
 
@@ -523,14 +523,14 @@ this.SearchView = Backbone.View.extend({
                         var Property_ = ResqLis[oneRes].indexProperties[oneProp];
                         var PropertyName_ = ResqLis[oneRes].indexPropertiesName[oneProp];
                         var Label_ = ResqLis[oneRes].labelProperty;
-                        Query += 'select   ?Score1 (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue  (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type)  ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,'+ty+',1)) as ?Score ) \n'; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
+                        Query += 'select   ?Score1 (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue  (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type)  ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,' + ty + ',1)) as ?Score ) \n'; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
                         Query += '{\n';
                         Query += '(?EntityURI ?Score1 ?PropertyValue) text:query (<' + Property_ + '> \'(' + TextSearch + ')\' ' + ResultLimitSubQ + ') .\n?EntityURI <' + Label_ + '> ?EntityLabel .\n';
                         Query += 'filter(str(?PropertyValue)!=\'\') .\n';
-                        Query += "optional { (?EntityURI ?Score2 ?PropertyValue2) text:query (<http://purl.org/dc/terms/subject> '("+int+")' ) .  filter(str(?EntityURI)!=\'\') .} \n"
+                        Query += "optional { (?EntityURI ?Score2 ?PropertyValue2) text:query (<http://purl.org/dc/terms/subject> '(" + int + ")' ) .  filter(str(?EntityURI)!=\'\') .} \n"
                         //Query += "optional { ?EntityURI <http://purl.org/dc/terms/subject> ?Sub1 .  } \n"
                         Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang1 .   } \n"
-                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang2 .  filter(str(?Lang2) = '"+idi+"'). bind( 1 as ?Score3  ).  } \n"
+                        Query += "optional { ?EntityURI <http://purl.org/dc/terms/language> ?Lang2 .  filter(str(?Lang2) = '" + idi + "'). bind( 1 as ?Score3  ).  } \n"
                         Query += "optional { ?EntityURI <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n";
                         Query += "optional { ?EntityURI a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document') .   } \n"
                         Query += "optional { {?EntityURI a <http://purl.org/ontology/bibo/Article> .  bind(1 as ?Score4  ). } union { ?EntityURI a <http://purl.org/net/nknouf/ns/bibtex#Mastersthesis> .  bind(1 as ?Score4  ). }  } \n"
@@ -662,7 +662,7 @@ linkg = function (e) {
     var v2 = encodeURIComponent(en.endpoint);
     var v3 = encodeURIComponent(en.graphURI);
     window.open('/graph/' + v1 + '/' + v2 + '/' + v3);
-    interestitem (obj.attributes['data-uri'].value);
+    interestitem(obj.attributes['data-uri'].value);
 };
 
 function Query(endpoint, graph, query) {
@@ -716,7 +716,7 @@ linkg2 = function (e) {
         }
     }
     );
-    interestitem (v1);
+    interestitem(v1);
 };
 
 ValidateSuggestionQuery = function (query) {
@@ -780,29 +780,29 @@ actAHyper = function (e) {
     //Session.set("auxAct", Session.get("auxAct") + 1);
     //App.resultCollection2.remove({});
 
-var usr = Profile.findOne({idProfile: Meteor.userId() });
-                var idi ='none';
-                var ty = '1';
-                var int='';
-                if(usr){
-                    idi = usr.language;
-                    if (usr.levelAcademic == 1) {
-                        ty = 2;
-                    }
-                    if (usr.levelAcademic == 2) {
-                        ty = 3;
-                    }
-                    if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
-                        var inte= usr.areasInterest;
-                        for (var sd=0; sd<inte.length; sd++){
-                            int +='('+AndStr(lang.getDictionnary('es')['FoS_'+inte[sd]])+') OR ';
-                            int +='('+AndStr(lang.getDictionnary('en')['FoS_'+inte[sd]])+')'+ ((sd!=inte.length-1)?' OR ':'');
-                        }
-                    }
-                }
-                if (int == ''){
-                    int ='_';
-                }
+    var usr = Profile.findOne({idProfile: Meteor.userId()});
+    var idi = 'none';
+    var ty = '1';
+    var int = '';
+    if (usr) {
+        idi = usr.language;
+        if (usr.levelAcademic == 1) {
+            ty = 2;
+        }
+        if (usr.levelAcademic == 2) {
+            ty = 3;
+        }
+        if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
+            var inte = usr.areasInterest;
+            for (var sd = 0; sd < inte.length; sd++) {
+                int += '(' + AndStr(lang.getDictionnary('es')['FoS_' + inte[sd]]) + ') OR ';
+                int += '(' + AndStr(lang.getDictionnary('en')['FoS_' + inte[sd]]) + ')' + ((sd != inte.length - 1) ? ' OR ' : '');
+            }
+        }
+    }
+    if (int == '') {
+        int = '_';
+    }
 
 
 
@@ -845,13 +845,13 @@ var usr = Profile.findOne({idProfile: Meteor.userId() });
     var patt = new RegExp("SELECT DISTINCT(.*)\n", 'g');
     var res = patt.exec(sq);
     if (res != null) {
-        if (respp == 1){
+        if (respp == 1) {
             varia2 = res[1] + ' ' + txtvar + SearchVar + ' ?Endpoint ?Score1 ';
-        }else{
-            varia2 = res[1] + ' ' + txtvar + SearchVar + ' ?Endpoint';    
+        } else {
+            varia2 = res[1] + ' ' + txtvar + SearchVar + ' ?Endpoint';
         }
-        
-        varia = res[1] + ' ' + txtvar + SearchVar + ' ?Endpoint (max(?Year1) as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type) ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,'+ty+',1)) as ?Score ) '; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
+
+        varia = res[1] + ' ' + txtvar + SearchVar + ' ?Endpoint (max(?Year1) as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type) ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,' + ty + ',1)) as ?Score ) '; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
     }
     //Obtener original
 
@@ -898,13 +898,13 @@ var usr = Profile.findOne({idProfile: Meteor.userId() });
             Query += 'service <' + Service + '> {\n';
         }
         var NewSQ2 = NewSQ.replace(new RegExp("SELECT DISTINCT", "g"), "SELECT DISTINCT ('" + ServiceName + "' AS ?Endpoint) ?Score2 ?Score3 ?Score4 ");
-        var sr='';
+        var sr = '';
         if (respp == 2) {
-            sr="";
-        }else{
-            sr="  bind(1 as ?Score1). ";
+            sr = "";
+        } else {
+            sr = "  bind(1 as ?Score1). ";
         }
-        NewSQ2 = NewSQ2.replace(/\}\n\}$/, sr+"optional { (" + MainVar + " ?Score2 ?PropertyValue2) <http://jena.apache.org/text#query> (<http://purl.org/dc/terms/subject> '("+int+")' ) .    filter(str("+MainVar+")!=\'\') . } \n   optional { " + MainVar + " <http://purl.org/dc/terms/language> ?Lang1 .  } \n optional { " + MainVar + " <http://purl.org/dc/terms/language> ?Lang2 .  filter(str(?Lang2) = '"+idi+"'). bind( 1 as ?Score3  ).  } \n optional { " + MainVar + " <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n  optional { " + MainVar + " a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document')  } \n optional { {" + MainVar + " a <http://purl.org/ontology/bibo/Article> .  bind(1 as ?Score4  ). } union { " + MainVar + " a <http://purl.org/net/nknouf/ns/bibtex#Mastersthesis> .  bind(1 as ?Score4  ). }  } \n }} ");
+        NewSQ2 = NewSQ2.replace(/\}\n\}$/, sr + "optional { (" + MainVar + " ?Score2 ?PropertyValue2) <http://jena.apache.org/text#query> (<http://purl.org/dc/terms/subject> '(" + int + ")' ) .    filter(str(" + MainVar + ")!=\'\') . } \n   optional { " + MainVar + " <http://purl.org/dc/terms/language> ?Lang1 .  } \n optional { " + MainVar + " <http://purl.org/dc/terms/language> ?Lang2 .  filter(str(?Lang2) = '" + idi + "'). bind( 1 as ?Score3  ).  } \n optional { " + MainVar + " <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n  optional { " + MainVar + " a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document')  } \n optional { {" + MainVar + " a <http://purl.org/ontology/bibo/Article> .  bind(1 as ?Score4  ). } union { " + MainVar + " a <http://purl.org/net/nknouf/ns/bibtex#Mastersthesis> .  bind(1 as ?Score4  ). }  } \n }} ");
 
         Query += NewSQ2 + "\n";
         if (!EndpointLocal) {
@@ -914,7 +914,7 @@ var usr = Profile.findOne({idProfile: Meteor.userId() });
     }
     Query += '} group by ' + varia2 + ' \n';
     //if (respp == 2) {
-        Query += 'order by desc(?Score)\n';
+    Query += 'order by desc(?Score)\n';
     //}
 
     var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": MainVar.replace('?', ''), "ApplyFilter": AppFilt};
@@ -968,13 +968,13 @@ qrmodalshow = function (e, base, type) {
 
     //  $("#qrarea2").qrcode ( {width: 125 ,height: 125,text: "http://localhost" });
     $("#myqrmodal").modal();
-    interestitem (e);
+    interestitem(e);
 }
 
 download = function (URI) {
     $("#mydwmodal").modal();
     $("#mydwmodal").attr("URI", URI);
-    interestitem (URI);
+    interestitem(URI);
 
 
 }
@@ -1050,21 +1050,21 @@ hide = function (e) {
 
 favaction = function (uri, label)
 {
-    if (!_.isNull(Meteor.userId()) ){
-    Meteor.call('savefavresource', uri, label, function (error, result) {
-        console.log(result);
-        // alert (result);
-    });
+    if (!_.isNull(Meteor.userId())) {
+        Meteor.call('savefavresource', uri, label, function (error, result) {
+            console.log(result);
+            // alert (result);
+        });
     } else {
-        alert ("Por favor, ingrese un usuario para utilizar esta característica");
+        alert("Por favor, ingrese un usuario para utilizar esta característica");
     }
 
 }
 
-rdflink = function (URI){
-   window.open(URI);
-     interestitem (URI);
-   }
+rdflink = function (URI) {
+    window.open(URI);
+    interestitem(URI);
+}
 
 function fuente(uri, base) {
 
@@ -1089,18 +1089,19 @@ function fuente(uri, base) {
         }
     }
     );
-};
+}
+;
 
-function interestitem (URI) {
-    
+function interestitem(URI) {
+
     // alert (URI);
     if (!_.isNull(Meteor.userId())) {
-     Meteor.call('saveinterest', URI  , function (error, result) { 
-    console.log (result);
-   // alert (result);
-   });
+        Meteor.call('saveinterest', URI, function (error, result) {
+            console.log(result);
+            // alert (result);
+        });
     }
-    }
+}
 
 
 desplegar = function (e) {
