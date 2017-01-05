@@ -921,6 +921,7 @@ this.DashboardView = Backbone.View.extend({
             $('#sparqlEditor #avoidErrors')[0].checked = false;
             var sparql = App.fedQueryUtils.graphToSPARQL('warning');
             if (sparql) {
+                sparql=sparql.replace("@0@).", ").");
                 App.dashboard.sparqlEditor.setValue(sparql);
                 Meteor.call('validateSPARQL', App.dashboard.sparqlEditor.getValue(), function (error, result) {
                     if (result.statusCode != 200) {
