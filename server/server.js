@@ -76,19 +76,26 @@ accessLevel:{
 /*
 AccountsTemplates.configure({
     SignUpHook: function () {
-      console.log ("Creado") ; }
+      console.log ("Creado") ; } 
     
 });*/
 
 Hooks.onCreateUser = function (userId) { 
  //alert ("Login");
  var usr = Meteor.users.findOne({'_id':userId});
+ var prof = Profile.findOne({'idProfile': userId });
 
+ console.log ("Nivel de acceso");
+ console.log (alevel);
+ if (typeof usr.profile === 'undefined'){
   Profile.insert({idProfile: userId , nameUser: "", direction: "" , levelAcademic: "0", areasInterest: [], language: "es", password: "", secMail:  usr.emails[0].address , accessLevel: "0"});
   Meteor.users.update({_id:userId}, {$set:{"profile":{ lang: "es" ,  'access':0 }}});
     console.log ("Usuario Creado");
  console.log (usr.emails[0].address);
-
+ } else if (usr.profile.access == 2 &&  typeof prof === 'undefined' ){
+    console.log ("Se debe  crear profile");
+    Profile.insert({ idProfile: userId  ,  nameUser: "Admin", direction: "" , levelAcademic: "0", areasInterest: [], language: "es", password: "", secMail:  "admin@cedia.org" , accessLevel: "2"});
+ }
 
  }; 
 
@@ -2494,12 +2501,205 @@ Api.addRoute('sparql', {authRequired: false}, {
 
                  return "Error";
 
-              }
-              
- 
- 
-        });
+              } ,
 
+                 SaveEntities: function  (endpointURI , defaultGraph , EntitiesArray ) {
+                 Entities.remove({endpoint: endpointURI, graph: defaultGraph});
+
+                 console.log ("Almacenando Entidades");
+                 console.log (EntitiesArray);
+                 //   var identifier = null; 
+               //    for ( var Ent in  EntitiesArray ){
+                        
+                 //identifier = Entities.insert ( { endpoint: endpointURI , graph : defaultGraph , entities : { fullName : Ent.fullName , prefix: Ent.prefix , name : Ent.name , ent: Ent.ent , dim: Ent.dim } });
+                  identifier = Entities.insert ( { endpoint: endpointURI , graph : defaultGraph , entities :  EntitiesArray  });
+
+                 console.log (identifier);
+                        
+                     //   Entities.update ( {'_id': identifier}, {$set: {endpoint: endpointURI , graph : defaultGraph , fullName : Ent.fullName , prefix: Ent.prefix , name : Ent.name , ent: Ent.ent , dim: Ent.dim }});
+
+                       
+                      //   }
+
+                 return "Error";
+
+              } , 
+
+               SaveConfEntity: function  ( user , Graph , ConfEnt , confgraph , confbus ) {
+                  if (valAccess(this.userId, 2)) {
+                var usr = this.userId; 
+              
+                var confexist = Configuration.findOne({ 'Endpoint': Graph  });
+                console.log ("Existe");
+                console.log (confexist);
+                  var newconf = [];
+                  if (  _.isUndefined(confexist)){ 
+                     newconf.push (ConfEnt);    
+                     console.log ("No existe");
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus });
+
+                     //return "almacenado";
+                  }else 
+                  {  
+                      
+                    var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfEntity.URI' : ConfEnt.URI });
+                    
+                       if ( _.isUndefined(confexist2) ) 
+                        {   newconf =   confexist.ConfEntity;
+                            newconf.push (ConfEnt);
+                            console.log ("Existe parecido");
+                            console.log (newconf);
+                       }
+                        else 
+                        {   newconf =   confexist2.ConfEntity;
+                          //  var idx =  _.findIndex(newconf , { URI :  ConfEnt.URI });
+                            var idx =  _.indexOf(_.pluck(newconf, 'URI'), ConfEnt.URI);
+                            newconf [idx] =  ConfEnt; 
+                            console.log ("El mismo");
+                            console.log (newconf);
+
+                        }
+
+                    return  Configuration.update({'_id': confexist['_id']} ,  {$set: { 'ConfEntity' : newconf } });
+                      }
+
+                       } else {
+                        return "Sin permisos";
+                      }
+                   
+            
+                   //  newconf = confexist.ConfEntity.push (ConfEnt); 
+                  // return   Configuration.update({'Endpoint': Graph , 'ConfEntity.URI' : ConfEnt.URI } , {$set: { 'ConfEntity' : newconf } });
+                 
+
+                
+              } , 
+              
+              SaveConfLits : function  ( user , Graph , ConfEnt , confgraph , confbus , constats ) {
+                  if (valAccess(this.userId, 2)) {
+                var usr = this.userId; 
+
+                var confexist = Configuration.findOne({ 'Endpoint': Graph  });
+                console.log ("Existe");
+                console.log (confexist);
+                  var newconf = [];
+                  if (  _.isUndefined(confexist)){ 
+                     newconf.push (ConfEnt);    
+                     console.log ("No existe");
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus ,  'ConfStat' : constats });
+
+                     //return "almacenado";
+                  } else {
+
+                    //var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfEntity.URI' : ConfEnt.URI });
+                     if ( confgraph.length > 0 ) {
+
+                        return Configuration.update({'_id': confexist['_id']} ,  {$set: { 'VisGraph' : confgraph } });
+                     }else {
+                        return Configuration.update({'_id': confexist['_id']} ,  {$set: { 'EntSearch' : confbus } });
+                     }
+
+
+
+                  }
+                    } else {
+                    return "Sin permisos";
+
+                    }
+
+              } , SaveConfStat :function ( user , Graph , ConfEnt , confgraph , confbus , constats )  
+              {     
+                    if (valAccess(this.userId, 2)) {
+                var usr = this.userId; 
+
+                var confexist = Configuration.findOne({ 'Endpoint': Graph  });
+                console.log ("Existe");
+                console.log (confexist);
+                  var newconf = [];
+                  if (  _.isUndefined(confexist)){ 
+                     newconf.push (constats);    
+                     console.log ("No existe");
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : ConfEnt , 'VisGraph' : confgraph , 'EntSearch' : confbus , 'ConfStat': constats  });
+
+                     //return "almacenado";
+                  }else 
+                  {  
+                      
+                    var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfStat.URI' : constats.URI });
+                    
+                       if ( _.isUndefined(confexist2) ) 
+                        {   newconf =   confexist.ConfStat;
+                            newconf.push (constats);
+                            console.log ("Existe parecido");
+                            console.log (newconf);
+                       }
+                        else 
+                        {   newconf =   confexist2.ConfStat;
+                          //  var idx =  _.findIndex(newconf , { URI :  ConfEnt.URI });
+                            var idx =  _.indexOf(_.pluck(newconf, 'URI'), constats.URI);
+                            newconf [idx] =  constats; 
+                            console.log ("El mismo");
+                            console.log (newconf);
+
+                        }
+
+                    return  Configuration.update({'_id': confexist['_id']} ,  {$set: { 'ConfStat' : newconf } });
+
+                   }
+            
+                   //  newconf = confexist.ConfEntity.push (ConfEnt); 
+                  // return   Configuration.update({'Endpoint': Graph , 'ConfEntity.URI' : ConfEnt.URI } , {$set: { 'ConfEntity' : newconf } });
+                 
+
+                 return "Error";
+                 
+                 } else {
+                    return "Sin permisos";
+                 }
+
+              }
+              ,
+              DeleteConfEnt : function ( valuri ,  graphendp ) {
+                 if (valAccess(this.userId, 2)) {
+                console.log ("Borrando");
+                console.log (valuri +" " +graphendp);
+                 var confexist = Configuration.findOne({ 'Endpoint': graphendp , 'ConfEntity.URI' : valuri });
+                 var entities = confexist.ConfEntity;
+                 console.log (entities);
+                 entities = _.reject(entities, function(el) { return el.URI === valuri ; });
+                 //return Configuration.remove ({ "Endpoint" :  graphendp , "ConfEnt.URI" : valuri });
+                 console.log (entities);
+                return  Configuration.update({'Endpoint': graphendp , 'ConfEntity.URI' : valuri } , {$set: { 'ConfEntity' : entities } });
+                 } else {
+                    return  "Sin permisos";
+                 }
+
+              } ,  DeleteConfStat : function ( valuri ,  graphendp ) {
+                if (valAccess(this.userId, 2)) {
+                console.log ("Borrando");
+                console.log (valuri +" " +graphendp);
+                 var confexist = Configuration.findOne({ 'Endpoint': graphendp , 'ConfStat.URI' : valuri });
+                 var entities = confexist.ConfStat;
+                 console.log (entities);
+                 entities = _.reject(entities, function(el) { return el.URI === valuri ; });
+                 //return Configuration.remove ({ "Endpoint" :  graphendp , "ConfEnt.URI" : valuri });
+                console.log (entities);
+                 Configuration.update({'Endpoint': graphendp , 'ConfStat.URI' : valuri } , {$set: { 'ConfStat' : entities } });
+                } else {
+                    return  "Sin permisos";
+                 }
+
+              } ,
+
+                DeleteImagen : function  ( id ) {
+                    console.log ("Borrando "+id);
+                   Images.remove({_id: id });
+                   return  "borrado";
+
+                }
+ 
+              });
+     
         //Update Prefixes schema on every server startup
         //Meteor.call('updatePrefixes');
         SyncedCron.start();

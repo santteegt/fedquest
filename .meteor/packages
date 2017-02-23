@@ -42,3 +42,6 @@ percolate:synced-cron
 mrt:mongodb-aggregation
 mikowals:batch-insert
 nimble:restivus
+mrt:bootstrap-select
+brucejo:bootstrap-multiselect
+ostrio:files

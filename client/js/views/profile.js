@@ -103,6 +103,17 @@ function loadProfile (){
     //     $("input[id=pwd]").val (result.password);
          $("select[id=language]").val(result.language);
          $("select[id=accessLevel]").val(result.accessLevel);
+     //    console.log ("Dis");
+     //   $("select[id=accessLevel]").attr("disabled","");
+    /*    $("select#accessLevel>option[value=0]").attr("disabled","");
+        _.each($("select#accessLevel>option"), function (opt){
+            
+        });*/
+        _.each($("select#accessLevel>option"), function (opt){
+         if (opt.value>result.accessLevel){$("select#accessLevel>option[value ="+opt.value+"]").attr("disabled","disabled");}
+        });
+
+         console.log (result.accessLevel);
           var area = result.areasInterest;
          var area = $('#area-checkbox input:checkbox').map(function(){
         

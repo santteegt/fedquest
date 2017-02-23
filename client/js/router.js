@@ -28,6 +28,7 @@ this.Router = Backbone.Router.extend({
       'error':'error' ,
       'favsearch':'favsearch' ,
       'help':'help' ,
+      'configpanel':'configpanel',
  //   'search/:lan':'search2',
     '': 'index',
    // ':lan': 'index',
@@ -146,5 +147,20 @@ new IndexView().render();
   } , favsearch : function (){ 
     $('div.navbar .collapse li a#options').hide();
     new FavSearchView().render();
-  }
+  } , configpanel : function (){ 
+    $('div.navbar .collapse li a#options').hide();
+   new confpanelView().render();
+   $("div.main-ops").onepage_scroll({
+      sectionContainer: "section",
+      responsiveFallback: 600,
+      loop: true
+    });
+    $('div.slider').wmuSlider({
+            touch: true,
+            animation: 'slide'
+        }); 
+   /* 
+    
+    new confpanelView().render(); */
+   }
 });
