@@ -1943,11 +1943,14 @@ Api.addRoute('sparql', {authRequired: false}, {
                 var muestra;
                 console.log('Entra1 ');
                 console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');
-                var result = Meteor.call('runQuery', endpointURI, defaultGraph,
+               /* var result = Meteor.call('runQuery', endpointURI, defaultGraph,
                         'select distinct ?o where{ ?s a ?o . '
                         + 'BIND(STR(?s) AS ?strVal) '
                         + 'FILTER(STRLEN(?strVal) >= ' + defaultGraph.length + ' && SUBSTR(?strVal, 1, ' + defaultGraph.length + ' ) = "'
                         + defaultGraph + '")}'
+                        );*/
+                var result = Meteor.call('runQuery', endpointURI, defaultGraph,
+                        'select distinct ?o where{ ?s a ?o }'
                         );
                 var rsEntities = EJSON.parse(result.content);
                 var dataset = [];

@@ -20,6 +20,7 @@ if (Meteor.isClient) {
 
     Session.set('AuxCargS', 0);
 
+
     var _logout = Meteor.logout;
     Meteor.logout = function customLogout() {
         // Do your thing here
@@ -61,10 +62,14 @@ if (Meteor.isClient) {
         Meteor.subscribe("searchs");
         Meteor.subscribe("favresources");
         Meteor.subscribe("recomendation");
-        Meteor.subscribe ("configuration");
+        const Conf = Meteor.subscribe ("configuration");
+        // var  Subs = Meteor.subscribe ("configuration");
         Meteor.subscribe('files.images.all');
         //Meteor.subscribe("recomendation");
         // Meteor.subscribe("cache");
+        const val  = Conf.ready () ;
+        Session.set ('Conf', val );
+    //   Session.set ('Sub', Subs );
 
     });
 
@@ -87,13 +92,13 @@ if (Meteor.isClient) {
   
 
 
-
-
+   
 
     this.App.resultCollection = new Meteor.Collection(null);
     this.App.resultCollectionSL = new Meteor.Collection(null);
     this.App.resultCollection2 = new Meteor.Collection(null);
     this.App.resultCollection3 = new Meteor.Collection(null);
+
     this.App.FindRepository = (function (uri) {
 
         var answer = {};
@@ -112,6 +117,8 @@ if (Meteor.isClient) {
         }
         return answer;
     });
+
+
 
     var Qmode = 0;
     var pa = -1;
@@ -173,6 +180,12 @@ if (Meteor.isClient) {
         });
         return "";
     });
+     Template.graph.helpers ({
+       Config : function () {
+        return Configuration.find().fetch().length > 0;
+       }
+     });
+     
     Template.stats.helpers({
         g1: function () {
             var str = {};
@@ -2423,7 +2436,38 @@ if (Meteor.isClient) {
                 }
             });
             return pagcon;
-        }
+        } , resourcesavailable: function () {
+     var hashEnt = {};
+    var ConfigEnt = [];
+     _.each ( Configuration.find().fetch() , function ( conf ) {
+        console.log ("Recursos disponibles");
+        console.log (conf.EntSearch);
+        _.each ( conf.EntSearch , function ( ent) {
+         var confe =  _.find( conf.ConfEntity , function(ce){ return ce.URI == ent });
+          if (!_.isUndefined(confe))
+          {
+           if ( !hashEnt.hasOwnProperty(ent) ){
+              hashEnt [ent] = { 'Name': confe.URI , 'Imagen': confe.file , 'Description' : confe.name } ;
+               if (Session.get ('s2') == confe.URI ) {
+                hashEnt[ent].Check = "'true'";
+               }
+           }
+           }
+
+        });
+     });
+     console.log ("Hash");
+     console.log (hashEnt);
+
+      var arrayent = Object.keys(hashEnt).map(function(key) {
+           return  hashEnt [key] ;
+      });
+      console.log ("Lista");
+      console.log (arrayent);
+      return arrayent;
+      
+    
+    }
     });
 
     function get_radio_value(RadioName) {
@@ -3252,6 +3296,11 @@ if (Meteor.isClient) {
         }
     }
 
+    function getConfig () {
+            var img = Configuration.find().fetch();
+    console.log ("Configuraciones");
+    console.log (img);
+    }
 
 
 

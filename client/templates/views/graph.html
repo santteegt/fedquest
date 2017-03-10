@@ -1,5 +1,6 @@
  <template name="graph">
- 	<div id= "areagrafo" class="col-xs-9 col-sm-8 col-sm-offset-1 main tree-main-container"  style="display:block; height:100vh" ng-model="value">
+  {{#if Template.subscriptionsReady}}
+ 	<div id= "areagrafo"  state = "{{Config}}" class="col-xs-9 col-sm-8 col-sm-offset-1 main tree-main-container"  style="display:block; height:100vh" ng-model="value">
 
 
     </div>
@@ -58,4 +59,5 @@
         </div>
       </div>
   <div class='notifications top-right' style="width: 250px;"></div>
+{{/if}}
  </template>

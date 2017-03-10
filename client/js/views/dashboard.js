@@ -79,6 +79,11 @@ this.DashboardView = Backbone.View.extend({
         Tracker.autorun(function () {
             //var endpoints = Endpoints.find({status: 'A'},{fields:{endpoint: 1, graphURI: 1}}).fetch();
             var endpoints = Endpoints.find({status: 'A'}, {sort: {base: -1}}).fetch();
+              var config = Configuration.find().fetch();
+            console.log ("Tracker Config");
+            console.log (config);
+            var endpoints = Endpoints.find({status: 'A'}, {sort: {base: -1}}).fetch();
+            console.log (endpoints);
             if (endpoints.length > 0) {
                 Session.set('endpoints', endpoints);
             } else {

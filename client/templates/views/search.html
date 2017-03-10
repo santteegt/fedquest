@@ -17,6 +17,17 @@
 						 </span>
 		</div>
 		</div>
+		 <form class="result-options" >
+        <div class=col-md-2> 
+        <div class="cc-selector"> 
+        {{#each resourcesavailable}}
+        <input id="{{Description}}" class="mainselecttype" type="radio" name="opciones" value="{{Name}}" Checked = "{{Check}}" />
+        <label style="background-image:url('{{Imagen}}');" tipo= "{{Name}}" class="opciones-cc {{Description}}" select="0" for="{{Imagen}}" data-toggle="tooltip" title="{{Description}}"></label>
+        {{/each}}
+            </div> 
+         </div>
+         </form>
+		<!--
 		<form class="result-options">
 		   <div class=col-md-2> 
 			  <div class="cc-selector"> 
@@ -29,7 +40,7 @@
 			  <label class="opciones-cc colecciones" for="colecciones2" data-toggle="tooltip" title={{lang "tip-collection"}}></label>
 		      </div>
 			  </div>
-			</form >
+			</form > -->
 		</div>
 		</div>
 		

@@ -129,8 +129,7 @@ editStat = function (e) {
     $("Select[id='StatRelPicker']").val (Selected.Relprop);
     $("input:radio[value="+Selected.typegraph+"]").prop("checked","true");
     console.log (Selected.typegraph);
-  //  $("#selectedimag").val(Selected.file);
-  //  $("#selectedimag").data('picker').sync_picker_with_select();
+
     $('div #ConfigStat').modal();
 
 };
@@ -151,8 +150,8 @@ editEntity = function (e) {
     $("Select[id='propertypickersingle']").val (Selected.descriptiveprop);
     $("Select[id='indexpropertypicker']").selectpicker('val', Selected.indexprop); 
     $("#checkfilter").prop("checked", Selected.espfilter);
-  //  $("#selectedimag").val(Selected.file);
-  //  $("#selectedimag").data('picker').sync_picker_with_select();
+    $("#selectedimag").val(Selected.file);
+    $("#selectedimag").data('picker').sync_picker_with_select();
 
     $('#FilterType  input:checkbox').removeAttr('checked');
    var area = $('#FilterType input:checkbox').map(function(){

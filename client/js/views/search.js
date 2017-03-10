@@ -1138,3 +1138,33 @@ desplegar2 = function (e) {
     }
     //alert ("Desplegar");
 }
+
+  Template.search.events({ 
+   'click .opciones-cc' (e) {
+    console.log ("Evento");
+    console.log (e.target.title);
+    var button = e.target.title;
+    if ($("input:radio[id='"+ button +"']").prop ("checked")){
+    $("input:radio[id='"+ button +"']").prop ("checked" , false);
+    $(".recurso").text (lang.lang ("resources-search"));
+    }else {
+    $("input:radio[id='"+ button +"']").prop ("checked" , true);
+     $(".recurso").text (lang.lang( "search-option") + button);
+    }  
+   } 
+
+  });
+/*
+  Template.search.onRendered( function () {
+    // Session.get('s2');
+    console.log ("RECEPCION DE PARAMETROS");
+    console.log (Session.get('s2'));
+    $("input:radio[value='"+Session.get('s2')+"']").prop("checked",true);
+  });*/
+
+Template.search.rendered = function () {
+   console.log ("RECEPCION DE PARAMETROS");
+    console.log (Session.get('s2'));
+    $("input:radio[value='"+Session.get('s2')+"']").prop("checked",true);  
+    console.log ($("input:radio[value='"+Session.get('s2')+"']"));
+}

@@ -113,11 +113,18 @@ new IndexView().render();
     new StatsView().render();        
   },
    graph: function(v1, v2, v3) {
+
+      Tracker.autorun(function () {
+      if (Session.get ("Conf")) {
+
      $('div.navbar .collapse li a#options').hide();
     $('div.navbar .collapse li a#options').css('pointer-events','none');
     console.log('entra a grafos');
     new GraphView(decodeURIComponent(v1),decodeURIComponent(v2),decodeURIComponent(v3)).render();        
-  },
+      }  });
+         
+      }
+  ,
 
   dashboardParam: function(id) {
      $('div.navbar .collapse li a#options').hide();
@@ -148,6 +155,8 @@ new IndexView().render();
     $('div.navbar .collapse li a#options').hide();
     new FavSearchView().render();
   } , configpanel : function (){ 
+
+  
     $('div.navbar .collapse li a#options').hide();
    new confpanelView().render();
    $("div.main-ops").onepage_scroll({
@@ -159,8 +168,7 @@ new IndexView().render();
             touch: true,
             animation: 'slide'
         }); 
-   /* 
     
-    new confpanelView().render(); */
+   /*new confpanelView().render(); */
    }
 });

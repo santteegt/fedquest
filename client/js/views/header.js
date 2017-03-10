@@ -130,8 +130,17 @@ Template.header.helpers({
     return false;
     }
    
-  }
+  } , 
+  optbuttondis: function () {
+
+   var location = window.location.pathname;
+   if (window.location.pathname.indexOf("dashboard") > 0){
+    return true;
+   } else {
+    return false;
+   }
   
+  }  
 });
 
 /*

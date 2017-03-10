@@ -23,21 +23,31 @@
             <li><a href="/stats" draggable="false">{{ lang "Statistics"}}</a></li>
             {{#if access_adv }} 
             <li><a href="/samples" draggable="false">{{lang "query-temp"}}</a></li>
+            {{#if optbuttondis }}
+               <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" draggable="false" id="options">{{lang "query-builder"}}<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li role="presentation" class="dropdown-header" draggable="false">SPARQL endpoint</li>
+                <li><a href="#" data-toggle="modal" data-target="#availableEndpoint" draggable="false">{{ lang "ava-endpoints"}}</a></li>
+                <li><a href="#" data-toggle="modal" data-target="#newEndpoint" draggable="false">{{ lang "new-endpoint"}}</a></li>
+                </ul>
+            </li>
+            {{else}}
             <li><a href="/dashboard" draggable="false">{{lang "query-builder"}}</a></li>
             {{/if}}
-            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" draggable="false" id="options">{{ lang "Options"}}<span class="caret"></span></a>
+            {{/if}}
+            <!--<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" draggable="false" id="options">{{ lang "Options"}}<span class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
                 <li role="presentation" class="dropdown-header" draggable="false">SPARQL endpoint</li>
                 <li><a href="#" data-toggle="modal" data-target="#availableEndpoint" draggable="false">{{ lang "ava-endpoints"}}</a></li>
                 <li><a href="#" data-toggle="modal" data-target="#newEndpoint" draggable="false">{{ lang "new-endpoint"}}</a></li>
                 
-              <!--
+              
                 <li class="divider"></li>
                 <li role="presentation" class="dropdown-header">Otros</li>
                 <li><a href="#">Separated link</a></li>
-                -->
+                
               </ul>
-            </li>
+            </li> -->
             {{#if access_level }} 
              <!--<li><a href="/profile"  draggable="false">{{lang "Administrar"}}</a></li> -->
              <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" draggable="false" id="profile">{{ lang "Manage"}}
