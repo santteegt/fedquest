@@ -45,3 +45,4 @@ nimble:restivus
 mrt:bootstrap-select
 brucejo:bootstrap-multiselect
 ostrio:files
+pfafman:filesaver

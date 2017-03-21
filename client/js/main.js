@@ -65,6 +65,7 @@ if (Meteor.isClient) {
         const Conf = Meteor.subscribe ("configuration");
         // var  Subs = Meteor.subscribe ("configuration");
         Meteor.subscribe('files.images.all');
+        Meteor.subscribe('files.cFiles.all');
         //Meteor.subscribe("recomendation");
         // Meteor.subscribe("cache");
         const val  = Conf.ready () ;
@@ -87,6 +88,7 @@ if (Meteor.isClient) {
     this.Favresources = new Meteor.Collection("favresources");
     this.Configuration = new Meteor.Collection("configuration");
     this.Images = new FilesCollection({collectionName: 'Images'});
+    this.cFiles = new FilesCollection({collectionName: 'cFiles'});
    // this.Images = new Meteor.Collection ("Images");
   
   
@@ -1219,14 +1221,14 @@ if (Meteor.isClient) {
                         [
                             {
                                 key: 'name',
-                                label: "Nombres" 
+                                label: lang.lang ("Obj_Name") 
 
                             } , {
                                 key: 'URI' ,
                                 label: "URI"
                             } , {
                                  key: 'descriptiveprop' ,
-                                 label : "Propiedad Descriptiva" 
+                                 label : lang.lang ("Prop_des")
                             } , {
                                 key: 'URI',
                                 label: lang.lang("delete"),
@@ -1236,7 +1238,7 @@ if (Meteor.isClient) {
                             }
                                 ,  {
                                 key: 'URI',
-                                label:  "Editar",
+                                label:  lang.lang ("edit") ,
                                 fn: function (value, object) {
                                     return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigbutton' onClick='editEntity(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-edit'></span></button></td>");
                                 } 
@@ -1264,19 +1266,19 @@ if (Meteor.isClient) {
                 showFilter: false,
                 fields:
                         [
-                            {
+                           {
                                 key: 'name',
-                                label: "Nombres" 
+                                label: lang.lang ("Obj_Name") 
 
                             } , {
                                 key: 'URI' ,
                                 label: "URI"
                             } , {
                                  key: 'Relprop' ,
-                                 label : "Relación" 
+                                 label : lang.lang ("rel") 
                             } , {
                                  key: 'typegraph' ,
-                                 label : "Gráfico" 
+                                 label : lang.lang ("graph_type")
                             }
                             , {
                                 key: 'URI',
@@ -1287,7 +1289,7 @@ if (Meteor.isClient) {
                             }
                                 ,  {
                                 key: 'URI',
-                                label:  "Editar",
+                                label:  lang.lang ("edit") ,
                                 fn: function (value, object) {
                                     return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigStatbutton' onClick='editStat(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-edit'></span></button></td>");
                                 } 
@@ -1389,18 +1391,23 @@ if (Meteor.isClient) {
 
       Template.graphselectionprop.helpers({
          EntitiesAvailable: function ( type ) {
+           
+           
             var valores = [];
             var graph = Session.get ('Graph');
-            console.log ("Graficar");
+           // var act = Session.get ('updatetables');
+            console.log ("Graficar lista 1");
             console.log (type);
 
              if (graph !== undefined &&  graph !== null ) { 
                  valores = Entities.find({'endpoint':graph}).fetch()[0].entities;
                 var valorselect = "" ;
                  if (type ==  "distriList") {
+                
                  valorselect = Configuration.find({ 'Endpoint': graph } , {reactive:false}).fetch()[0].VisGraph;
 
                  }  else {
+
                  valorselect = Configuration.find({ 'Endpoint': graph } , {reactive:false}).fetch()[0].EntSearch;   
                  }
                  console.log ("Valores registrados");
@@ -1423,9 +1430,12 @@ if (Meteor.isClient) {
                  
              } else {
                  //valores = Properties.find().fetch();
+                 
                  valores = [ {name : "" , fullName : ""} ] ;
+                 Session.set ('refresh', true);
              }
              console.log (valores.length);
+            //Session.set ('updatetables', false);
 
              return valores;
        
@@ -1433,17 +1443,22 @@ if (Meteor.isClient) {
 
          EntitiesSelected :function (type) {
              var valores = [];
+       
+           
             var graph = Session.get ('Graph');
-            console.log ("Graficar");
+            //var act = Session.get ('updatetables');
+            console.log ("Graficar lista2");
             console.log (type);
 
              if (graph !== undefined &&  graph !== null ) { 
                  valores = Entities.find({'endpoint':graph}).fetch()[0].entities;
                 var valorselect = "" ;
                  if (type ==  "distriList") {
+                    
                  valorselect = Configuration.find({ 'Endpoint': graph } , {reactive:false}).fetch()[0].VisGraph;
 
                  }  else {
+
                  valorselect = Configuration.find({ 'Endpoint': graph } , {reactive:false}).fetch()[0].EntSearch;   
                  }
                  console.log ("Valores registrados");
@@ -1465,7 +1480,7 @@ if (Meteor.isClient) {
                  valores = [ {name : "" , fullName : ""} ] ;
              }
              console.log (valores.length);
-
+            //Session.set ('updatetables', false);
              return valores;
 
 
@@ -2999,7 +3014,37 @@ if (Meteor.isClient) {
             "Date": "Date",
             "Filters": "Filters",
             "Search_action": "Search",
-            "it": "italien"
+            "it": "italien",
+            "Configuration_panel" : "CONFIGURATION PANEL" ,
+            "export"  : "Export" ,
+            "import" : "Import" ,
+             "graph_vis" :"Graph Explorer" ,
+            "entity_search" : "Entities Search" ,
+            "stats_conf": "Stats configuration",
+            "entity_conf" : "Entity Configuration" ,
+            "entity_name" : "Entity name" ,
+            "entity_uri" : "Entity URI" ,
+            "pick_image" : "Choose Image" ,
+            "upload_image" :"Upload  Image" ,
+             "attr_desc" : "Identification attribute" ,
+             "autocomplete" :"Autocomplete" ,
+             "attr_index" : "Indexed Attribute" ,
+             "apply_filter" : "Apply Special Filter" ,
+             "choose_filter" : "Choose  filter " ,
+             "lang" : "Language" ,
+             "choose_icon" :"Pick a icon" ,
+             "stats_conf" : "Stats Configuration" ,
+             "rel_analized" : "Analized Relation" ,
+             "graph_type" : "Kind of graphic" ,
+             "hist" : "Histogram" ,
+             "pie" : "Pie" ,
+             "import_export" : "Import/Export Configuration" ,
+             "rel" : "Relation" ,
+             "edit" : "Edit" ,
+             "Prop_des" : "Descriptive Property" ,
+             "Obj_Name" : "Name" , 
+             "queries" : "Queries" ,
+             "confpanel" : "Configuration"
         };
 
         var idiomEsp = {
@@ -3177,7 +3222,37 @@ if (Meteor.isClient) {
             "Date": "Fecha",
             "Filters": "Filtros",
             "Search_action": "Búsqueda",
-            "it": "italian"
+            "it": "italian" ,
+            "Configuration_panel" : "PANEL DE CONFIGURACIÓN" ,
+            "import" : "Importar" ,
+            "export" : "Exportar" ,
+            "graph_vis" :"Visualizador Gráfico" ,
+            "entity_search" : "Búsqueda de Entidades" ,
+            "stats_conf":"Configuración de Estadísticas",
+            "entity_conf" : "Configurar Entidad" ,
+            "entity_name" : "Nombre de la Entidad" ,
+            "entity_uri" : "URI de la entidad" ,
+            "pick_image" : "Seleccionar  Imagen" ,
+            "upload_image" :"Subir  Imagen" ,
+             "attr_desc" : "Atributo identificativo" ,
+             "autocomplete" :"Autocompletado" ,
+             "attr_index" : "Atributos Indexados" ,
+             "apply_filter" : "Aplicar Filtro Especial " ,
+             "choose_filter" : "Selección de Filtro " ,
+             "lang" : "Lenguaje" ,
+             "choose_icon" :"Seleccione un icono" ,
+             "stats_conf" : "Configurar Estadísticas" ,
+             "rel_analized" : "Relación Analizada" ,
+             "graph_type" : "Tipo de Gráfico" ,
+             "hist" : "Histograma" ,
+             "pie" : "Pastel" ,
+             "import_export" : "Importar/Exportar configuraciones" ,
+             "rel" : "Relación" ,
+             "edit" : "Editar" ,
+             "Prop_des" : "Propiedad Descriptiva" ,
+             "Obj_Name" : "Nombre" ,
+             "queries" : "Consultas" ,
+             "confpanel" : "Configuración"
         };
 
 

@@ -72,6 +72,116 @@ accessLevel:{
 
 });
 
+confEnt  = new SimpleSchema ({
+name : {
+type : String ,
+label : "name"
+} , 
+URI : {
+type: String ,
+label : "URI" ,
+regEx : SimpleSchema.RegEx.Url
+} ,
+file : {
+    type: String ,
+    label : "file" ,
+    optional : true 
+ //   regEx : SimpleSchema.RegEx.IP
+} ,
+autocomplete : {
+type : [String] ,
+label : "autocomplete" ,
+optional : true
+} , 
+descriptiveprop : {
+type: String ,
+label : "descriptiveprop" ,
+optional : true
+} ,
+indexprop : {
+    type: [String] ,
+label : "indexprop" ,
+optional : true
+} , 
+filtertype : {
+  type:  [Number] ,
+label : "filtertype",
+optional : true    
+} , 
+icon : {
+   type: String ,
+   label : "icon" ,
+optional : true
+
+} , 
+espfilter : {
+  type: Boolean ,  
+  label:   "espfilter" ,
+  optional : true  
+}
+});
+
+
+confstat  = new SimpleSchema ({ 
+name : {
+   type : String ,
+   label: "Documento"
+} , 
+URI:  {
+   type : String ,
+   label: "URI" ,
+   regEx : SimpleSchema.RegEx.Url
+} ,
+ descriptiveprop : {
+    type: String ,
+    label : "descriptiveprop"
+ } ,
+ Relprop : {
+    type :  String , 
+    label : "Relprop"  
+ } , 
+ typegraph : {
+     type: String , 
+    label:  "typegraph"
+ }
+
+
+});
+
+Importval = new SimpleSchema({ 
+  idUser : {
+    type: String,
+    label: "idUser" ,
+    max: 200
+  } ,
+  Endpoint: {
+    type: String,
+    label: "Endpoint"
+  } ,
+  ConfEntity : {
+    type: [confEnt]  ,
+    label : "ConfEntity" 
+  } ,
+  VisGraph : {
+  type: [String] ,
+  label : "VisGraph" , 
+  optional : true
+  } ,
+  EntSearch : {
+  type: [String]  ,
+  label : "EntSearch" ,
+  optional : true 
+  } , 
+  ConfStat : {
+    type : [confstat] ,
+    label : "ConfStat" ,
+    optional : true
+  }
+});
+
+
+
+
 
 /*
 AccountsTemplates.configure({
@@ -2331,6 +2441,7 @@ Api.addRoute('sparql', {authRequired: false}, {
             deleteEndpoint: function (id, endpointURI, defaultGraph) {
                 Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
                 Endpoints.remove(id);
+                Configuration.remove ( {"Endpoint": endpointURI });
                 console.log("==Endpoint removed: " + endpointURI + " - " + defaultGraph);
                 Meteor.call('updateStats');
             },
@@ -2351,6 +2462,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                 // console.log(endpointURI + defaultGraph);
                 var endpoint = Endpoints.findOne({base: true});
                 // console.log("Resp" + endpoint.opt);
+
                 return endpoint;
             },
             findAllEndpoints: function () {
@@ -2699,7 +2811,73 @@ Api.addRoute('sparql', {authRequired: false}, {
                    Images.remove({_id: id });
                    return  "borrado";
 
-                }
+                } , 
+
+                 ImportConf : function ( name ) {
+                    console.log (name);
+                   // console.log (files.cfiles.all.find());
+                   var importfile = cFiles.findOne({});
+                   //   var importfile = cFiles.find().fetch();
+                    //console.log (files.cfiles.all.find());
+                    var location = importfile.currentFile.path;
+                   
+                    console.log (location);
+                    
+                    var fs = Npm.require('fs');
+                    var filedata = fs.readFileSync(location , 'utf8' ).trim() ;
+                    console.log (filedata);
+                    console.log (typeof filedata);
+                    console.log (typeof "prueba");
+                     var Config = JSON.parse(filedata);
+                       console.log (Config);
+                    var confend  =  Config[1].Endpoint;
+                    console.log (confend);
+                      var fail = false ;
+                      var faildetail  = "";
+                    _.each ( Config , function (conf , idx ) {
+                     console.log ("Leyendo");
+                     var confactual =  Configuration.findOne({ 'Endpoint': conf.Endpoint });
+                     var confreg = Endpoints.findOne ({'endpoint': conf.Endpoint });
+                     console.log ("Validate");
+                      console.log (conf["_id"]);
+                     delete conf['_id'];
+                   
+            
+                     var isValid = Match.test(conf, Importval);
+                     console.log (isValid);
+                        if (!isValid){ 
+                          fail = true;
+                          faildetail = "Algunos  registros no cumplen con el modelo esperado";
+                        };
+                     //check(conf, Importval);
+
+                     delete conf['_id'];
+                   
+                     if ( _.isUndefined(confactual) && _.isUndefined(confreg) ) { 
+                        console.log ("No registrado "+conf.Endpoint );
+                         fail = true;
+                         faildetail =  "Algunos registros no disponen de endpoints registrados";
+                     } else if ( _.isUndefined(confactual)){
+
+                         Configuration.insert (conf);
+                         console.log (conf.Endpoint + 'Ingresado');
+                     }else {
+                         Configuration.update ({ 'Endpoint': conf.Endpoint } , {$set: {'ConfEntity' : conf.ConfEntity , 'VisGraph': conf.VisGraph , 'EntSearch' : conf.EntSearch , 'ConfStat': conf.ConfStat  }} );
+                          console.log (conf.Endpoint + 'actualizado');
+                     }
+                     } );
+                      cFiles.remove({});
+                      if (fail){
+                         return "Advertencia: " + faildetail;
+                      } else {
+                        return "Configuración Cargada exitosamente";
+                      }
+
+                  
+
+
+
+                 }
  
               });
      

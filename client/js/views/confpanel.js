@@ -22,6 +22,7 @@ this.confpanelView = Backbone.View.extend({
    Blaze.render(Template.confpanel, $('div.main-ops')[0]);
    Blaze.render(Template.dialogEntity , $('#sparql-content')[0]);
    Blaze.render(Template.dialogStat , $('#sparql-content')[0]);
+   Blaze.render(Template.dialogxport , $('#sparql-content')[0]);
   
    configthis.setEvents($('#sparql-content'));
    // LoadEndpoints ();
@@ -30,6 +31,8 @@ this.confpanelView = Backbone.View.extend({
        
     } ,  
     setEvents: function (a) {
+
+
    //   alert("Adios");
     //  console.log ("Hola mundo");
     // LoadEndpoints ();
@@ -52,6 +55,27 @@ this.confpanelView = Backbone.View.extend({
 
    }
    );
+
+     exportevent = function (event) {
+     console.log ( $("Select[id='endpointmultipicker']").val () ) ;
+     var endpointexport = $("Select[id='endpointmultipicker']").val () ;
+     var condition = ""; 
+     var conditions = [];
+     _.each ( endpointexport , function (e , idx ) {
+     var condend = "{ Endpoint : '"+ e+"' }";
+        condition = condend +" , "+condition ; 
+        conditions.push ( { Endpoint : e });
+     });
+    // var aux =  [ {Endpoint:"http://190.15.141.66:8890/myservice/sparql"} , {Endpoint:"http://190.15.141.102:8891/myservice/sparql"}];
+     console.log (conditions);
+    // var config = Configuration.find({$or:[ {Endpoint:"http://190.15.141.66:8890/myservice/sparql"} , {Endpoint:"http://190.15.141.102:8891/myservice/sparql"}]}).fetch();
+     var config = Configuration.find({$or: conditions }).fetch();
+      console.log (config);
+      var yourCSVData = JSON.stringify(config);
+     var blob = new Blob([yourCSVData], {type: "text/json;charset=utf-8"});
+     saveAs(blob, "exportconfig.json");
+
+     }
 
     deleteimg = function ( e ) {
     var opt = $("#selectedimag").val();
@@ -173,6 +197,10 @@ editEntity = function (e) {
   $('div #ConfigEntity').modal();
 };
 
+ eventport = function (event) {
+ // $('#deleteimgbutton').css ("display","none");
+   $('div #Configport').modal();
+ }
 
  SendConfiguration = function (event) {
   var confgraph = [] ;
@@ -206,7 +234,7 @@ editEntity = function (e) {
 
 var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity , confgraph , confbus , constats ,function (error, result) {
        if ( _.isUndefined(error)  ) {
-            alert("Almacenado");
+            console.log ("Almacenado");
       } else {
             alert(error);
       }
@@ -234,7 +262,7 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity
       console.log (result);
       console.log (error);
       if ( _.isUndefined(error)  ) {
-            alert("Almacenado");
+            console.log ("Almacenado");
       } else {
             alert(error);
       }
@@ -269,11 +297,13 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity
          if ($('#'+ori+' option:selected').val() != null) {
               var tempSelect = $('#'+ori+' option:selected').val();
               // $('#'+ori+' option:selected').remove();
-              $('#'+ori+' option:selected').remove().appendTo('#'+dest); //remove
+              $('#'+ori+' option:selected').remove().appendTo('#'+dest).attr ("Reactive", false ); //remove
               $('#'+ori).attr('selectedIndex', '-1').find("option:selected").removeAttr("selected");
               $('#'+dest).attr('selectedIndex', '-1').find("option:selected").removeAttr("selected");
               $('#'+dest).val(tempSelect); //remove
-             
+             // console.log ("Mover OBJ");
+             // console.log (tempSelect);
+             //console.log ($('#'+ori+' option:selected').val());
               saveconfig (dest , tempSelect , 0);
               tempSelect = '';
           } else {
@@ -286,13 +316,14 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity
       if ($('#'+dest+' option:selected').val() != null) {
         
           var tempSelect = $('#'+dest+' option:selected').val();
-          $('#'+dest+' option:selected').remove().appendTo('#'+ori); //remove
+          $('#'+dest+' option:selected').remove().appendTo('#'+ori).attr ("Reactive", false ); //remove
         //  $('#'+dest+' option:selected').appendTo('#'+ori);   //remove
           $('#'+dest ).attr('selectedIndex', '-1').find("option:selected").removeAttr("selected");
           $('#'+ori).attr('selectedIndex', '-1').find("option:selected").removeAttr("selected");
 
-          $('#'+ori).val(tempSelect  ); //remove
-          
+         /* $('#'+ori).val(tempSelect); //remove
+          console.log ("Mover OBJ");
+          console.log (tempSelect);*/
           saveconfig (dest , tempSelect  , 1);
           tempSelect = '';
       } else {
@@ -331,7 +362,7 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity
    var result = Meteor.call('SaveConfLits', Meteor.userId() ,  graph , ConfEntity , confgraph , confbus ,  confstats ,function (error, result) {
       
       if ( _.isUndefined(error)  ) {
-            alert("Almacenado");
+            console.log("Almacenado");
       } else {
             alert(error);
       }
@@ -375,7 +406,18 @@ deleteConfigStat = function (e) {
      });
  }
 
- 
+ Template.selectendpoint.onCreated (function () {
+ Tracker.autorun(
+  function () { 
+    Session.get ('refresh');
+    console.log ("Tracker active");
+  var graph = $("#endpointpicker").val();
+   Session.set ('refresh', false);
+   Session.set ('Graph' , graph );
+
+
+ });
+ });
 
 /*
  Template.selectendpoint.onRendered(function(){
@@ -452,6 +494,12 @@ Template.completproperty.events({
 });
 */
 
+Template.graphoptions.rendered = function () {
+console.log ("render graph");/*
+ var graph = $("#endpointpicker").val();
+ Session.set ('Graph',graph);*/
+};
+
 Template.indexproperty.rendered = function(){
   $('#indexpropertypicker').selectpicker();
 };
@@ -473,15 +521,35 @@ Template.selectendpoint.events({
   'change #endpointpicker': function(e) {
     //var selected = $("#endpointpicker").val();
     //var graph = $("#endpointpicker > option[value='"+selected+"']").attr("graph");
-    var graph = $("#endpointpicker").val();
+    
     //console.log(selected);
+
+    var graph = $("#endpointpicker").val();
     console.log(graph);
     if (  graph == "---") { graph = undefined ; }
-    Session.set ('Graph',graph);
+    Session.set ('Graph', undefined);
+     /*$('#selectDistriList').find('option').remove();
+    $('#selectDistriListbus').find('option').remove();
+     $('#distriListbus').find('option').remove();
+    $('#distriList').find('option').remove();*/
+   //$("option[reactive='false']").remove();
     $('#propertypicker').selectpicker("refresh");
+   // Session.set("noRender", true);
+    
+    Session.set("noRender", false);
+    //Session.set ('Graph',graph);
   }
 });
 
+Template.graphselectionprop.noRender = function(){
+  return Session.get("noRender");
+};
+
+Template.graphselectionprop.onCreated(function () { 
+ Session.set("noRender", false);
+var graph = $("#endpointpicker").val();
+ Session.set ('Graph',graph);
+});
 
 
 Template.confpanel.rendered = function(){
@@ -631,6 +699,8 @@ Template.uploadForm.onCreated(function () {
 Template.uploadForm.helpers({
   currentUpload: function () {
     return Template.instance().currentUpload.get();
+  } , deletebutton : function (e) {
+    return  e == "FileImage";
   }
 });
 
@@ -672,6 +742,28 @@ Template.uploadForm.events({
   }
 });
 
+var renderTimeout1 = false;
+Template.selectmultiendpoint.onCreated  (function () {
+ $('#endpointmultipicker').selectpicker();
+});
+
+Template.optendpoint.rendered = function(){
+  if (renderTimeout1 !== false) {
+    Meteor.clearTimeout(renderTimeout1);
+  }
+  renderTimeout1 = Meteor.setTimeout(function() {
+    $('#endpointmultipicker').selectpicker("refresh");
+    renderTimeout1 = false;
+  }, 10);
+};
+
+    Template.selectmultiendpoint.helpers({
+         endpointsAvailable: function () {
+           // console.log ("Mostrando Endpoi");
+           // console.log (Endpoints);
+         return Endpoints.find({status: 'A'}).fetch();
+         }
+    });
 /*
 Template.file.helpers({
   imageFile: function () {
@@ -703,3 +795,99 @@ Template.completproperty.events({
     console.log(selected);
   }
 });*/
+
+Template.uploadForm.onCreated(function () {
+  this.currentUpload = new ReactiveVar(false);
+});
+
+Template.uploadForm.helpers({
+  currentUpload: function () {
+    return Template.instance().currentUpload.get();
+  }
+});
+
+Template.uploadForm.events({
+  'change #fileInput': function (e, template) {
+    if (e.currentTarget.files && e.currentTarget.files[0]) {
+      // We upload only one file, in case 
+      // there was multiple files selected
+      var file = e.currentTarget.files[0];
+      if (file) {
+        var uploadInstance = Images.insert({
+          file: file,
+          streams: 'dynamic',
+          chunkSize: 'dynamic'
+        }, false);
+
+        uploadInstance.on('start', function() {
+          template.currentUpload.set(this);
+        });
+
+        uploadInstance.on('end', function(error, fileObj) {
+          if (error) {
+            alert('Error during upload: ' + error.reason);
+          } else {
+            alert('File "' + fileObj.name + '" successfully uploaded');
+           /*  $("select").imagepicker({
+             hide_select : false,
+             show_label  : false 
+             });*/
+            // $("#selectedimag").css ("display", "none"); 
+
+          }
+          template.currentUpload.set(false);
+        });
+
+        uploadInstance.start();
+      }
+    }
+  } , 
+  'change #cFilesConfig': function (e, template) {
+    if (e.currentTarget.files && e.currentTarget.files[0]) {
+      // We upload only one file, in case 
+      // there was multiple files selected
+      var file = e.currentTarget.files[0];
+      if (file) {
+        var uploadInstance = cFiles.insert({
+          file: file,
+          streams: 'dynamic',
+          chunkSize: 'dynamic'
+        }, false);
+
+        uploadInstance.on('start', function() {
+          template.currentUpload.set(this);
+        });
+
+        uploadInstance.on('end', function(error, fileObj) {
+          if (error) {
+            alert('Error during upload: ' + error.reason);
+          } else {
+            alert('File "' + fileObj.name + '" successfully uploaded');
+
+         var result =   Meteor.call( 'ImportConf' , fileObj.name , function (error, result ) {
+                   
+                 if (  _.isUndefined(error))
+                 {   alert (result);
+                    // location.reload(); 
+                      //var act = Session.set ('updatetables' , true);
+                      Session.set ('Graph', undefined);
+                  } else {
+                    alert (error);
+                  }
+         });
+           /*  $("select").imagepicker({
+             hide_select : false,
+             show_label  : false 
+             });*/
+            // $("#selectedimag").css ("display", "none"); 
+
+          }
+          template.currentUpload.set(false);
+        });
+
+        uploadInstance.start();
+      }
+    }
+  }
+
+});

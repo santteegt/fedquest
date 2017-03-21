@@ -2,29 +2,19 @@
 	
      <section class="pagina1">
     <div class="container-fluid conf_panel " >
-    <div class="TitleConf">  <h3> PANEL DE CONFIGURACIÓN </h3></div> <br>
+    <div class="TitleConf">  <h3> {{ lang "Configuration_panel"}} </h3></div> <br>
 
     <form role="form-horizontal" class="Profile-user form-horizontal col-sm-10 col-sm-offset-1" id="EntitiesForm" >
     	<div class="form-group">
-        <label for= "RepoSelec" class="control-label col-sm-3"> Endpoint </label>
-          <!-- <div class="col-sm-4">
-   
-      <select class="selectpicker" id="endpointpicker" style="display: none;">
-       <option> Seleccione una opcion </option>
-      {{#each endpointsAvailable}}
-      <option value="{{name}}"> {{name}} </option>
-        {{/each}} 
-        {{else}}
-         Loading...
-        {{/if}} 
-      </select>   
-      
+        <label for= "RepoSelec" class="control-label col-sm-3"> Endpoint </label>      
     
 
-        </div>-->
+
         <div class="col-sm-4">
         {{> selectendpoint}}
         </div>
+         <button type="button" class="col-sm-offset-3" id="xportbutton" onclick="eventport (event)"  > {{ lang "import" }}/{{lang "export"}}
+          </button>
         </div>
         
      
@@ -40,7 +30,7 @@
       </section>
        <section class="pagina2"> 
          <div class="container-fluid confpanelsec2 " >
-          <div class="TitleStat">  <h4> Visualizador Gráfico </h4></div> 
+          <div class="TitleStat">  <h4> {{ lang "graph_vis"}} </h4></div> 
           <div class="btn-toolbar">&nbsp; </div>
          <div class="form-group col-sm-12 col-sm-offset-3 ">
               <!--   <label for= "IndexLabel" class="control-label col-sm-3"> Visualizador Gráfico  </label> -->
@@ -53,7 +43,7 @@
    </section>
    <section>
          <div class="container-fluid confpanelsec2 " >
-          <div class="TitleStat">  <h4> Búsqueda de Entidades </h4></div> 
+          <div class="TitleStat">  <h4> {{ lang "entity_search"}}</h4></div> 
           <div class="btn-toolbar">&nbsp; </div>
          <div class="form-group col-sm-12 col-sm-offset-3">
          <!--    <label for= "IndexLabel" class="control-label col-sm-3"> Búsqueda de Entidades  </label> -->
@@ -65,7 +55,7 @@
    </section>
      <section>
      <div class="container-fluid confpanelsec2" >
-       <div class="TitleStat">  <h4> Configuración de Estadísticas </h4></div> 
+       <div class="TitleStat">  <h4> {{lang "stats_conf"}} </h4></div> 
      <!-- <label for= "StaticsLabel" class="control-label col-sm-3"> Estadísticas  </label> -->
       <div class="form-group col-sm-10 col-sm-offset-1">
        {{> reactiveTable collection=StatLoad settings=settingstat }}
@@ -83,7 +73,8 @@
        <option> --- </option>
        {{#each endpointsAvailable}}
       <!-- <option value="{{name}}"> {{name}} </option> class="selectpicker" multiple-->
-      {{> optendpoint}}
+    <!--  {{> optendpoint}} -->
+    <option value="{{endpoint}}" graph="{{endpoint}}"> {{name}} </option>
         {{/each}} 
       </select>
 </template>
@@ -149,15 +140,16 @@
 <template name="graphselectionprop">
      
      <div class="form-group">
+     {{#unless noRender}}
      <select id="{{listori}}" identificador="{{parametro}}" class ="col-sm-4" name="distriList" multiple="multiple" style="height: 250px; margin: 0px 2px 0px 3px;">
-            <option> --- </option>
+            <!-- <option>  </option> -->
        {{#each EntitiesAvailable listori }}
       <!-- <option value="{{name}}"> {{name}} </option> class="selectpicker" multiple-->
        {{> graphoptions }}
         {{/each}} 
-            
-    </select>
          
+    </select>
+          {{/unless}}  
 
 <!-- <a href="javascript:void(0);" onclick="addopt ('Hola')" id="addPop">Add</a>
         <a href="javascript:void(0);"  onclick="removeopt('Hola')" id="removePop">Remove</a> -->
@@ -207,26 +199,26 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
-            <h4 class="modal-title" id="myModalLabel"> Configurar Entidad</h4>
+            <h4 class="modal-title" id="myModalLabel"> {{lang  "entity_conf" }}</h4>
           </div>
           
           <div class="modal-body" style="text-align: left" >
             <form   role="form-horizontal" class="dialogent form-horizontal" id="ModalFormEntity">
              <div class="form-group">
-              <label for= "NameLabel" class="control-label col-sm-3"> Nombre de la Entidad </label>
+              <label for= "NameLabel" class="control-label col-sm-3"> {{ lang "entity_name"}} </label>
               <div class="col-sm-4">
                 <input type="text" class="form-control" id="ClassName">
               </div>
             </div>
             <div class="form-group">
-              <label for= "UriLabel" class="control-label col-sm-3"> URI de la entidad </label>
+              <label for= "UriLabel" class="control-label col-sm-3"> {{ lang "entity_uri"}}</label>
               <div class="col-sm-4">
                <!--   <input type="text" class="form-control" id="ClassURI">  -->
                {{> completentity  identifier="entitypicker" }}
              </div> 
            </div>
            <div class="form-group">
-            <label for= "ImgLabel" class="control-label col-sm-3"> Seleccionar  Imagen  </label>
+            <label for= "ImgLabel" class="control-label col-sm-3">  {{ lang  "pick_image" }} </label>
             <div class="col-sm-8">
               <!-- <input type="file" id="ClassImg" accept="image/*"> -->
                 
@@ -234,29 +226,29 @@
             </div>
             </div>
              <div class="form-group">
-            <label for= "ImgLabel" class="control-label col-sm-3"> Subir  Imagen  </label>
+            <label for= "ImgLabel" class="control-label col-sm-3"> {{ lang "upload_image"}}  </label>
             <div class="col-sm-9">
               <!-- <input type="file" id="ClassImg" accept="image/*"> -->
                 
-                 {{> uploadForm}}
+                 {{> uploadForm    identifier = "FileImage"}}
             </div>
            
           </div>
           <div class="form-group">
-          <label for= "DesLabel" class="control-label col-sm-3"> Atributo descriptivo  </label>
+          <label for= "DesLabel" class="control-label col-sm-3"> {{ lang "attr_desc" }}  </label>
             <div class="col-sm-4">
             {{>  completpropertysingle  identifier = "propertypickersingle" }}
             </div>
           </div>
           <div class="form-group">
-            <label for= "CompleteLabel" class="control-label col-sm-3"> Autocompletado  </label>
+            <label for= "CompleteLabel" class="control-label col-sm-3"> {{ lang "autocomplete"}}  </label>
             <div class="col-sm-4">
          {{> completproperty}}
        </div>
      </div>
  
     <div class="form-group">
-      <label for= "IndexLabel" class="control-label col-sm-3"> Atributos Indexados  </label>
+      <label for= "IndexLabel" class="control-label col-sm-3"> {{ lang "attr_index"}}  </label>
       <div class="col-sm-4">
           <!-- <select class="selectpicker" multiple>  
            <option>Título</option>
@@ -268,28 +260,28 @@
        </div>
      </div>
      <div class="form-group">
-      <label for= "EspFilterLabel" class="control-label col-sm-3"> Aplicar Filtro Especial  </label>
+      <label for= "EspFilterLabel" class="control-label col-sm-3">  {{ lang "apply_filter"}}  </label>
       <div class="col-sm-4">
        <input type="checkbox" id ="checkfilter" > 
      </div>
    </div>
 
    <div class="form-group" id="FilterType">
-     <label for= "IndexLabel" class="control-label col-sm-3"> Selección Filtro  </label>
+     <label for= "IndexLabel" class="control-label col-sm-3"> {{ lang "choose_filter" }} </label>
      <div class="col-sm-6">
        <label class="checkbox-inline">
-         <input type="checkbox" id="checkboxEnLinea1" value=1 > Tipo
+         <input type="checkbox" id="checkboxEnLinea1" value=1 > {{ lang "Type"}}
        </label>
        <label class="checkbox-inline">
-        <input type="checkbox" id="checkboxEnLinea2" value=2 > Año
+        <input type="checkbox" id="checkboxEnLinea2" value=2 > {{ lang "Year"}}
       </label>
       <label class="checkbox-inline">
-        <input type="checkbox" id="checkboxEnLinea3" value=3 > Lenguaje
+        <input type="checkbox" id="checkboxEnLinea3" value=3 > {{ lang "lang"}}
       </label>
     </div>
   </div>
   <div class="form-group">
-           <label for= "IndexLabel" class="control-label col-sm-3"> Seleccione un icono  </label>
+           <label for= "IndexLabel" class="control-label col-sm-3"> {{ lang "choose_icon" }}  </label>
            <div class="col-sm-4">
          <button class="btn btn-default" id="iconselect" name="icon" role="iconpicker"></button>
            </div>
@@ -315,32 +307,33 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
-            <h4 class="modal-title" id="myModalLabel"> Configurar Estadísticas </h4>
+            <h4 class="modal-title" id="myModalLabel"> {{ lang "stats_conf"}} </h4>
           </div>
           
           <div class="modal-body" style="text-align: left" >
             <form   role="form-horizontal" class="dialogent form-horizontal" id="ModalFormStat">
              <div class="form-group">
-              <label for= "NameLabel" class="control-label col-sm-3"> Nombre de la Entidad </label>
+              <label for= "NameLabel" class="control-label col-sm-3"> {{ lang "entity_name" }}</label>
               <div class="col-sm-4">
                 <input type="text" class="form-control" id="StatClassName">
               </div>
             </div>
              <div class="form-group">
-              <label for= "UriLabel" class="control-label col-sm-3"> URI de la entidad </label>
+              <label for= "UriLabel" class="control-label col-sm-3"> {{ lang "entity_uri" }}</label>
               <div class="col-sm-4">
                <!--   <input type="text" class="form-control" id="ClassURI">  -->
                {{> completentity identifier="StatURIpicker" }}
              </div> 
            </div>
             <div class="form-group">
-            <label for= "DesLabel" class="control-label col-sm-3"> Atributo Identificativo  </label>
+            <label for= "DesLabel" class="control-label col-sm-3"> 
+            {{ lang "attr_desc"}}  </label>
             <div class="col-sm-4">
             {{>  completpropertysingle identifier = "StatDesPicker"}}
             </div>
           </div>
           <div class="form-group">
-            <label for= "RelLabel" class="control-label col-sm-3"> Relación Analizada  </label>
+            <label for= "RelLabel" class="control-label col-sm-3"> {{ lang "rel_analized"}} </label>
             <div class="col-sm-4">
             {{>  completpropertysingle identifier = "StatRelPicker"}}
             </div>
@@ -348,8 +341,8 @@
           <div class="form-group">
           <label for= "TypeLabel" class="control-label col-sm-3"> Tipo de Gráfico  </label>
             <div class="col-sm-4">
-          <input type="radio" name="TypeStat" value="Pie"> Pastel 
-          <input type="radio" name="TypeStat" value="Hist"> Histrograma 
+          <input type="radio" name="TypeStat" value="Pie"> {{lang "pie"}} 
+          <input type="radio" name="TypeStat" value="Hist">  {{ lang "hist"}}
           </div>
           </div>
           </form>
@@ -364,6 +357,19 @@
 </template>
 
 
+<!--
+<template name="uploadForm">
+  {{#with currentUpload}}
+    Uploading <b>{{file.name}}</b>: 
+    <span id="progress">{{progress.get}}%</span>
+  {{else}}
+     <div class="form-group ">
+    <input id={{"fileInput"}} class="col-sm-6" type="file" /> 
+     <button type="button" class="btn btn-default btn-xs col-sm-1"  title="Delete" id="deleteimgbutton" onclick="deleteimg(event)"  > <span class="glyphicon glyphicon-minus"></span></button> 
+    </div>
+  
+  {{/with}}
+</template> -->
 
 <template name="uploadForm">
   {{#with currentUpload}}
@@ -371,13 +377,39 @@
     <span id="progress">{{progress.get}}%</span>
   {{else}}
      <div class="form-group ">
-    <input id="fileInput" class="col-sm-6" type="file" /> 
+    <input id="{{identifier}}" class="col-sm-6" type="file" /> 
+    {{#if deletebutton identifier }}
      <button type="button" class="btn btn-default btn-xs col-sm-1"  title="Delete" id="deleteimgbutton" onclick="deleteimg(event)"  > <span class="glyphicon glyphicon-minus"></span></button> 
+      {{/if}}
     </div>
   <!--  <p><small>Upload file in jpeg or png format, with size less or equal to 10MB</small></p> -->
   {{/with}}
 </template> 
 
+<template name="uploadForm2">
+  {{#with currentUpload}}
+    Uploading <b>{{file.name}}</b>: 
+    <span id="progress">{{progress.get}}%</span>
+  {{else}}
+     <div class="form-group ">
+    <input id="{{identifier}}" class="col-sm-6" type="file" /> 
+    
+    </div>
+  <!--  <p><small>Upload file in jpeg or png format, with size less or equal to 10MB</small></p> -->
+  {{/with}}
+</template> 
+
+<template name="uploadFiles">
+  {{#with currentUpload}}
+    Uploading <b>{{file.name}}</b>: 
+    <span id="progress">{{progress.get}}%</span>
+  {{else}}
+     <div class="form-group ">
+    <input id="fileInput" class="col-sm-6" type="file" /> 
+    </div>
+  <!--  <p><small>Upload file in jpeg or png format, with size less or equal to 10MB</small></p> -->
+  {{/with}}
+</template>
 
 
 
@@ -401,39 +433,44 @@
 <template name = "optimag">
  <option data-img-src="{{URL _id }}" class="OptImag" data-img-class="OptImag" data-img-alt="{{name}}" id="{{ _id }}" value="{{URL _id }}">  {{name}}  </option>
 </template> 
-<!-- 
-<template name="uploadedFiles">
-  {{#if countFiles}} 
-    <ul>
-      {{#each uploadedFiles}}
-        <li>
-          <a href="{{path}}?download=true" download="{{name}}">{{name}}</a>
-          <img src="{{URL _id }}" width = "40" height="40" alt="{{name}}" />
-        </li>
-      {{/each}}
-    </ul>
-   {{else}} 
-    <div>No files uploaded, yet</div>
-  {{/if}} 
-</template> -->
 
-<!-- <template name="uploadedFiles">
-  {{#if uploadedFiles.count}}
-    <ul>
-      {{#each file in uploadedFiles.each}}
-        <li>
-          <a href="{{file.link}}?download=true" download="{{file.name}}">{{file.name}}</a>
-        </li>
-      {{/each}}
-    </ul>
-  {{else}}
-    <div>No files uploaded, yet</div>
-  {{/if}}
-</template> 
-<template name='file'>
-  {{#with imageFile }}
-    <img src="{{path}}" alt="{{name}}" />
-  {{else}}
-    Loading Image...
-  {{/with}}
-</template> -->
+
+
+<template name="dialogxport">
+    <div class="modal fade" id="Configport" tabindex="1" role="dialog" aria-labelledby="Configuration" aria-hidden="true">
+        <div class="modal-dialog" id = "portdialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
+            <h4 class="modal-title" id="myModalLabel"> {{ lang "import_export"}}</h4>
+          </div>
+          
+          <div class="modal-body" style="text-align: left" >
+            <h4> {{ lang "export"}} </h4>
+             {{ > selectmultiendpoint }}
+            <button type="button" class="col-sm-offset-2" id="exportbutton" onclick="exportevent (event)"  > {{ lang "export"}}
+            </button>
+            <hr /> 
+            <h4> {{ lang "import"}} </h4>
+            {{> uploadForm  identifier ="cFilesConfig" }}
+             <hr /> 
+          </div>
+           <div class="modal-footer">
+         <button type="button" class="btn btn-default" data-dismiss="modal">{{ lang "close"}}</button>
+         </div>
+        </div>
+      </div>
+    </div>
+
+  </template>
+
+  <template name = "selectmultiendpoint"  >
+       <select   id="endpointmultipicker" class="selectpicker" multiple >
+       <option> --- </option>
+       {{#each endpointsAvailable}}
+
+      <!-- <option value="{{name}}"> {{name}} </option> class="selectpicker" multiple-->
+      {{> optendpoint}}
+        {{/each}} 
+      </select>
+</template>

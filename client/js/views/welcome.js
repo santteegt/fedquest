@@ -85,8 +85,12 @@ search_query = function (e) {
     /*var obj = e.target;
     if (obj.tagName == "IMG") {
         obj = obj.parentElement;
-
     }*/
+    /*
+     Meteor.call( 'commandexec' , $('input:text[name=terms]').val(),function (error , result ) {
+          console.log ("Ejecucion"+result);
+     }); */
+
     var result = Meteor.call('findbase', function(error, result) {
                //console.log ("Querys");
                console.log (result);
@@ -155,6 +159,8 @@ Template.welcomePage.helpers({
     $("input:radio[id='"+ button +"']").prop ("checked" , true);
      $(".recurso").text (lang.lang( "search-option") + button);
     }  
+
+     
    }
 
   });
