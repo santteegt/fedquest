@@ -44,7 +44,7 @@ Profile.allow({
 
 // What to do when the server first starts up
 Meteor.startup(function (){
-
+//Profile.remove({});
     //Fill the collection with some initial data if it's empty
     // Endpoints.remove({});
     /*if(Endpoints.find().count() == 0) {

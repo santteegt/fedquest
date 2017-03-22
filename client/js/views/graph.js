@@ -19,23 +19,85 @@ var d3tip = require('d3-tip')(d3);
     Session.set('v3', v3);
     //var vv2=v2;
     //var vv3=v3;
+  // const Configuration = Meteor.subscribe('configuration');
+    /*const ConfigStatus = Session.get ("Conf");
+    Tracker.autorun(() => {
+    const isReady = ConfigStatus.ready();
+    console.log ("Listo");
+    console.log(isReady);  
+    });*/
+     
+
+            //var endpoints = Endpoints.find({status: 'A'},{fields:{endpoint: 1, graphURI: 1}}).fetch();
+             console.log ("Listo?");
+            console.log (Session.get ("Conf"));
+          // const s = Session.get ("Sub");
+         // const  con =  s.ready();
+          if (Session.get ("Conf")) {
+            var config = Configuration.find().fetch();
+
+           // Session.set ( "Config" , config );
+            console.log ("Tracker Config");
+            console.log (config);
+
+          // configent =  _.pluck(config , 'ConfEntity');
+              var hashimg = {};
+              var hashDes = {};
+            _.map( config , function(c){
+             _.map (c.ConfEntity , function (d){
+              // var U = d.URI ;
+                if (!hashimg.hasOwnProperty(d.URI)) {
+                  hashimg [d.URI] = d.file ;
+                } 
+                 if (!hashDes.hasOwnProperty(d.URI)) {
+                  hashDes [d.URI] = d.descriptiveprop ;
+                } 
+
+              });
+             });
+             hashimg ["unknow"] = "/images/documento.png";
+             hashDes ["unknow"] = "Title";
+             console.log ("Calcimg");
+             console.log (hashimg);
+             Session.set ('img' , hashimg );
+             Session.set ('restitle' , hashDes );
+             console.log ("directo");
+             console.log (Session.get('restitle'));
+   } 
 
 
+                calcexclusion (Session.get ('v2'));
+          /*  console.log ("Calcular exclusion");
+            var all = Entities.find({ endpoint: Session.get ('v2') }).fetch()[0].entities;
+            var alltext = _.pluck (all , "fullName");
+            console.log (alltext);
+            var some = Configuration.find({Endpoint: Session.get ('v2') }).fetch()[0].VisGraph;
+            console.log (some);
+            var exclusion =  _.difference (alltext , some);
+            Session.set ("exclusion" , exclusion);
+            console.log (exclusion);*/
+         
   },
 
   //////////////////////////
   //Render Samples Views//
   //////////////////////////
   render: function() {
+   
+     
+        
     Blaze.render(Template.graph, $('#sparql-content')[0]);
-      
-      
 
     this.setEvents($('#sparql-content'));
     console.log('render Graph');
     return this;
+     
+
   },
   setEvents: function(divNode) {
+ //   console.log ("Configuraciones");
+   // console.log (App.GetConfig ());
+
    //alert ('Nodos');
   //  $("#areagrafo").css( "background", "red" );
    
@@ -45,6 +107,7 @@ var d3tip = require('d3-tip')(d3);
   });*/
   //var  area =  d3.select("#areagrafo");
   //var width = d3.select("#areagrafo").attr ('width');
+
   var element = $('#areagrafo');
   var width = $(element).width();
   var  height = $(element).height();
@@ -123,6 +186,23 @@ var d3tip = require('d3-tip')(d3);
     
   }
 });
+    function calcexclusion ( endpointactual ) {
+
+        console.log ("Calcular exclusion");
+        console.log (endpointactual);
+            var all = Entities.find({ endpoint: endpointactual }).fetch()[0].entities;
+            var alltext = _.pluck (all , "fullName");
+            console.log (alltext);
+            var some = Configuration.find({Endpoint: endpointactual }).fetch()[0].VisGraph;
+            console.log (some);
+            var exclusion =  _.difference (alltext , some);
+            //Session.set ("exclusion" , exclusion);
+            console.log (exclusion);
+            return exclusion;
+
+    } ;
+
+
    function initiaload (idbase , endpointbase ,  width , height ,  svg ) 
    {
            // var sparql = 'select * where { <'+idbase+'> ?b ?c . filter isLiteral (?c) }';
@@ -133,10 +213,29 @@ var d3tip = require('d3-tip')(d3);
             var objroot = {}; 
             var scope =  "scope" ;
 
+           //var exc =  Session.get ('exclusion');
+           var exc = calcexclusion (endpointbase ['endpoint']);
+             var exclusion = '';
+            if (exc.length > 0) {
+              var noexist = " . FILTER NOT EXISTS { ";
+              var exceptions = '';
+              for (var i= 0 ; i< exc.length ;i++){
+                 exception =  '?c a  <'+exc[i]+'> ';
+                   if ( i > 0 ){
+                   exceptions = exceptions + ' && '+exception;
+                   } else {
+                    exceptions = exception;
+                   }
+              }
+              exclusion = noexist+exceptions+' }';
+            }
+           
+
+
 
            var sparql = 'Construct {'
                       + '<'+idbase+'> ?b ?c }'
-                      + 'where  { <'+idbase+'> ?b ?c} ' ;
+                      + 'where  { <'+idbase+'> ?b ?c '+exclusion+'} limit 1000' ;
 
          var context = {
                                 "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
@@ -163,12 +262,12 @@ var d3tip = require('d3-tip')(d3);
                     var resourcebase = {};
                     console.log (result.resultSet);
                     var data = jQuery.parseJSON( result.resultSet.content);
-
+                  
                     
 
                    //  var resultjson = jQuery.parseJSON( result.resultSet.content);
 
-                     console.log ("Compactcall");
+                    /* console.log ("Compactcall");
                      jsonld.compact(data , context, function(err, compacted) {
                      console.log (err);
                      console.log ("Compacted");
@@ -189,14 +288,35 @@ var d3tip = require('d3-tip')(d3);
                                
                               entityname = 'publication';
                            }
-
-
-
                      resourcebase [ entityname] = {'@id' : compacted["@id"] , 'data' : compacted , children : [] };
                      draw(svg, width, height, resourcebase , scope , endpointbase); 
+
+                           */
+                     jsonld.expand(data, function(err, expanded) {
+                          console.log ("Expand");                      
+                          console.log (expanded[0]);
+                          expanded = expanded[0];
+                         
+                        resourcebase["@id"] =  expanded["@id"] ;
+                        var typeA = expanded['@type'];
+                         var entityname = '';
+                         if (Array.isArray(typeA)) {
+                          entityname = typeA[0];
+                         } else {
+                           entityname = typeA;
+                         }
+
+                      resourcebase [ entityname] = {'@id' : expanded["@id"] , 'data' : expanded , children : [] };
+                     resourcebase [ 'tipo'] = entityname;
+                     draw(svg, width, height, resourcebase , scope , endpointbase); 
+
+                            });
+
+
+                     
                 //     datachildren (idbase , compacted , node , "publication");
                      // _.without(compacted, _.findWhere(compacted, {id: 3}));
-                      });
+                     
 
 
                     } else {
@@ -447,7 +567,7 @@ var d3tip = require('d3-tip')(d3);
                 console.log (exploredArtistIds);
                 
               //  var dataini;
-              
+              /*
                 if (isAuthor(dataini)){
                 return  { "@id": id ,
                  'author': {"@id": id, data: dataini.author.data},
@@ -544,7 +664,8 @@ var d3tip = require('d3-tip')(d3);
                         .on("mouseover", function (d) {
                             var node = d;
                            var id;
-                            if ('publication' in d) {
+                               id =  d["@id"];
+                           /* if ('publication' in d) {
                                  id = d.publication["@id"];
                               //  var title = _.findWhere(node.publication.jsonld["@graph"], {"@id": id, "@type": "bibo:Document"})["dcterms:title"];
                               //  tip.html(title);
@@ -619,7 +740,7 @@ var d3tip = require('d3-tip')(d3);
 
                 nodeEnter.append("image")
                         .attr("xlink:href", function (d) {
-                       if (isAuthor(d)) {
+                      /* if (isAuthor(d)) {
                                 return '/images/author-default.png';
                                 //return AE.getSuitableImage(d.author.images);
                            } else if (isCollection(d)) {
@@ -628,7 +749,8 @@ var d3tip = require('d3-tip')(d3);
                             }else {
 
                                 return '/images/documento.png' ;
-                            }
+                            }*/
+                             return resourceicon(d);
                         })
                         .attr("x", "-32px")
                         .attr("y", "-32px")
@@ -655,42 +777,47 @@ var d3tip = require('d3-tip')(d3);
                             //return "middle";
                         })
                         .text(function (d) {
-                            if (isAuthor(d)) {
-                                //return d.author.name;
-                                var id = d.author["@id"];
-                                var name = d.author.data['foaf:name']; 
+                         var title =   resourcetitle(d);
+                            var t = '';
 
-                                //var author = _.findWhere(d.author.jsonld["@graph"], {"@id": id, "@type": "foaf:Person"});
-                              ///   console.log ("AUTORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR");
-                               // console.log (name);
-                               //   console.log ("---");
-                                  if (Array.isArray(name)) {
-                                    name = name[0];
+                           // console.log ("TITULO");
+                            //console.log (title);
+                            if (Array.isArray(title)) {
+                                    t = title [0];
+                                  } else {
+                                    t = title;
                                   }
+                     //      console.log ("3");
+                                   console.log ("Entrando Title");
+                                   console.log (d);
+                                   var restitle = {};
+                                if (t.length>1){
+                                   console.log ("sI"+t+t.length);
 
-                                return name ;
-
-                            } else if (isPublication(d)) {
-                             var id = d.publication["@id"];
-                            // var publication = _.findWhere( d.publication.data["@graph"], {"@id": id, "@type": "bibo:Document"} );
-                             var pub = d.publication.data["dcterms:title"];
-                              var title ;
-                              if (typeof (pub) === 'string') {
-                                    
-                                 title = pub.substring (0,40)+ '...';
+                                  if (typeof d[d.tipo]['data'][t] === "undefined" ){
+                                   restitle['@value'] =  relativeURI(d.tipo);
+                                   }else {
+                                   restitle = d[d.tipo]['data'][t];
+                                  }
+                                  console.log (restitle);
                                 } else {
-                                    _.map(pub , function (value, idx) {
-                                        if (idx == 1 ) { title = value.substring (0,40)+ '...'};
-                                           });
-                                      }
-                            // return pub.substring(0,40)+'...' ;//publication["dcterms:title"];
-                               return title ;
-                             } else if (isCollection(d)) 
-                             {
-                             var id = d.collection["@id"];
-                            // var publication = _.findWhere( d.publication.data["@graph"], {"@id": id, "@type": "bibo:Document"} );
-                             return d.collection.data["dcterms:description"];
-                             }
+                               //   console.log ("no"+t+t.length);
+                                   restitle['@value']= relativeURI(d.tipo);
+                                }
+                                // console.log ("2");
+
+                                   if (Array.isArray(restitle)) {
+                                       restitle = restitle[0];
+                                      } 
+                                       restitle = restitle['@value']; 
+                                   console.log ("3");
+                                   console.log (restitle);
+                              if (restitle.length > 40){
+                                 restitle  = restitle.substring (0,40)+ '...';
+
+                              }
+
+                              return restitle;
 
                         })
                         .style("fill-opacity", 0);
@@ -749,7 +876,8 @@ var d3tip = require('d3-tip')(d3);
                           tip.html( function (d) 
                           {
                             var enlace = "" ;
-                          if (isAuthor(d.target)) {
+                            enlace = d.target[d.target.tipo]["relation"];
+                       /*   if (isAuthor(d.target)) {
                           
                               enlace = d.target["author"]["relation"];
                           } else if (isPublication(d.target)) {
@@ -760,6 +888,7 @@ var d3tip = require('d3-tip')(d3);
                       
                              enlace = d.target["collection"]["relation"];
                            }
+                           */
                            return   equivalencias (enlace);
 
                           }
@@ -852,14 +981,25 @@ var d3tip = require('d3-tip')(d3);
                       else if (text == "http://rdaregistry.info/Elements/a/P50161"){
                          return  "contributor of";
                       }else {
-                        if ( text.indexOf(":") > 0) {
-                          text = text.substr(text.indexOf(":") + 1);
-                        }
 
-                        return text ;
+                         return relativeURI (text);
                       }
 
                 }
+
+                function relativeURI (text) {
+                     if ( text.indexOf(":") > 0) {
+                          text = text.substr(text.indexOf(":") + 1);
+                        }
+
+                   var index =  text.lastIndexOf("/") ? text.lastIndexOf("/") : text.lastIndexOf("#"); 
+                          if (index > 0) {
+                            text = text.substr(index+1);
+                          }
+
+                        return text ;
+                      
+                 }
 
              function toggleChildrenRightClick(d) {
                 if (d.children) {
@@ -920,6 +1060,35 @@ var d3tip = require('d3-tip')(d3);
                 zoomListener.scale(scale);
                 zoomListener.translate([x, y]);
             }
+
+                function resourceicon(d) {
+                   console.log (Session.get ('img'));
+                   var imag = Session.get('img');
+                  
+                   console.log ("Imagen -------");
+                   console.log (imag);
+                   console.log (imag [d.tipo]);
+                   return imag [d.tipo];
+                 // d.tipo;
+
+                 } 
+
+                   function resourcetitle(d) {
+                   var des = Session.get('restitle');
+                   console.log ("obtener des");
+                   console.log (d.tipo);
+                   console.log (des[d.tipo]);
+                 //  if (des[d.tipo] != undefined ){
+                   if ( typeof des[d.tipo] === "undefined" ){
+                   return "";
+                   }else {
+                     return des [d.tipo];
+                   
+                   }
+                 // d.tipo;
+
+                 } 
+
 
                function isAuthor(d) {
                 return 'author' in d;
@@ -1006,18 +1175,9 @@ var d3tip = require('d3-tip')(d3);
                     centerNode(d);
                 } else {
                    
-                    if (isAuthor(d)) {
-                        drawpanel (d , "author");
-                       // Datachild(d);
-                    } else if (isPublication(d)) {
-                        drawpanel (d , "publication");
-                      //  Datachild(d );
-                    } else if (isCollection(d)) {
-                        drawpanel (d , "collection");
-                      //  Datachild(d );
+                      drawpanel (d , d.tipo);
 
-                    }
-                     Datachild(d , endpointactual );
+                     Datachild(d , endpointactual , true );
                     //console.log ("Node");
                     //console.log (d);
                    // Datachild(d);
@@ -1026,14 +1186,16 @@ var d3tip = require('d3-tip')(d3);
 
 
 
-               function Datachild (node  , endpointselect)
+               function Datachild (node  , endpointselect , wait )
                 {   // var idbase =  'http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES';
                    
                     console.log ("Consulta");
                     console.log (node);
                     var idbase = node["@id"];
-                      
-                     if (isCollection(node)) { waitingDialog.show(); }
+                    if (wait) {
+                       waitingDialog.show();
+                       } 
+                  //   if (isCollection(node)) { waitingDialog.show(); }
 
                     var prefix =  ' PREFIX dct: <http://purl.org/dc/terms/> '
                                 + ' PREFIX bibo: <http://purl.org/ontology/bibo/> '
@@ -1041,7 +1203,7 @@ var d3tip = require('d3-tip')(d3);
 
                       
                    // jsonsparql = { sparql: 'select * where {<http://190.15.141.66:8899/uce/contribuyente/VELASCO__MARIA_DE_LOURDES> ?b ?c . filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))}' , validateQuery: false} ;
-                    
+                    /*
                     var sparql = ' Construct { '  
                   + '<'+idbase+'> ?b ?c .'
                   + '?c <http://purl.org/dc/terms/title> ?t .'
@@ -1078,6 +1240,35 @@ var d3tip = require('d3-tip')(d3);
                   +  'OPTIONAL {?c   <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>   ?tipe}}' 
                   +  'Order by (?b)' ;
                //   + 'filter (str(?b) != str(<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>))'
+
+                  */
+            
+               calcexclusion (endpointselect['endpoint']);
+
+             //var exc =  Session.get ('exclusion');
+             var exc =   calcexclusion (endpointselect['endpoint']);
+             var exclusion = '';
+             var Filter = '';
+            if (exc.length > 0) {
+            //  var noexist = " . FILTER NOT EXISTS { ";
+              var exceptions = '';
+              for (var i= 0 ; i< exc.length ;i++){
+                 exception = ' ?y != <'+exc[i]+'>  ';
+                   if ( i > 0 ){
+                   exceptions = exceptions + ' && '+exception;
+                   } else {
+                    exceptions = exception;
+                   }
+              }
+               exclusion = exceptions+' ';
+              //exclusion = exceptions+' && ';
+                Filter = '. FILTER  ( '+exclusion+' )';
+            }   
+
+                  
+                  var sparql =  'Construct {  <'+idbase+'> ?b ?c . <'+idbase+'> a ?z . <'+idbase+'> ?n ?m '+
+                    '. ?c ?a ?x . ?c a ?y } where { <'+idbase+'> ?b ?c  . <'+idbase+'> a ?z .   <'+idbase+'> ?n ?m .' +
+                   '?c ?a ?x .  ?c a ?y '+Filter+' }';
 
 
                    var  jsonsparql = { "sparql": sparql , 'validateQuery': false} ;
@@ -1121,11 +1312,67 @@ var d3tip = require('d3-tip')(d3);
                             };
                     
                    var resultjson = jQuery.parseJSON( result.resultSet.content);
-
+                     console.log ("RESULTADO");
+                     console.log (resultjson);
                     // console.log ("Compactcall");
-                    waitingDialog.hide();
+                   
+                     
                      if (resultjson.hasOwnProperty("@graph")) {
-                     jsonld.compact(resultjson , context, function(err, compacted) {
+                        waitingDialog.hide();
+                    jsonld.expand(resultjson, function(err, expanded) {
+                          console.log ("Expand");                      
+                          console.log (expanded);
+                        //  expanded = expanded[0]; 
+                            var dataresult =  expanded;
+
+
+                        var num = 0;
+                     
+                      for (var j = 0 ; j <dataresult.length; j++){ 
+                            if (dataresult[j]["@id"] == idbase && j > 0){
+                                 var  aux = dataresult[0];
+                                 dataresult[0] = dataresult[j];
+                                 dataresult[j] = aux;
+                            }else if (dataresult[j]["@type"] != "owl:Thing"){
+                                 num ++;
+                            }
+                      }
+      
+
+                              
+                           Session.set('numresultgraph', num);
+
+
+                          if (num > 20){
+                         
+                           // confirm ("Muchos registros");
+                       //     $( "#dialog-confirm" ).dialog( "open" );
+                              $( "#Despl-todos").click (function () 
+                              {
+                                datachildren (idbase , dataresult , node , "publication" , false);
+                                $( "#myModal").modal('hide');
+                              });
+                            
+                                $( "#Despl-Muestra").click (function () 
+                              {  //alert ();
+                                datachildren (idbase , dataresult , node , "publication" , true);
+                                $( "#myModal").modal('hide');
+                              });
+
+                            $( "#myModal").modal();
+
+                          
+
+                        
+
+                          } else {
+                            datachildren (idbase , dataresult , node , "publication" , false);
+                          }
+
+                        });
+
+
+                  /*   jsonld.compact(resultjson , context, function(err, compacted) {
                      console.log ("Compacted");
                      console.log(JSON.stringify(compacted, null, 2)); 
 
@@ -1165,7 +1412,7 @@ var d3tip = require('d3-tip')(d3);
                                  $( this ).dialog( "close" );
                                 }
                                  }
-                               });*/
+                               });
                               
                            Session.set('numresultgraph', num);
 
@@ -1201,13 +1448,14 @@ var d3tip = require('d3-tip')(d3);
                    //  datachildren (idbase , compacted , node , "publication");
                       });
 
+                          */
 
                      } else {
                             
                            Meteor.call('findendpointactual', idbase  , function(error, result) { 
                                console.log ("Entra findend");
                                console.log (result);
-                             if (result.statusCode == 200 && result.content )
+                             if (result.statusCode == 200 && result.content && endpointselect['endpoint']!=  result.endpoint["endpoint"] )
                              {    console.log ("Ahora si");
                                  
                                    endpointactual['endpoint'] = result.endpoint["endpoint"];
@@ -1220,9 +1468,12 @@ var d3tip = require('d3-tip')(d3);
                                   }).show();
 
                                    console.log ("LLama de nuevo");
-                                   Datachild (node , endpointactual) ;
+                                  // waitingDialog.hide();
+                               
+                                   Datachild (node , endpointactual , false ) ;
                              }else {
                                 alert ("No es posible extraer mas datos, verifique que se encuentra registrado el endpoint");
+                                waitingDialog.hide();
 
                              }
 
@@ -1249,10 +1500,6 @@ var d3tip = require('d3-tip')(d3);
                  
                   //   var resultjson = jsondata;
                   // var resultjson = jQuery.parseJSON( jsondata);
-
-
-
-
                    //var dataresult = resultjson['@graph'] ;
                    var dataresult = jsondata ;
                     if (trial)
@@ -1296,8 +1543,45 @@ var d3tip = require('d3-tip')(d3);
                           console.log ("Propiedades");
                           console.log (relations);
 
+                                       var tipo = objson['@type'];
+                                             
+                                            if (Array.isArray(tipo)){
+                                             console.log ("Es array"); 
+                                              if ( node['tipo']!= undefined && node['tipo']!= 'unknow'){
 
-                              if ( objson["@type"] == "foaf:Person" ){
+                                              for (var i = 0 ; i < tipo.length ;i++) {
+                                                
+                                                if (tipo[i] == node['tipo']){
+                                                tipo = tipo[i];
+                                                break;
+                                                }
+                                              }
+
+
+                                              } else {  
+                                                 console.log ("No tiene TIPO");    
+                                                tipo = tipo[0];  }
+                                            }
+
+                                            console.log (tipo);
+                              console.log ("NODO TIPO");  
+                              console.log (node);
+                                     
+                              
+                                 if ( typeof node[tipo] === 'undefined') {
+                                   node[tipo] = {'data':objson , 'tipo': tipo};
+                                    node['tipo']=tipo;
+                                   delete node['unknow'];
+
+                                 }else {
+                                  node[tipo]['data']= objson;
+                                    node['tipo']=tipo;
+                                 }
+                                   console.log (node);
+
+
+
+                          /*/    if ( objson["@type"] == "foaf:Person" ){
                                  node['author']['data'] =  objson;
                              //    node ['author']['data']['Relation'] = "SameAs";
                              // node['author']['data'] = _.union( objson , node['author']['data'] );
@@ -1310,11 +1594,68 @@ var d3tip = require('d3-tip')(d3);
                                // node['publication']['data'] = _.union( objson , node['publication']['data'] );
                                  node['publication']['data'] =  objson;
                                //  node['publication']['data']['Relation'] =  "SameAs";
+                              }*/
+
+
+                               
+                               if (objson.hasOwnProperty ("http://www.w3.org/2002/07/owl#sameAs")) {
+
+                                 node = relateditems  (objson , "http://www.w3.org/2002/07/owl#sameAs" , relations , node );
+
+                               }
+
+                              if (objson.hasOwnProperty ("http://www.w3.org/2000/01/rdf-schema#seeAlso")) {
+                                node = relateditems  (objson , "http://www.w3.org/2000/01/rdf-schema#seeAlso" , relations , node );
+
+                               }
+
+                               /* 
+                              console.log (node);
+
+                                if (objson.hasOwnProperty ("http://www.w3.org/2000/01/rdf-schema#seeAlso"))
+                           {  
+                             console.log("Si sameAs");
+                              var objsame = [] ;
+                           if (  Array.isArray(objson["http://www.w3.org/2000/01/rdf-schema#seeAlso"]) ) {
+       
+                                  objsame = objson["http://www.w3.org/2000/01/rdf-schema#seeAlso"] ;
+                                  console.log ("Varios");
+
+
+                           } else 
+                               {
+                                  objsame[0] = objson["http://www.w3.org/2000/01/rdf-schema#seeAlso"];
+                                  console.log ("Solo uno");
+                        
+                               }
+                          
+
+                             for (var j = 0 ; j < objsame.length ;j++)
+                              {  
+                           var child = {};*/
+                          /*  console.log ("Same as");
+                            console.log ("ObjCompleto");
+                            console.log (objsame);
+
+                            console.log ("Obj1");
+                            console.log (objsame[j]);*/
+                           /*  console.log ("Nuevo See also");
+                             console.log (objsame);
+                            console.log (relations[objsame[j]["@id"]]);
+                           // var typeRelation["Relation"] = "SameAs";
+                           child ['@id'] =  objsame[j]["@id"]; 
+                           child ["unknow"] = {'@id' : objsame[j]["@id"] , 'data' : { 'Title': {"@value":"SeeAlso" } } , children : [] , 'relation': relations[objsame[j]["@id"]] };
+                          child ['tipo'] = "unknow";
+                           node.children.push(child);
+                          
+                          // exploredArtistIds.push(objsame[j]["@id"]);
+                          // console.log ("Explorados");
+                           //console.log (exploredArtistIds);
+
                               }
 
-                                
-                              console.log (node);
-                           if (objson.hasOwnProperty ("owl:sameAs"))
+                           }*/
+                          /* if (objson.hasOwnProperty ("owl:sameAs"))
                            {  
                              console.log("Si sameAs");
                               var objsame = [] ;
@@ -1342,7 +1683,7 @@ var d3tip = require('d3-tip')(d3);
                             console.log (objsame);
 
                             console.log ("Obj1");
-                            console.log (objsame[j]);*/
+                            console.log (objsame[j]);
 
                             console.log (relations[objsame[j]["@id"]]);
                            // var typeRelation["Relation"] = "SameAs";
@@ -1356,7 +1697,7 @@ var d3tip = require('d3-tip')(d3);
 
                               }
 
-                           }
+                           }*/
 
                    
                        /*  for (x in objson) {
@@ -1396,8 +1737,12 @@ var d3tip = require('d3-tip')(d3);
 
 
                            _.map(typedata, function (value, idx) {
-                            
-                           
+                             
+                             if (idx == 0){
+                            console.log("VALOR");
+                            console.log(value);
+                            entityname = value;
+                           /*
                            if (value ==  'bibo:Collection' ) {
                             
                               entityname = 'collection';
@@ -1409,27 +1754,25 @@ var d3tip = require('d3-tip')(d3);
                               entityname = 'publication';
                            }else {
                            	  entityname  =   'false';
-                           }
+                           } */
 
 
                             if (entityname != 'false'){
 
                            child [entityname] = {'@id' : objson["@id"] , 'data' : dataresult[i] , children : [] ,  'relation': relations[objson["@id"]] };
+                           child ['tipo'] = entityname; 
                            node.children.push(child);
                         //   exploredArtistIds.push(objson[j]["@id"]);
                         console.log (relations[objson["@id"]]);
                           console.log ("Nuevo Child");
                           console.log (child);
+                        }
                           // console.log ("Explorados");
                           // console.log (exploredArtistIds);
                              }
 
 
-                        }
-                              
-
-
-                        );
+                        });
 
                           
 
@@ -1470,6 +1813,44 @@ var d3tip = require('d3-tip')(d3);
                 update(node, true);
                 centerNode(node);
                }
+
+                function relateditems  (objson , clase , relations , node) {
+
+                    if (objson.hasOwnProperty (clase))
+                           {  
+                             console.log("Si sameAs");
+                              var objsame = [] ;
+                           if (  Array.isArray(objson[clase]) ) {
+       
+                                  objsame = objson[clase] ;
+                                  console.log ("Varios");
+                           } else 
+                               {
+                                  objsame[0] = objson[clase];
+                                  console.log ("Solo uno");
+                               }
+                          
+
+                             for (var j = 0 ; j < objsame.length ;j++)
+                              {  
+                           var child = {};
+                           
+                             console.log ("Nuevo See also");
+                             console.log (objsame);
+                            console.log (relations[objsame[j]["@id"]]);
+                           // var typeRelation["Relation"] = "SameAs";
+                           child ['@id'] =  objsame[j]["@id"]; 
+                           child ["unknow"] = {'@id' : objsame[j]["@id"] , 'data' : { 'Title': {"@value":"SeeAlso" } } , children : [] , 'relation': relations[objsame[j]["@id"]] };
+                          child ['tipo'] = "unknow";
+                         // return child;
+                           node.children.push(child);
+                        
+
+                              }
+
+                           }
+                           return node;
+                }
 
                 function hrelations (objson ){
                          var relations = {};
@@ -1515,7 +1896,51 @@ var d3tip = require('d3-tip')(d3);
                     //view data in infoBar
                    // var entity = _.findWhere(node.publication.data["@graph"], {"@id": id, "@type": "bibo:Document"});
                    var entity ;
-                   var model = {}; 
+                   var model = {} ; 
+                   id = node["@id"];
+                   console.log  ("NODO");
+                   console.log  (node);
+                  var tipe = node.tipo; 
+                  console.log  (tipe);
+                  console.log ("Modelo"); 
+                  entity = node[tipe]['data'] ;
+
+                  /* if ( Session.get ('model') ){
+                     model =  Session.get ('model');
+                     console.log ("Ya existe MODELO");
+                     console.log (model);
+                     } else { */
+
+                  console.log ("Array Ent");
+                  console.log (entity);
+
+                  var prop = Properties.find({ endpoint: Session.get ('v2') }).fetch();
+                   _.map  ( prop , function (p) {
+                   if (entity [p.fullName]){
+                    if (typeof entity[p.fullName][0]["@value"] !== 'undefined') {
+                      var uri = entity[p.fullName][0]["@value"].substring(0, 5).indexOf ("http");
+                      console.log (entity[p.fullName][0]["@value"].substring(0, 5));
+                       var labelty = "";
+                     if (uri > -1){ 
+                         labelty = "a";
+                     } else {
+                         labelty = "div";
+                     }
+                      model[p.fullName] = { label : relativeURI (p.fullName) , containerType: labelty };
+                     }
+                     }  // console.log (p);
+                //  return  relativeURI ("");
+                   }); 
+                   console.log ("MODELO creado");
+                   console.log (model);
+                  // Session.set ("model", model);
+                    //}
+                  
+                      
+
+
+
+                   /*
                     if (entityname == 'publication') {
                       id = node.publication["@id"];
                       entity = node.publication.data ;
@@ -1536,10 +1961,10 @@ var d3tip = require('d3-tip')(d3);
                         entity = node.author.data ;
                         console.log ("draw");
                         console.log (entity);
-                      /*  model = {"http://xmlns.com/foaf/0.1/name": {label: "Name", containerType: "div"},
-                        "http://xmlns.com/foaf/0.1/firstName": {label: "First Name", containerType: "div"},
-                        "http://xmlns.com/foaf/0.1/lastName": {label: "Last Name", containerType: "div"},
-                         };*/
+                      /* // model = {"http://xmlns.com/foaf/0.1/name": {label: "Name", containerType: "div"},
+                       // "http://xmlns.com/foaf/0.1/firstName": {label: "First Name", containerType: "div"},
+                      //  "http://xmlns.com/foaf/0.1/lastName": {label: "Last Name", containerType: "div"},
+                     //    };
                           model = { "Relation" : {label : "Relation" , containerType: "div"} ,
                         "foaf:name": {label: "Name", containerType: "div"},
                         "foaf:firstName": {label: "First Name", containerType: "div"},
@@ -1556,7 +1981,7 @@ var d3tip = require('d3-tip')(d3);
                       //  "http://xmlns.com/foaf/0.1/firstName": {label: "First Name", containerType: "div"},
                       //  "http://xmlns.com/foaf/0.1/lastName": {label: "Last Name", containerType: "div"},
                          };
-                     }
+                     }*/
                  //   infoBar.find('h4').text("Publication Info");
                //  console.log ('Info Barra');
                //  console.log (entity['http://purl.org/dc/terms/title']);
@@ -1568,9 +1993,12 @@ var d3tip = require('d3-tip')(d3);
                     pubInfo.html('');
                     _.each(_.keys(model), function (key, idx) {
                               
-                        if (entity[key]) {
-                            if (model[key].containerType == 'a') {
-                                var values =  entity[key]; //entity[key].length ?
+                            if (entity[key]) {
+                           /* if (model[key].containerType == 'a') {
+                              
+                              
+                             
+                                var values =  entity[key]["@value"]; //entity[key].length ?
                                        // _.pluck(entity[key], '@id') : [entity[key]["@id"]];
                                 var div = $('<div>');
                                 var label = $('<span class="label label-primary">').text(lang.lang(model[key].label));
@@ -1582,26 +2010,54 @@ var d3tip = require('d3-tip')(d3);
                                     div.append(anchor);
                                     div.append("</br>");
                                     pubInfo.append(div);
-                               //     return anchor;
+                               //     return anchor;*/
                              //   });
-                            } else { //append into a div container
+                           // } else { //append into a div container
                                 var div = $('<div>');
                                 var label = $('<span class="label label-primary">').text(lang.lang(model[key].label));
                                 div.append(label);
                                 div.append("</br>");
                                 pubInfo.append(div);
                                 var values = entity[key].length ? entity[key] : [entity[key]];
+                                console.log ("VALOR");
+                                console.log (values);
                                 if (typeof (values) === 'string') {
-                                    var span = $('<span class="field-value">').text(values);
+                                    var span = $("<a target='blank'>").attr('href', values).text(values);
                                     div.append(span);
                                 } else {
                                     _.map(values, function (value, idx) {
-                                        var span = $('<span class="field-value">').text(value);
+                                       console.log (value);
+                                       if (model[key].containerType == 'a') {
+                                        if (typeof (value) === 'string') {
+                                                var span =  $("<a target='blank'>").attr('href', value).text(value);
+                                                div.append(span);
+                                                 div.append("</br>");
+                                       } else {
+                                        var span = $("<a target='blank'>").attr('href', value['@value']).text(value['@value']);
                                         div.append(span);
-                                        div.append("</br>");
+                                        div.append("</br>");}
+
+                                       }
+                                        else {
+                                      if (typeof (value) === 'string') {
+                                                var span = $('<span class="field-value">').text(value);
+                                                div.append(span);
+                                                div.append("</br>");
+                                       } else {
+                                        var lan = "";
+                                        if (!(typeof value['@language'] === 'undefined'))
+                                        {  lan = " ("+value['@language']+")" ;
+
+                                        }
+                                        var span = $('<span class="field-value">').text(value['@value']+lan);
+                                        div.append(span);
+                                        div.append("</br>");}
+                                        }
                                     });
                                 }
-                            }
+                            //}
+                             
+                      //  }
                              
                         }
 

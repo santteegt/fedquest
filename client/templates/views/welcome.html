@@ -38,10 +38,21 @@
         
            
           
-      </div><!--.row-->
+      </div><!--.row onclick="updatebuttons('{{Name}}')"  -->
           </div>
-    
+
         <form>
+        <div class=col-md-12 col-md-offset-4> 
+        <div class="cc-selector"> 
+        {{#each resourcesavailable}}
+        <input id="{{Description}}" class="mainselecttype" type="radio" name="opciones" value="{{Name}}"  />
+        <label style="background-image:url('{{Imagen}}');" tipo= "{{Name}}" class="opciones-cc {{Description}}" select="0" for="{{Imagen}}" data-toggle="tooltip" title="{{Description}}"></label>
+        {{/each}}
+            </div> 
+         </div>
+         </form>
+    
+       <!-- <form>
        <div class=col-md-6 col-md-offset-2> 
         <div class="cc-selector"> 
         <input id="documentos" type="radio" name="opciones" value="documentos" />
@@ -54,7 +65,7 @@
           </div>
         
         </div>
-              </form>
+              </form> -->
         </div>
         {{#if user_access }} 
           <div class="mostrar_reco" display = "none" > 

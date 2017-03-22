@@ -1,0 +1,23 @@
+this.confpanelView = Backbone.View.extend({
+  tagName: "div",
+  id: "confpanel",
+
+  /////////////////////////
+  // View Initialization //
+  /////////////////////////
+  initialize: function() {
+    var me;
+    me = this;
+
+  } ,
+
+  render: function() {
+
+
+    Blaze.render(Template.confpanel, $('#sparql-content')[0]);
+    //adminthis.setEvents($('#sparql-content'));
+    console.log('Render config');
+    return this;
+    }
+  
+  });

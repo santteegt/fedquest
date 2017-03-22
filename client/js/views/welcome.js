@@ -85,8 +85,12 @@ search_query = function (e) {
     /*var obj = e.target;
     if (obj.tagName == "IMG") {
         obj = obj.parentElement;
-
     }*/
+    /*
+     Meteor.call( 'commandexec' , $('input:text[name=terms]').val(),function (error , result ) {
+          console.log ("Ejecucion"+result);
+     }); */
+
     var result = Meteor.call('findbase', function(error, result) {
                //console.log ("Querys");
                console.log (result);
@@ -111,6 +115,53 @@ Template.welcomePage.helpers({
     return false;
     }
    
-  } });
+  } , resourcesavailable: function () {
+     var hashEnt = {};
+    var ConfigEnt = [];
+     _.each ( Configuration.find().fetch() , function ( conf ) {
+        console.log ("Recursos disponibles");
+        console.log (conf.EntSearch);
+        _.each ( conf.EntSearch , function ( ent) {
+         var confe =  _.find( conf.ConfEntity , function(ce){ return ce.URI == ent });
+          if (!_.isUndefined(confe))
+          {
+           if ( !hashEnt.hasOwnProperty(ent) ){
+              hashEnt [ent] = { 'Name': confe.URI , 'Imagen': confe.file , 'Description' : confe.name  } ;
+           }
+           }
 
+        });
+     });
+     console.log ("Hash");
+     console.log (hashEnt);
+
+      var arrayent = Object.keys(hashEnt).map(function(key) {
+           return  hashEnt [key] ;
+      });
+      console.log ("Lista");
+      console.log (arrayent);
+      return arrayent;
+      
+    
+    }
+   });
+
+
+  Template.welcomePage.events({ 
+   'click .opciones-cc' (e) {
+    console.log ("Evento");
+    console.log (e.target.title);
+    var button = e.target.title;
+    if ($("input:radio[id='"+ button +"']").prop ("checked")){
+    $("input:radio[id='"+ button +"']").prop ("checked" , false);
+    $(".recurso").text (lang.lang ("resources-search"));
+    }else {
+    $("input:radio[id='"+ button +"']").prop ("checked" , true);
+     $(".recurso").text (lang.lang( "search-option") + button);
+    }  
+
+     
+   }
+
+  });
 

@@ -1,0 +1,37 @@
+.TitleConf {
+    margin-top: 80px;
+}
+
+.conf_panel {
+  /*  overflow: scroll; */
+    top: 0px;
+    bottom: 0px;
+    position: absolute;
+    width: 100%;
+
+}
+
+.confpanelsec2 {
+    top:    90px;
+    bottom: 0px;
+    position: absolute;
+    width: 100%;
+}
+
+#Entitydialog {
+  width: 700px;
+}
+
+  
+#Statdialog {
+  width: 700px;
+}
+
+ .thumbnails li img{
+                width: 40px;
+                height: 40px;
+            }
+/*
+#selectedimag {
+	display : none;
+}*/

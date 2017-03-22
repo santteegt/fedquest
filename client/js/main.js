@@ -1,6 +1,25 @@
+
+ /* this.Images = new Meteor.Files({
+    debug: true,
+    collectionName: 'Images',
+    allowClientCode: false, // Disallow remove files from Client
+    storagePath:  'prueba/images' ,
+    onBeforeUpload: function (file) {
+    // Allow upload files under 10MB, and only in png/jpg/jpeg formats
+    if (file.size <= 1024*1024*10 && /png|jpg|jpeg/i.test(file.extension)) {
+      return true;
+    } else {
+      return 'Please upload image, with size equal or less than 10MB';
+    }
+    }
+    });
+*/
+
+
 if (Meteor.isClient) {
 
     Session.set('AuxCargS', 0);
+
 
     var _logout = Meteor.logout;
     Meteor.logout = function customLogout() {
@@ -35,6 +54,7 @@ if (Meteor.isClient) {
     Tracker.autorun(function () {
         Meteor.subscribe("statsc");
         Meteor.subscribe("allproperties");
+        Meteor.subscribe("allentities");
         Meteor.subscribe("endpoints");
         Meteor.subscribe("queries");
         Meteor.subscribe("prefixes");
@@ -42,7 +62,15 @@ if (Meteor.isClient) {
         Meteor.subscribe("searchs");
         Meteor.subscribe("favresources");
         Meteor.subscribe("recomendation");
+        const Conf = Meteor.subscribe ("configuration");
+        // var  Subs = Meteor.subscribe ("configuration");
+        Meteor.subscribe('files.images.all');
+        Meteor.subscribe('files.cFiles.all');
+        //Meteor.subscribe("recomendation");
         // Meteor.subscribe("cache");
+        const val  = Conf.ready () ;
+        Session.set ('Conf', val );
+    //   Session.set ('Sub', Subs );
 
     });
 
@@ -50,6 +78,7 @@ if (Meteor.isClient) {
     this.Statsc = new Meteor.Collection("statsc");
     this.Graphs = new Meteor.Collection("graphs");
     this.Properties = new Meteor.Collection("properties");
+    this.Entities = new Meteor.Collection("entities");
     this.Prefixes = new Meteor.Collection("prefixes");
     this.Endpoints = new Meteor.Collection("endpoints");
     this.Queries = new Meteor.Collection("queries");
@@ -57,10 +86,21 @@ if (Meteor.isClient) {
     this.Searchs = new Meteor.Collection("searchs");
     this.Recomendation = new Meteor.Collection("recomendation");
     this.Favresources = new Meteor.Collection("favresources");
+    this.Configuration = new Meteor.Collection("configuration");
+    this.Images = new FilesCollection({collectionName: 'Images'});
+    this.cFiles = new FilesCollection({collectionName: 'cFiles'});
+   // this.Images = new Meteor.Collection ("Images");
+  
+  
+
+
+   
+
     this.App.resultCollection = new Meteor.Collection(null);
     this.App.resultCollectionSL = new Meteor.Collection(null);
     this.App.resultCollection2 = new Meteor.Collection(null);
     this.App.resultCollection3 = new Meteor.Collection(null);
+
     this.App.FindRepository = (function (uri) {
 
         var answer = {};
@@ -79,6 +119,8 @@ if (Meteor.isClient) {
         }
         return answer;
     });
+
+
 
     var Qmode = 0;
     var pa = -1;
@@ -140,6 +182,12 @@ if (Meteor.isClient) {
         });
         return "";
     });
+     Template.graph.helpers ({
+       Config : function () {
+        return Configuration.find().fetch().length > 0;
+       }
+     });
+     
     Template.stats.helpers({
         g1: function () {
             var str = {};
@@ -1101,6 +1149,380 @@ if (Meteor.isClient) {
             };
         }
     });
+
+    /*Template.selectendpoint.helpers({
+     endpointsAvailable: function () {
+            return Endpoints.find({status: 'A'}).fetch();
+        } 
+    });*/
+     /*Template.selectendpoint.onRendered({
+         endpointsAvailable: function () {
+            console.log (Endpoints);
+         return Endpoints.find({status: 'A'}).fetch();
+         }
+    });*/
+    /* Template.confpanel.onCreated(function(){
+  
+      this.subscribe("endpoints");
+       });*/
+
+
+       /*    Template.confpanel.helpers({
+              PropertiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get ('Graph');
+            console.log ("Graficar");
+             if (graph !== undefined){ 
+                 valores = Properties.find({'endpoint':graph}).fetch();
+             } else {
+                 //valores = Properties.find().fetch();
+                 valores = [ {name : ""} ]
+             }
+             console.log (valores.length);
+
+             return valores;
+       
+           } ,  EntitiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get ('Graph');
+            console.log ("Graficar");
+             if (graph !== undefined){ 
+                 valores = Entities.find({'endpoint':graph}).fetch()[0].entities;
+             } else {
+                 //valores = Properties.find().fetch();
+                 valores = [ {name : ""} ]
+             }
+             console.log (valores.length);
+
+             return valores;
+       
+         }
+
+           });*/
+
+    Template.confpanel.helpers({
+    EntitiesLoad: function () {
+          var endp = Session.get ('Graph');
+          //if (endp !== undefined  && endp != null){
+            if ( ! _.isUndefined(endp) ) {
+          console.log (endp);
+          console.log (Configuration.find({ "Endpoint" : endp }).fetch()[0].ConfEntity);
+          return Configuration.find({ "Endpoint" : endp }).fetch()[0].ConfEntity;
+             }else 
+             {
+                return [];
+             }
+    } , 
+     settingsent: function () {
+            return {
+                rowsPerPage: 5,
+                showFilter: false,
+                fields:
+                        [
+                            {
+                                key: 'name',
+                                label: lang.lang ("Obj_Name") 
+
+                            } , {
+                                key: 'URI' ,
+                                label: "URI"
+                            } , {
+                                 key: 'descriptiveprop' ,
+                                 label : lang.lang ("Prop_des")
+                            } , {
+                                key: 'URI',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigbutton' onClick='deleteConfig(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
+                                } 
+                            }
+                                ,  {
+                                key: 'URI',
+                                label:  lang.lang ("edit") ,
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigbutton' onClick='editEntity(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-edit'></span></button></td>");
+                                } 
+                            
+                            }
+                            
+
+                            
+                        ]
+            }; } , 
+            StatLoad : function  () {
+                  var endp = Session.get ('Graph');
+          if (endp !== undefined  && endp != null){
+          console.log (endp);
+          console.log (Configuration.find({ "Endpoint" : endp }).fetch()[0].ConfStat);
+        return Configuration.find({ "Endpoint" : endp }).fetch()[0].ConfStat;
+             }else 
+             {
+                return [];
+             }
+
+            } ,  settingstat : function () {
+               return {
+                rowsPerPage: 5,
+                showFilter: false,
+                fields:
+                        [
+                           {
+                                key: 'name',
+                                label: lang.lang ("Obj_Name") 
+
+                            } , {
+                                key: 'URI' ,
+                                label: "URI"
+                            } , {
+                                 key: 'Relprop' ,
+                                 label : lang.lang ("rel") 
+                            } , {
+                                 key: 'typegraph' ,
+                                 label : lang.lang ("graph_type")
+                            }
+                            , {
+                                key: 'URI',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigStatbutton' onClick='deleteConfigStat(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
+                                } 
+                            }
+                                ,  {
+                                key: 'URI',
+                                label:  lang.lang ("edit") ,
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigStatbutton' onClick='editStat(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-edit'></span></button></td>");
+                                } 
+                            
+                            }
+                            
+
+                            
+                        ]
+                 } ; }
+            
+     });
+
+     Template.selectendpoint.helpers({
+         endpointsAvailable: function () {
+           // console.log ("Mostrando Endpoi");
+           // console.log (Endpoints);
+         return Endpoints.find({status: 'A'}).fetch();
+         }
+    });
+
+
+      Template.completproperty.helpers({
+         PropertiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get ('Graph');
+            console.log ("Graficar");
+             if (graph !== undefined ){ 
+                 valores = Properties.find({'endpoint':graph}).fetch();
+             } else {
+                 //valores = Properties.find().fetch();
+                 valores = [ {name : ""} ];
+             }
+             console.log (valores.length);
+
+             return valores;
+       
+         }
+    });
+
+
+      Template.completentity.helpers({
+         EntitiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get ('Graph');
+            console.log ("Graficar");
+            if ( ! ( _.isUndefined(graph) && graph !== null ) ) {
+             //if (graph !== undefined &&  graph !== null ){ 
+                 valores = Entities.find({'endpoint':graph}).fetch()[0].entities;
+             } else {
+                 //valores = Properties.find().fetch();
+                 //valores = [ {name : ""} ];
+
+             }
+             //console.log (valores.length);
+
+             return valores;
+       
+         }
+    });
+
+      Template.completpropertysingle.helpers({
+         PropertiesAvailableSingle: function () {
+            var valores = [];
+            var graph = Session.get ('Graph');
+            console.log ("Graficar");
+             if (graph !== undefined){ 
+                 valores = Properties.find({'endpoint':graph}).fetch();
+             } else {
+                 //valores = Properties.find().fetch();
+                 valores = [ {name : ""} ] ;
+             }
+             console.log (valores.length);
+
+             return valores;
+       
+         }
+    });
+
+
+         Template.indexproperty.helpers({
+         PropertiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get ('Graph');
+            console.log ("Graficar");
+             if (graph !== undefined){ 
+                 valores = Properties.find({'endpoint':graph}).fetch();
+             } else {
+                 //valores = Properties.find().fetch();
+                 valores = [ {name : ""} ] ;
+             }
+             console.log (valores.length);
+
+             return valores;
+       
+         }
+    });
+
+
+      Template.graphselectionprop.helpers({
+         EntitiesAvailable: function ( type ) {
+           
+           
+            var valores = [];
+            var graph = Session.get ('Graph');
+           // var act = Session.get ('updatetables');
+            console.log ("Graficar lista 1");
+            console.log (type);
+
+             if (graph !== undefined &&  graph !== null ) { 
+                 valores = Entities.find({'endpoint':graph}).fetch()[0].entities;
+                var valorselect = "" ;
+                 if (type ==  "distriList") {
+                
+                 valorselect = Configuration.find({ 'Endpoint': graph } , {reactive:false}).fetch()[0].VisGraph;
+
+                 }  else {
+
+                 valorselect = Configuration.find({ 'Endpoint': graph } , {reactive:false}).fetch()[0].EntSearch;   
+                 }
+                 console.log ("Valores registrados");
+                 console.log (valorselect);
+               //  console.log (_.pluck(valores, 'name'));
+                // if (   typeof valoreselect === 'undefined'  ) 
+                  //  {   
+                        var filtrado = _.filter( valores , function( element ){ 
+                            return  !(_.contains( valorselect , element.fullName )); 
+                        });
+                        valores = filtrado;
+                        console.log ("Filtrado");
+                        console.log (filtrado);
+                        //console.log (_.pluck(valores, 'name'));
+                        //console.log ("Calcular");
+                        //var valorescal = _.difference( _.pluck(valores, 'name') , valorselect );
+                        //console.log (valorescal);
+                  // }
+
+                 
+             } else {
+                 //valores = Properties.find().fetch();
+                 
+                 valores = [ {name : "" , fullName : ""} ] ;
+                 Session.set ('refresh', true);
+             }
+             console.log (valores.length);
+            //Session.set ('updatetables', false);
+
+             return valores;
+       
+         } ,
+
+         EntitiesSelected :function (type) {
+             var valores = [];
+       
+           
+            var graph = Session.get ('Graph');
+            //var act = Session.get ('updatetables');
+            console.log ("Graficar lista2");
+            console.log (type);
+
+             if (graph !== undefined &&  graph !== null ) { 
+                 valores = Entities.find({'endpoint':graph}).fetch()[0].entities;
+                var valorselect = "" ;
+                 if (type ==  "distriList") {
+                    
+                 valorselect = Configuration.find({ 'Endpoint': graph } , {reactive:false}).fetch()[0].VisGraph;
+
+                 }  else {
+
+                 valorselect = Configuration.find({ 'Endpoint': graph } , {reactive:false}).fetch()[0].EntSearch;   
+                 }
+                 console.log ("Valores registrados");
+                 console.log (valorselect);
+               //  console.log (_.pluck(valores, 'name'));
+                // if (  typeof valoreselect == 'undefined' ) 
+                  //  {   
+                        var filtrado = _.filter( valores , function( element ){ 
+                            return  _.contains( valorselect , element.fullName ); 
+                        });
+                        console.log ("Filtrado");
+                        console.log (filtrado);   
+                        valores = filtrado;
+                   //}
+
+                 
+             } else {
+                 //valores = Properties.find().fetch();
+                 valores = [ {name : "" , fullName : ""} ] ;
+             }
+             console.log (valores.length);
+            //Session.set ('updatetables', false);
+             return valores;
+
+
+         }
+    });
+   
+ 
+
+
+/*
+     Template.MultipleSelectAuto.helpers({
+  'myMenuItems': function selectedItems() {
+    var endp = Endpoints.find({status: 'A'}).fetch();
+    var newlist = _.each( endp , function ( endpointp , idx) {
+       return { value : idx , caption : endp.name , selected : "false" }
+     });
+    console.log (newList);
+
+
+    return newlist ;  
+   }
+    ,
+  'mySelectedList': function selectedList() {
+    /*let retVal = arr.filter(function aFilter(elem) {return elem.selected;})
+    .map(function aMap(elem) {return elem.value;});
+    return retVal ? retVal : [];*/ /*
+    return   Endpoints.find({status: 'A'}).fetch();
+  },
+  
+  'myConfigOptions': function configOptions() {
+    return {
+      'nonSelectedText': 'Check option',
+      'buttonClass': 'btn btn-primary',
+      'onChange': function onChange(option, checked) {
+        let index = $(option).val();
+        console.log('Changed option ' + index + '. checked: ' + checked);
+        arr.indexOf(index).selected = checked;
+      }
+    };
+  }
+});
+*/
     // JS
     Template.favsearch.helpers({
         histsearch: function () {
@@ -1228,6 +1650,7 @@ if (Meteor.isClient) {
             }
         }
     });
+     
 
     Template.adminpanel.helpers({
         usersAvailable: function () {
@@ -1519,8 +1942,8 @@ if (Meteor.isClient) {
                             graph.endpointProperties[j - 1] = graph.endpointProperties[j];
                             graph.endpointProperties[j] = aux;
                         }
-                        console.log("Prop");
-                        console.log(graph.endpointProperties[j]);
+                       // console.log("Prop");
+                        //console.log(graph.endpointProperties[j]);
 
                     }
                     console.log("HASH ");
@@ -1543,12 +1966,17 @@ if (Meteor.isClient) {
                             graph.endpointEntities[j - 1] = graph.endpointEntities[j];
                             graph.endpointEntities[j] = aux;
                         }
-                        //  console.log ("Ent");
-                        // console.log (graph.endpointEntities[j]);
+                          console.log ("Ent");
+                         console.log (graph.endpointEntities[j]);
 
                     }
 
                     Session.set(graph.endpoint + '|' + graph.graphURI, {entities: graph.endpointEntities, properties: graph.endpointProperties});
+                    Meteor.call('SaveEntities', graph.endpoint, graph.graphURI , graph.endpointEntities , function (error, result) {
+                        console.log (result);
+
+                        });
+
                     response.push(graph);
                     //console.log(graph);
                 });
@@ -2023,7 +2451,38 @@ if (Meteor.isClient) {
                 }
             });
             return pagcon;
-        }
+        } , resourcesavailable: function () {
+     var hashEnt = {};
+    var ConfigEnt = [];
+     _.each ( Configuration.find().fetch() , function ( conf ) {
+        console.log ("Recursos disponibles");
+        console.log (conf.EntSearch);
+        _.each ( conf.EntSearch , function ( ent) {
+         var confe =  _.find( conf.ConfEntity , function(ce){ return ce.URI == ent });
+          if (!_.isUndefined(confe))
+          {
+           if ( !hashEnt.hasOwnProperty(ent) ){
+              hashEnt [ent] = { 'Name': confe.URI , 'Imagen': confe.file , 'Description' : confe.name } ;
+               if (Session.get ('s2') == confe.URI ) {
+                hashEnt[ent].Check = "'true'";
+               }
+           }
+           }
+
+        });
+     });
+     console.log ("Hash");
+     console.log (hashEnt);
+
+      var arrayent = Object.keys(hashEnt).map(function(key) {
+           return  hashEnt [key] ;
+      });
+      console.log ("Lista");
+      console.log (arrayent);
+      return arrayent;
+      
+    
+    }
     });
 
     function get_radio_value(RadioName) {
@@ -2555,7 +3014,37 @@ if (Meteor.isClient) {
             "Date": "Date",
             "Filters": "Filters",
             "Search_action": "Search",
-            "it": "italien"
+            "it": "italien",
+            "Configuration_panel" : "CONFIGURATION PANEL" ,
+            "export"  : "Export" ,
+            "import" : "Import" ,
+             "graph_vis" :"Graph Explorer" ,
+            "entity_search" : "Entities Search" ,
+            "stats_conf": "Stats configuration",
+            "entity_conf" : "Entity Configuration" ,
+            "entity_name" : "Entity name" ,
+            "entity_uri" : "Entity URI" ,
+            "pick_image" : "Choose Image" ,
+            "upload_image" :"Upload  Image" ,
+             "attr_desc" : "Identification attribute" ,
+             "autocomplete" :"Autocomplete" ,
+             "attr_index" : "Indexed Attribute" ,
+             "apply_filter" : "Apply Special Filter" ,
+             "choose_filter" : "Choose  filter " ,
+             "lang" : "Language" ,
+             "choose_icon" :"Pick a icon" ,
+             "stats_conf" : "Stats Configuration" ,
+             "rel_analized" : "Analized Relation" ,
+             "graph_type" : "Kind of graphic" ,
+             "hist" : "Histogram" ,
+             "pie" : "Pie" ,
+             "import_export" : "Import/Export Configuration" ,
+             "rel" : "Relation" ,
+             "edit" : "Edit" ,
+             "Prop_des" : "Descriptive Property" ,
+             "Obj_Name" : "Name" , 
+             "queries" : "Queries" ,
+             "confpanel" : "Configuration"
         };
 
         var idiomEsp = {
@@ -2733,7 +3222,37 @@ if (Meteor.isClient) {
             "Date": "Fecha",
             "Filters": "Filtros",
             "Search_action": "Búsqueda",
-            "it": "italian"
+            "it": "italian" ,
+            "Configuration_panel" : "PANEL DE CONFIGURACIÓN" ,
+            "import" : "Importar" ,
+            "export" : "Exportar" ,
+            "graph_vis" :"Visualizador Gráfico" ,
+            "entity_search" : "Búsqueda de Entidades" ,
+            "stats_conf":"Configuración de Estadísticas",
+            "entity_conf" : "Configurar Entidad" ,
+            "entity_name" : "Nombre de la Entidad" ,
+            "entity_uri" : "URI de la entidad" ,
+            "pick_image" : "Seleccionar  Imagen" ,
+            "upload_image" :"Subir  Imagen" ,
+             "attr_desc" : "Atributo identificativo" ,
+             "autocomplete" :"Autocompletado" ,
+             "attr_index" : "Atributos Indexados" ,
+             "apply_filter" : "Aplicar Filtro Especial " ,
+             "choose_filter" : "Selección de Filtro " ,
+             "lang" : "Lenguaje" ,
+             "choose_icon" :"Seleccione un icono" ,
+             "stats_conf" : "Configurar Estadísticas" ,
+             "rel_analized" : "Relación Analizada" ,
+             "graph_type" : "Tipo de Gráfico" ,
+             "hist" : "Histograma" ,
+             "pie" : "Pastel" ,
+             "import_export" : "Importar/Exportar configuraciones" ,
+             "rel" : "Relación" ,
+             "edit" : "Editar" ,
+             "Prop_des" : "Propiedad Descriptiva" ,
+             "Obj_Name" : "Nombre" ,
+             "queries" : "Consultas" ,
+             "confpanel" : "Configuración"
         };
 
 
@@ -2852,6 +3371,11 @@ if (Meteor.isClient) {
         }
     }
 
+    function getConfig () {
+            var img = Configuration.find().fetch();
+    console.log ("Configuraciones");
+    console.log (img);
+    }
 
 
 

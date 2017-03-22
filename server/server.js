@@ -72,23 +72,140 @@ accessLevel:{
 
 });
 
+confEnt  = new SimpleSchema ({
+name : {
+type : String ,
+label : "name"
+} , 
+URI : {
+type: String ,
+label : "URI" ,
+regEx : SimpleSchema.RegEx.Url
+} ,
+file : {
+    type: String ,
+    label : "file" ,
+    optional : true 
+ //   regEx : SimpleSchema.RegEx.IP
+} ,
+autocomplete : {
+type : [String] ,
+label : "autocomplete" ,
+optional : true
+} , 
+descriptiveprop : {
+type: String ,
+label : "descriptiveprop" ,
+optional : true
+} ,
+indexprop : {
+    type: [String] ,
+label : "indexprop" ,
+optional : true
+} , 
+filtertype : {
+  type:  [Number] ,
+label : "filtertype",
+optional : true    
+} , 
+icon : {
+   type: String ,
+   label : "icon" ,
+optional : true
+
+} , 
+espfilter : {
+  type: Boolean ,  
+  label:   "espfilter" ,
+  optional : true  
+}
+});
+
+
+confstat  = new SimpleSchema ({ 
+name : {
+   type : String ,
+   label: "Documento"
+} , 
+URI:  {
+   type : String ,
+   label: "URI" ,
+   regEx : SimpleSchema.RegEx.Url
+} ,
+ descriptiveprop : {
+    type: String ,
+    label : "descriptiveprop"
+ } ,
+ Relprop : {
+    type :  String , 
+    label : "Relprop"  
+ } , 
+ typegraph : {
+     type: String , 
+    label:  "typegraph"
+ }
+
+
+});
+
+Importval = new SimpleSchema({ 
+  idUser : {
+    type: String,
+    label: "idUser" ,
+    max: 200
+  } ,
+  Endpoint: {
+    type: String,
+    label: "Endpoint"
+  } ,
+  ConfEntity : {
+    type: [confEnt]  ,
+    label : "ConfEntity" 
+  } ,
+  VisGraph : {
+  type: [String] ,
+  label : "VisGraph" , 
+  optional : true
+  } ,
+  EntSearch : {
+  type: [String]  ,
+  label : "EntSearch" ,
+  optional : true 
+  } , 
+  ConfStat : {
+    type : [confstat] ,
+    label : "ConfStat" ,
+    optional : true
+  }
+});
+
+
+
+
 
 /*
 AccountsTemplates.configure({
     SignUpHook: function () {
-      console.log ("Creado") ; }
+      console.log ("Creado") ; } 
     
 });*/
 
 Hooks.onCreateUser = function (userId) { 
  //alert ("Login");
  var usr = Meteor.users.findOne({'_id':userId});
+ var prof = Profile.findOne({'idProfile': userId });
 
+ console.log ("Nivel de acceso");
+ console.log (alevel);
+ if (typeof usr.profile === 'undefined'){
   Profile.insert({idProfile: userId , nameUser: "", direction: "" , levelAcademic: "0", areasInterest: [], language: "es", password: "", secMail:  usr.emails[0].address , accessLevel: "0"});
   Meteor.users.update({_id:userId}, {$set:{"profile":{ lang: "es" ,  'access':0 }}});
     console.log ("Usuario Creado");
  console.log (usr.emails[0].address);
-
+ } else if (usr.profile.access == 2 &&  typeof prof === 'undefined' ){
+    console.log ("Se debe  crear profile");
+    Profile.insert({ idProfile: userId  ,  nameUser: "Admin", direction: "" , levelAcademic: "0", areasInterest: [], language: "es", password: "", secMail:  "admin@cedia.org" , accessLevel: "2"});
+ }
 
  }; 
 
@@ -1936,11 +2053,14 @@ Api.addRoute('sparql', {authRequired: false}, {
                 var muestra;
                 console.log('Entra1 ');
                 console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');
-                var result = Meteor.call('runQuery', endpointURI, defaultGraph,
+               /* var result = Meteor.call('runQuery', endpointURI, defaultGraph,
                         'select distinct ?o where{ ?s a ?o . '
                         + 'BIND(STR(?s) AS ?strVal) '
                         + 'FILTER(STRLEN(?strVal) >= ' + defaultGraph.length + ' && SUBSTR(?strVal, 1, ' + defaultGraph.length + ' ) = "'
                         + defaultGraph + '")}'
+                        );*/
+                var result = Meteor.call('runQuery', endpointURI, defaultGraph,
+                        'select distinct ?o where{ ?s a ?o }'
                         );
                 var rsEntities = EJSON.parse(result.content);
                 var dataset = [];
@@ -2321,6 +2441,7 @@ Api.addRoute('sparql', {authRequired: false}, {
             deleteEndpoint: function (id, endpointURI, defaultGraph) {
                 Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
                 Endpoints.remove(id);
+                Configuration.remove ( {"Endpoint": endpointURI });
                 console.log("==Endpoint removed: " + endpointURI + " - " + defaultGraph);
                 Meteor.call('updateStats');
             },
@@ -2341,6 +2462,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                 // console.log(endpointURI + defaultGraph);
                 var endpoint = Endpoints.findOne({base: true});
                 // console.log("Resp" + endpoint.opt);
+
                 return endpoint;
             },
             findAllEndpoints: function () {
@@ -2494,12 +2616,271 @@ Api.addRoute('sparql', {authRequired: false}, {
 
                  return "Error";
 
-              }
-              
- 
- 
-        });
+              } ,
 
+                 SaveEntities: function  (endpointURI , defaultGraph , EntitiesArray ) {
+                 Entities.remove({endpoint: endpointURI, graph: defaultGraph});
+
+                 console.log ("Almacenando Entidades");
+                 console.log (EntitiesArray);
+                 //   var identifier = null; 
+               //    for ( var Ent in  EntitiesArray ){
+                        
+                 //identifier = Entities.insert ( { endpoint: endpointURI , graph : defaultGraph , entities : { fullName : Ent.fullName , prefix: Ent.prefix , name : Ent.name , ent: Ent.ent , dim: Ent.dim } });
+                  identifier = Entities.insert ( { endpoint: endpointURI , graph : defaultGraph , entities :  EntitiesArray  });
+
+                 console.log (identifier);
+                        
+                     //   Entities.update ( {'_id': identifier}, {$set: {endpoint: endpointURI , graph : defaultGraph , fullName : Ent.fullName , prefix: Ent.prefix , name : Ent.name , ent: Ent.ent , dim: Ent.dim }});
+
+                       
+                      //   }
+
+                 return "Error";
+
+              } , 
+
+               SaveConfEntity: function  ( user , Graph , ConfEnt , confgraph , confbus ) {
+                  if (valAccess(this.userId, 2)) {
+                var usr = this.userId; 
+              
+                var confexist = Configuration.findOne({ 'Endpoint': Graph  });
+                console.log ("Existe");
+                console.log (confexist);
+                  var newconf = [];
+                  if (  _.isUndefined(confexist)){ 
+                     newconf.push (ConfEnt);    
+                     console.log ("No existe");
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus });
+
+                     //return "almacenado";
+                  }else 
+                  {  
+                      
+                    var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfEntity.URI' : ConfEnt.URI });
+                    
+                       if ( _.isUndefined(confexist2) ) 
+                        {   newconf =   confexist.ConfEntity;
+                            newconf.push (ConfEnt);
+                            console.log ("Existe parecido");
+                            console.log (newconf);
+                       }
+                        else 
+                        {   newconf =   confexist2.ConfEntity;
+                          //  var idx =  _.findIndex(newconf , { URI :  ConfEnt.URI });
+                            var idx =  _.indexOf(_.pluck(newconf, 'URI'), ConfEnt.URI);
+                            newconf [idx] =  ConfEnt; 
+                            console.log ("El mismo");
+                            console.log (newconf);
+
+                        }
+
+                    return  Configuration.update({'_id': confexist['_id']} ,  {$set: { 'ConfEntity' : newconf } });
+                      }
+
+                       } else {
+                        return "Sin permisos";
+                      }
+                   
+            
+                   //  newconf = confexist.ConfEntity.push (ConfEnt); 
+                  // return   Configuration.update({'Endpoint': Graph , 'ConfEntity.URI' : ConfEnt.URI } , {$set: { 'ConfEntity' : newconf } });
+                 
+
+                
+              } , 
+              
+              SaveConfLits : function  ( user , Graph , ConfEnt , confgraph , confbus , constats ) {
+                  if (valAccess(this.userId, 2)) {
+                var usr = this.userId; 
+
+                var confexist = Configuration.findOne({ 'Endpoint': Graph  });
+                console.log ("Existe");
+                console.log (confexist);
+                  var newconf = [];
+                  if (  _.isUndefined(confexist)){ 
+                     newconf.push (ConfEnt);    
+                     console.log ("No existe");
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus ,  'ConfStat' : constats });
+
+                     //return "almacenado";
+                  } else {
+
+                    //var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfEntity.URI' : ConfEnt.URI });
+                     if ( confgraph.length > 0 ) {
+
+                        return Configuration.update({'_id': confexist['_id']} ,  {$set: { 'VisGraph' : confgraph } });
+                     }else {
+                        return Configuration.update({'_id': confexist['_id']} ,  {$set: { 'EntSearch' : confbus } });
+                     }
+
+
+
+                  }
+                    } else {
+                    return "Sin permisos";
+
+                    }
+
+              } , SaveConfStat :function ( user , Graph , ConfEnt , confgraph , confbus , constats )  
+              {     
+                    if (valAccess(this.userId, 2)) {
+                var usr = this.userId; 
+
+                var confexist = Configuration.findOne({ 'Endpoint': Graph  });
+                console.log ("Existe");
+                console.log (confexist);
+                  var newconf = [];
+                  if (  _.isUndefined(confexist)){ 
+                     newconf.push (constats);    
+                     console.log ("No existe");
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : ConfEnt , 'VisGraph' : confgraph , 'EntSearch' : confbus , 'ConfStat': constats  });
+
+                     //return "almacenado";
+                  }else 
+                  {  
+                      
+                    var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfStat.URI' : constats.URI });
+                    
+                       if ( _.isUndefined(confexist2) ) 
+                        {   newconf =   confexist.ConfStat;
+                            newconf.push (constats);
+                            console.log ("Existe parecido");
+                            console.log (newconf);
+                       }
+                        else 
+                        {   newconf =   confexist2.ConfStat;
+                          //  var idx =  _.findIndex(newconf , { URI :  ConfEnt.URI });
+                            var idx =  _.indexOf(_.pluck(newconf, 'URI'), constats.URI);
+                            newconf [idx] =  constats; 
+                            console.log ("El mismo");
+                            console.log (newconf);
+
+                        }
+
+                    return  Configuration.update({'_id': confexist['_id']} ,  {$set: { 'ConfStat' : newconf } });
+
+                   }
+            
+                   //  newconf = confexist.ConfEntity.push (ConfEnt); 
+                  // return   Configuration.update({'Endpoint': Graph , 'ConfEntity.URI' : ConfEnt.URI } , {$set: { 'ConfEntity' : newconf } });
+                 
+
+                 return "Error";
+                 
+                 } else {
+                    return "Sin permisos";
+                 }
+
+              }
+              ,
+              DeleteConfEnt : function ( valuri ,  graphendp ) {
+                 if (valAccess(this.userId, 2)) {
+                console.log ("Borrando");
+                console.log (valuri +" " +graphendp);
+                 var confexist = Configuration.findOne({ 'Endpoint': graphendp , 'ConfEntity.URI' : valuri });
+                 var entities = confexist.ConfEntity;
+                 console.log (entities);
+                 entities = _.reject(entities, function(el) { return el.URI === valuri ; });
+                 //return Configuration.remove ({ "Endpoint" :  graphendp , "ConfEnt.URI" : valuri });
+                 console.log (entities);
+                return  Configuration.update({'Endpoint': graphendp , 'ConfEntity.URI' : valuri } , {$set: { 'ConfEntity' : entities } });
+                 } else {
+                    return  "Sin permisos";
+                 }
+
+              } ,  DeleteConfStat : function ( valuri ,  graphendp ) {
+                if (valAccess(this.userId, 2)) {
+                console.log ("Borrando");
+                console.log (valuri +" " +graphendp);
+                 var confexist = Configuration.findOne({ 'Endpoint': graphendp , 'ConfStat.URI' : valuri });
+                 var entities = confexist.ConfStat;
+                 console.log (entities);
+                 entities = _.reject(entities, function(el) { return el.URI === valuri ; });
+                 //return Configuration.remove ({ "Endpoint" :  graphendp , "ConfEnt.URI" : valuri });
+                console.log (entities);
+                 Configuration.update({'Endpoint': graphendp , 'ConfStat.URI' : valuri } , {$set: { 'ConfStat' : entities } });
+                } else {
+                    return  "Sin permisos";
+                 }
+
+              } ,
+
+                DeleteImagen : function  ( id ) {
+                    console.log ("Borrando "+id);
+                   Images.remove({_id: id });
+                   return  "borrado";
+
+                } , 
+
+                 ImportConf : function ( name ) {
+                    console.log (name);
+                   // console.log (files.cfiles.all.find());
+                   var importfile = cFiles.findOne({});
+                   //   var importfile = cFiles.find().fetch();
+                    //console.log (files.cfiles.all.find());
+                    var location = importfile.currentFile.path;
+                   
+                    console.log (location);
+                    
+                    var fs = Npm.require('fs');
+                    var filedata = fs.readFileSync(location , 'utf8' ).trim() ;
+                    console.log (filedata);
+                    console.log (typeof filedata);
+                    console.log (typeof "prueba");
+                     var Config = JSON.parse(filedata);
+                       console.log (Config);
+                    var confend  =  Config[1].Endpoint;
+                    console.log (confend);
+                      var fail = false ;
+                      var faildetail  = "";
+                    _.each ( Config , function (conf , idx ) {
+                     console.log ("Leyendo");
+                     var confactual =  Configuration.findOne({ 'Endpoint': conf.Endpoint });
+                     var confreg = Endpoints.findOne ({'endpoint': conf.Endpoint });
+                     console.log ("Validate");
+                      console.log (conf["_id"]);
+                     delete conf['_id'];
+                   
+            
+                     var isValid = Match.test(conf, Importval);
+                     console.log (isValid);
+                        if (!isValid){ 
+                          fail = true;
+                          faildetail = "Algunos  registros no cumplen con el modelo esperado";
+                        };
+                     //check(conf, Importval);
+
+                     delete conf['_id'];
+                   
+                     if ( _.isUndefined(confactual) && _.isUndefined(confreg) ) { 
+                        console.log ("No registrado "+conf.Endpoint );
+                         fail = true;
+                         faildetail =  "Algunos registros no disponen de endpoints registrados";
+                     } else if ( _.isUndefined(confactual)){
+
+                         Configuration.insert (conf);
+                         console.log (conf.Endpoint + 'Ingresado');
+                     }else {
+                         Configuration.update ({ 'Endpoint': conf.Endpoint } , {$set: {'ConfEntity' : conf.ConfEntity , 'VisGraph': conf.VisGraph , 'EntSearch' : conf.EntSearch , 'ConfStat': conf.ConfStat  }} );
+                          console.log (conf.Endpoint + 'actualizado');
+                     }
+                     } );
+                      cFiles.remove({});
+                      if (fail){
+                         return "Advertencia: " + faildetail;
+                      } else {
+                        return "Configuración Cargada exitosamente";
+                      }
+
+                  
+
+
+
+                 }
+ 
+              });
+     
         //Update Prefixes schema on every server startup
         //Meteor.call('updatePrefixes');
         SyncedCron.start();
