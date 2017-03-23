@@ -2,7 +2,7 @@
   debug: true,
   collectionName: 'cFiles',
   allowClientCode: false, // Disallow remove files from Client
-  storagePath:  '/home/joe/data/Meteor/Files' ,
+  storagePath:  '/home/cedia/data/Meteor/Files' ,
   onBeforeUpload: function (file) {
     // Allow upload files under 10MB, and only in png/jpg/jpeg formats
     if (file.size <= 1024*1024*10 && /json/i.test(file.extension)) {

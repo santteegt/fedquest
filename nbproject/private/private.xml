@@ -2,16 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/client/js/views/nlsearch.js</file>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/client/js/main.js</file>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/client/templates/views/welcome.html</file>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/client/js/views/search.js</file>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/public/NLTool/sparklis/osparklis.js</file>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/public/NLTool/sparklis/osparklis.css</file>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/client/templates/views/nlsearch.html</file>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/client/js/router.js</file>
-            <file>file:/home/cedia/Ext/Prototipo/sparql-fedquest/client/css/search.css</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>
