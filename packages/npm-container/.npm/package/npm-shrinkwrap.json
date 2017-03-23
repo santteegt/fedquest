@@ -3,7 +3,7 @@
     "sparqljs": {
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/sparqljs/-/sparqljs-1.0.3.tgz",
-      "from": "sparqljs@1.0.3"
+      "from": "https://registry.npmjs.org/sparqljs/-/sparqljs-1.0.3.tgz"
     }
   }
 }
