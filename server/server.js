@@ -410,6 +410,21 @@ String.prototype.removeDiacritics = function () {
     return str;
 }
 
+Array.prototype.getUnique = function(){
+   var u = {}, a = [];
+   for(var i = 0, l = this.length; i < l; ++i){
+      if(u.hasOwnProperty(this[i])) {
+         continue;
+      }
+      a.push(this[i]);
+      u[this[i]] = 1;
+   }
+   return a;
+}
+
+
+
+
 var mlseconds = 0;
 
 function TickTock(msj) {
@@ -461,135 +476,6 @@ function intersect(a, b) {
     });
 }
 
-/*
-function Prio_IntA(tx, lsin) {
-    var lsmat = [];
-    var txtl = tx;
-    var txtl_ = txtl.split(" ").unique().filter(function (d) {
-        return d !== "";
-    });
-    var nu1 = txtl_.length;
-    for (var i = 0; i < lsin.length; i++) {
-        var txtl_2 = lsin[i];
-        var nu2 = txtl_2.length;
-        if (nu1 > 0 || nu2 > 0) {
-            var vin = intersect(txtl_.slice(0), txtl_2.slice(0)).length / (nu1 < nu2 ? nu1 : nu2);
-            if (vin > 0.9) {
-                lsmat.push(i % 19);
-                lsin[i] = [];
-            }
-        }
-    }
-    return lsmat;
-}
-*/
-
-
-
-/*
-
-function Prio(idc, cons, ord, pon, idi, e, f, t, lsi) {
-
-
-    var key = idc + '_' + JSON.stringify(cons) + '_' + JSON.stringify(ord) + '_' + pon + '_' + idi + '_' + JSON.stringify(lsi);
-
-    //console.log('key'+key);
-
-
-   var kwq = Cache.find({keyk: key.hashCode()}).fetch();
-
-    var k = null;
-
-    if (kwq.length == 0) {
-        TickTock(true);
-        if (ord != null) {
-            k = Cache.find(cons, ord).fetch();
-        } else {
-            k = Cache.find(cons).fetch();
-        }
-
-        if (k.length == 0) {
-            return k;
-        }
-        
-        var cach=true;
-
-        var rob = {};
-        for (var ii = 0; ii < k.length; ii++) {
-            k[ii].score = Number(k[ii].score);
-            var ponn = 1;
-            if (rob[k[ii].uri + ''] != undefined) {
-                ponn = rob[k[ii].uri + ''];
-            } else {
-
-                if (k[ii].faceted[3].value != null && (k[ii].faceted[3].value == 'http://purl.org/net/nknouf/ns/bibtex#Mastersthesis' || k[ii].faceted[3].value == 'http://purl.org/ontology/bibo/Article')) {
-                    //k[ii].score = k[ii].score * pon;
-                    //console.log('type'+k[ii].uri+k[ii].score);
-                    ponn += pon +2;
-                }
-                if (k[ii].faceted[2].value != null && (k[ii].faceted[2].value == idi)) {
-                    //k[ii].score = k[ii].score * 3;
-                    //console.log('lang'+k[ii].uri+k[ii].score);
-                    ponn += 2;
-                }
-                if (!Array.isArray(k[ii].sub)){
-                    cach=false;
-                }
-
-                if (k[ii].sub !== null && Array.isArray(k[ii].sub) && k[ii].sub.length > 0) {
-                    for (var tss = 0; tss < lsi.length; tss++) {
-                        for (var tssz = 0; tssz < k[ii].sub.length; tssz++) {
-                            if (lsi[tss] == k[ii].sub[tssz]) {
-                                //k[ii].score = k[ii].score * 2;
-                                ponn += 3;
-                                console.log('inter ' + k[ii].uri +' '+ k[ii].score);
-                                break;
-                            }
-                        }
-
-                    }
-                }
-                rob[k[ii].uri + ''] = ponn;
-
-            }
-            k[ii].score = k[ii].score * ponn;
-
-        }
-        k = _.sortBy(k, function (o) {
-            return -1 * o.score;
-        })
-        var r__ = {};
-        var s__ = 0;
-        for (var ii = 0; ii < k.length; ii++) {
-            //console.log(k[ii].uri+'  '+k[ii].score);
-            if (r__['' + k[ii].uri] == undefined) {
-                r__['' + k[ii].uri] = s__;
-                s__++;
-            }
-            k[ii].nresult = r__['' + k[ii].uri];
-        }
-        //k=k.sort(function (a,b){ return a.nresult>b.nresult;});
-        k = _.sortBy(k, function (o) {
-            return o.nresult;
-        })
-
-
-        if(cach){
-            Cache.insert({keyk: key.hashCode(), result: k, ttl_date: new Date()});
-        }
-        
-        TickTock(true);
-    } else {
-        k = kwq[0].result;
-    }
-    if (t) {
-        k = k.filter(function (d) {
-            return d.nresult >= e && d.nresult < e + f;
-        });
-    }
-    return k;
-}
-*/
 
 var num_auto=0;
 
@@ -609,118 +495,6 @@ var num_auto=0;
         return 0;
       }
     });
-    /*
-    SyncedCron.add({
-      name: 'ProfileBasedBoosting',
-      schedule: function(parser) {
-        // parser is a later.parse object
-        return parser.text('every 1 seconds');
-      },
-      job: function() {
-        var lsareintP = [];
-        var englsar = {"FoS_0": "Art",
-                            "FoS_1": "Biology",
-                            "FoS_2": "Business",
-                            "FoS_3": "Chemistry",
-                            "FoS_4": "Computer science",
-                            "FoS_5": "Economics",
-                            "FoS_6": "Engineering",
-                            "FoS_7": "Environmental science",
-                            "FoS_8": "Geography",
-                            "FoS_9": "Geology",
-                            "FoS_10": "History",
-                            "FoS_11": "Materials science",
-                            "FoS_12": "Mathematics",
-                            "FoS_13": "Medicine",
-                            "FoS_14": "Philosophy",
-                            "FoS_15": "Physics",
-                            "FoS_16": "Political science",
-                            "FoS_17": "Psychology",
-                            "FoS_18": "Sociology"};
-                        var esplsar = {"FoS_0": "Arte",
-                            "FoS_1": "Biología",
-                            "FoS_2": "Negocios",
-                            "FoS_3": "Química",
-                            "FoS_4": "Ciencias de la computación",
-                            "FoS_5": "Economía",
-                            "FoS_6": "Ingeniería",
-                            "FoS_7": "Ciencias medioambientales",
-                            "FoS_8": "Geografía",
-                            "FoS_9": "Geología",
-                            "FoS_10": "Historia",
-                            "FoS_11": "Ciencias de los materiales",
-                            "FoS_12": "Matemáticas",
-                            "FoS_13": "Medicina",
-                            "FoS_14": "Filosofía",
-                            "FoS_15": "Física",
-                            "FoS_16": "Ciencias políticas",
-                            "FoS_17": "Psicología",
-                            "FoS_18": "Sociología"};
-          
-          
-          
-          for (;;){
-              
-              var lsareintP=[];
-              var lsnn = [];
-                            for (var ik = 0; ik < 19; ik++) {
-                                lsareintP.push(englsar['FoS_' + ik]);
-                            }
-                            for (var ik = 0; ik < 19; ik++) {
-                                lsareintP.push(esplsar['FoS_' + ik]);
-                            }
-                            lsnn = lsareintP;
-                            for (var n = 0; n < lsnn.length; n++) {
-                                lsnn[n] = lsnn[n].removeDiacritics().keyword().trim().toLowerCase().split(" ").unique().filter(function (d) {
-                                    return d !== "";
-                                });
-                            }
-                            lsareintP = lsnn;
-              
-              var OnePri = Cache.findOne({keyp: {$exists: true}});
-              if (OnePri){
-                  var ky = OnePri.keyp;
-                  var resu= Cache.find({key:ky}).fetch();
-                  var r_Sub ={};
-                  for (var i=0; i<resu.length; i++){
-                      
-                      var v = resu[i].uri;
-                      var sub__=resu[i].sub;
-                      //console.log(sub__);
-                      var fSub=null;
-                      if (r_Sub["" + v] != undefined) {
-                        fSub = r_Sub["" + v];
-                      } else {
-                        if (sub__ != undefined && sub__ != null) {
-                                            var lsnn = sub__.removeDiacritics().keyword().trim().toLowerCase().split('#|#').unique().filter(function (d) {
-                                                return d !== "";
-                                            });
-                                            var rresy = [];
-                                            var lsareintPP = lsareintP.slice(0);
-                                            for (var kw = 0; kw < lsnn.length; kw++) {
-                                                var areinc = Prio_IntA(lsnn[kw], lsareintPP);
-                                                rresy = rresy.concat(areinc);
-                                            }
-                                            fSub = rresy.unique();
-                        }
-                        r_Sub["" + v] = fSub;
-                    }
-                    //Cache.update({keyl: sug.queue}, {$set: {value: unique.slice(0, 5), cacheable: false, ttl_date: new Date()}});
-                    Cache.update({'_id':resu[i]['_id']}, {$set: {sub:fSub}});
-                  }
-                  Cache.remove({keyp:ky});
-              }else{
-                  Meteor._sleepForMs(1000);
-              }
-          }
-          
-                
-          
-          
-      }
-    });
-    */
-    
     
     SyncedCron.add({
       name: 'UpdateSugg',
@@ -729,6 +503,7 @@ var num_auto=0;
         return parser.text('every 1 seconds');
       },
       job: function() {
+        var ConfigInfo = Configuration.find().fetch();
 	var endp = Endpoints.find().fetch();
         for (; ; ) {
             var pend = Cache.find({queue: {$exists: true}}, {sort: {qord: -1}, limit: 1}).fetch();
@@ -749,27 +524,26 @@ var num_auto=0;
             var lsend = sug.lsend;
             var cont = sug.cont;
             var resp = sug.resp;
-            var spar = "select distinct ?p ?Score { (?e ?Score ?p) <http://jena.apache.org/text#query> (<---> '___' 3) } order by desc(?Score)";
+            var spar = "select distinct ?p ?Score { (?e ?Score ?p) <http://jena.apache.org/text#query> (<---> '___' 1000) . ?e a <%%%>. } order by desc(?Score) limit 3";
             spar = spar.replace(new RegExp("___", "g"), query);
             var proper = [];
-            switch (clas_) {
-                case 'P':
-                    proper.push('http://xmlns.com/foaf/0.1/name');
-                    break;
-                case 'D':
-                    proper.push('http://purl.org/dc/terms/subject');
-                    proper.push('http://purl.org/dc/terms/title');
-                    break;
-                case 'C':
-                    proper.push('http://purl.org/dc/terms/description');
-                    break;
-                case 'T':
-                    proper.push('http://xmlns.com/foaf/0.1/name');
-                    proper.push('http://purl.org/dc/terms/subject');
-                    proper.push('http://purl.org/dc/terms/description');
-                    proper.push('http://purl.org/dc/terms/title');
-                    break;
-            }
+                    for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                        var lsEn = ConfigInfo[qm].ConfEntity.filter(function (a) {
+                            return a.URI == clas_ || clas_=="T";
+                        });
+                        for (var qmx = 0; qmx < lsEn.length; qmx++) {
+                            if (lsEn[qmx].autocomplete !=null){
+                                for (var qmxx = 0; qmxx < lsEn[qmx].autocomplete.length; qmxx++) {
+                                    proper.push({p: lsEn[qmx].autocomplete[qmxx], c: lsEn[qmx].URI, k:lsEn[qmx].autocomplete[qmxx]+'+'+lsEn[qmx].URI});
+                                }
+                            }
+                        }
+                    }
+            
+
+            proper = _.uniq(proper, function(p){ return p.k; });
+            
+            
             if (lsend == null) {
                 var foo = [];
                 for (var i = 0; i < endp.length; i++) {
@@ -780,9 +554,25 @@ var num_auto=0;
             var endpoint_i = Math.floor(cont / proper.length);
             var prope_i = cont % proper.length;
             var endpoint = endp[lsend[endpoint_i]];
-            var _spar = spar.replace(new RegExp("---", "g"), proper[prope_i]);
+            var _spar = spar.replace(new RegExp("---", "g"), proper[prope_i].p);
+            _spar = _spar.replace(new RegExp("%%%", "g"), proper[prope_i].c);
             var objQuery={sparql: _spar, ep: endpoint.endpoint, gr: endpoint.graphURI};
-            var result = Meteor.call('doQueryCacheStats', objQuery);
+            var result = {resultSet:{value:'{  "head": {    "vars": [ "p" , "Score" ]  } ,  "results": {    "bindings": [          ]  }}'}};
+                   
+            var cendp = ConfigInfo.filter(function (a){
+                return a.Endpoint==endpoint.endpoint;
+            });
+            cendp=cendp[0];
+            var cvarlisc=cendp.ConfEntity.filter(function (a){
+                return a.URI==proper[prope_i].c;
+            });
+
+            if (cvarlisc.length!=0){
+                result=Meteor.call('doQueryCacheStats', objQuery);                    
+            }
+            
+            
+                  
             
             if (result == null || result == undefined || result.resultSet == null || result.resultSet== undefined || result.resultSet.value == null || result.resultSet.value== undefined )
             {
