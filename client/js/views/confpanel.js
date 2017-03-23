@@ -174,9 +174,11 @@ editEntity = function (e) {
     $("Select[id='propertypickersingle']").val (Selected.descriptiveprop);
     $("Select[id='indexpropertypicker']").selectpicker('val', Selected.indexprop); 
     $("#checkfilter").prop("checked", Selected.espfilter);
+     var img = Images.find().fetch().length;
+     if ( img > 0) {
     $("#selectedimag").val(Selected.file);
     $("#selectedimag").data('picker').sync_picker_with_select();
-
+    }
     $('#FilterType  input:checkbox').removeAttr('checked');
    var area = $('#FilterType input:checkbox').map(function(){
         
@@ -690,7 +692,7 @@ Template.optimag.helpers ({
   }
 }) ;
 
-
+/*
 
 Template.uploadForm.onCreated(function () {
   this.currentUpload = new ReactiveVar(false);
@@ -726,10 +728,10 @@ Template.uploadForm.events({
             alert('Error during upload: ' + error.reason);
           } else {
             alert('File "' + fileObj.name + '" successfully uploaded');
-           /*  $("select").imagepicker({
-             hide_select : false,
-             show_label  : false 
-             });*/
+           //  $("select").imagepicker({
+            // hide_select : false,
+            // show_label  : false 
+            // });
             // $("#selectedimag").css ("display", "none"); 
 
           }
@@ -739,8 +741,9 @@ Template.uploadForm.events({
         uploadInstance.start();
       }
     }
-  }
-});
+  } 
+
+});*/
 
 var renderTimeout1 = false;
 Template.selectmultiendpoint.onCreated  (function () {
@@ -803,11 +806,13 @@ Template.uploadForm.onCreated(function () {
 Template.uploadForm.helpers({
   currentUpload: function () {
     return Template.instance().currentUpload.get();
+  } , deletebutton : function (e) {
+    return  e == "FileImage";
   }
 });
 
 Template.uploadForm.events({
-  'change #fileInput': function (e, template) {
+  'change #FileImage': function (e, template) {
     if (e.currentTarget.files && e.currentTarget.files[0]) {
       // We upload only one file, in case 
       // there was multiple files selected
