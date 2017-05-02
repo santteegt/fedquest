@@ -39,7 +39,7 @@ this.confpanelView = Backbone.View.extend({
     $('.selectpicker').selectpicker();
 
 
-    $( "#ConfigEntity , #distriList , #selectDistriList , #selectDistriListbus , #distriListbus , #ConfigStat"  ).hover(
+    $( "#ConfigEntity , #distriList , #selectDistriList , #selectDistriListbus , #distriListbus , #ConfigStat , #FontProp" ).hover(
     function() {
     
     $(document).off('mousewheel DOMMouseScroll MozMousePixelScroll');
@@ -234,9 +234,11 @@ editEntity = function (e) {
   console.log (ConfEntity.icon);
   console.log (ConfEntity.file);
 
-var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity , confgraph , confbus , constats ,function (error, result) {
+var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , [] , ConfEntity , confgraph , confbus , constats ,function (error, result) {
        if ( _.isUndefined(error)  ) {
             console.log ("Almacenado");
+            console.log ("Cerrrando");
+           $('div #ConfigEntity').modal('hide');
       } else {
             alert(error);
       }
@@ -260,7 +262,7 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity
     console.log (StatEntity.Relprop);
     console.log (StatEntity.typegraph);
 
-    var result = Meteor.call('SaveConfStat', Meteor.userId() ,  graph , []  , [] , [] , StatEntity ,function (error, result) {
+    var result = Meteor.call('SaveConfStat', Meteor.userId() ,  graph , [] , []  , [] , [] , StatEntity ,function (error, result) {
       console.log (result);
       console.log (error);
       if ( _.isUndefined(error)  ) {
@@ -340,6 +342,7 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity
   var confbus = [];
   var ConfEntity = [];
   var confstats = [];
+  var Source = [];
   var graph = $("#endpointpicker").val();
    
   $('#'+dest+' option').each(function()
@@ -361,7 +364,7 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , ConfEntity
     confgraph = selgraph;
    }
 
-   var result = Meteor.call('SaveConfLits', Meteor.userId() ,  graph , ConfEntity , confgraph , confbus ,  confstats ,function (error, result) {
+   var result = Meteor.call('SaveConfLits', Meteor.userId() ,  graph , Source , ConfEntity , confgraph , confbus ,  confstats ,function (error, result) {
       
       if ( _.isUndefined(error)  ) {
             console.log("Almacenado");
@@ -420,6 +423,30 @@ deleteConfigStat = function (e) {
 
  });
  });
+
+ Template.optpropsingle.onRendered (function( ){ 
+// console.log ("Renderizando  Prop");
+ // console.log (this);
+ // console.log (this.view._domrange.parentElement);
+  var id = this.view._domrange.parentElement.id ;
+ // console.log (this.view._domrange.parentElement.val())
+
+ // console.log (this.data.fullName);
+ // console.log (this.data.isSelected);
+
+   var graphend = Session.get ('Graph');
+   var conf = Configuration.find ({ "Endpoint" : graphend }).fetch()[0].Source;
+  //console.log ("config Carga");
+  // console.log (conf);
+   if (conf != undefined && conf == this.data.fullName &&  id == "FontProp")      
+   {   //console.log ("*************************************"); 
+      // console.log (conf);
+       $("select#FontProp").val(conf);  
+   }
+
+  
+ // http://purl.org/ontology/bibo/abstract
+});
 
 /*
  Template.selectendpoint.onRendered(function(){
@@ -554,6 +581,31 @@ var graph = $("#endpointpicker").val();
 });
 
 
+Template.confpanel.events({
+  'change #FontProp': function(e) {
+    var selected = $("#FontProp").val();
+    console.log(selected);
+    var graph = $("#endpointpicker").val();
+     var result = Meteor.call('SaveConfSource', Meteor.userId() ,  graph , selected , [] , [] , [] , [] ,function (error, result) {
+       if ( _.isUndefined(error)  ) {
+            console.log ("Almacenado");
+            console.log ("Cerrrando");
+           $('div #ConfigEntity').modal('hide');
+      } else {
+            alert(error);
+      }
+     //console.log (Meteor.userId());
+    });
+
+ }
+
+
+  
+});
+
+//Template.completpropertysingle.
+
+
 Template.confpanel.rendered = function(){
   $('#iconselect').iconpicker({
  // iconset: 'fontawesome',
@@ -566,7 +618,6 @@ Template.confpanel.rendered = function(){
   });
 
 };
-
  
   
  //Template.uploadedFiles.OnCreated ( function () {
