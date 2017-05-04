@@ -50,7 +50,14 @@
          <div class="col-sm-6"> 
               {{> graphselectionprop listori="distriListbus" listdest="selectDistriListbus" }}
          </div> 
-         </div> 
+         </div>
+         <div class="btn-toolbar">&nbsp; </div>
+           <div class="form-group form-horizontal col-sm-offset-1">
+            <label for= "RelLabel" class="control-label col-sm-4"> Propiedad Fuente </label>
+            <div class="col-sm-4 col-sm-offset-1">
+            {{>  completpropertysingle identifier = "FontProp"}}
+            </div>
+          </div> 
          </div>
    </section>
      <section>
@@ -126,7 +133,7 @@
 <template name = "completpropertysingle"  >
        <select   id="{{identifier}}" >
        <option> --- </option>
-       {{#each PropertiesAvailableSingle  }}
+       {{#each PropertiesAvailableSingle   }}
       <!-- <option value="{{name}}"> {{name}} </option>-->
       {{> optpropsingle}}
         {{/each}} 
@@ -134,7 +141,7 @@
 </template>
 
 <template name="optpropsingle">
-   <option value="{{fullName}}"> {{name}} </option>
+   <option value="{{fullName}}" selected="{{isSelected}}" > {{name}} </option>
 </template>
 
 <template name="graphselectionprop">

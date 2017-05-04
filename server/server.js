@@ -157,7 +157,11 @@ Importval = new SimpleSchema({
   Endpoint: {
     type: String,
     label: "Endpoint"
-  } ,
+  } , Source : {
+    type: String , 
+    label : "Source" ,
+    optional : true    
+  } , 
   ConfEntity : {
     type: [confEnt]  ,
     label : "ConfEntity" 
@@ -563,14 +567,16 @@ var num_auto=0;
                 return a.Endpoint==endpoint.endpoint;
             });
             cendp=cendp[0];
-            var cvarlisc=cendp.ConfEntity.filter(function (a){
+            if (cendp != undefined){
+                var cvarlisc=cendp.ConfEntity.filter(function (a){
                 return a.URI==proper[prope_i].c;
             });
+            
 
             if (cvarlisc.length!=0){
                 result=Meteor.call('doQueryCacheStats', objQuery);                    
             }
-            
+            }
             
                   
             
@@ -1431,7 +1437,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                             r = {};
                             r_Sub = {};
                             m = {};
-                            l = {};
+                         //   l = {};
                             bulk = [];
                           //  if (!appPri) {
                                 k = Cache.find({
@@ -1685,6 +1691,21 @@ Api.addRoute('sparql', {authRequired: false}, {
                                     }
                         });
             },
+             runQueryGet: function (endpointURI, defaultGraph, query, format, timeout) {
+                format = _.isUndefined(format) ? 'application/sparql-results+json' : format;
+                timeout = _.isUndefined(timeout) ? '0' : timeout;
+                //return HTTP.get(endpointURI,
+                return HTTP.get(endpointURI,
+                        {
+                            'params':
+                                    {
+                                      //  'default-graph-uri': defaultGraph,
+                                        'query': query,
+                                        'format': format,
+                                        'timeout': timeout
+                                    }
+                        });
+            },
             runQueryDescr: function (endpointURI, defaultGraph, query, format, timeout) {
                 format = _.isUndefined(format) ? 'application/rdf+json' : format;
                 timeout = _.isUndefined(timeout) ? '0' : timeout;
@@ -1849,8 +1870,8 @@ Api.addRoute('sparql', {authRequired: false}, {
                         + 'FILTER(STRLEN(?strVal) >= ' + defaultGraph.length + ' && SUBSTR(?strVal, 1, ' + defaultGraph.length + ' ) = "'
                         + defaultGraph + '")}'
                         );*/
-                var result = Meteor.call('runQuery', endpointURI, defaultGraph,
-                        'select distinct ?o where{ ?s a ?o }'
+                var result = Meteor.call('runQueryGet', endpointURI, defaultGraph,
+                        'select distinct ?o where{ [] a ?o }'
                         );
                 var rsEntities = EJSON.parse(result.content);
                 var dataset = [];
@@ -2067,7 +2088,7 @@ Api.addRoute('sparql', {authRequired: false}, {
             fetchGraphSchema2: function (endpointURI, defaultGraph) {
                 console.log('ENtra 2')
                 console.log('==Obtaining graph description of <' + defaultGraph + '> from ' + endpointURI + '==');
-                var result = Meteor.call('runQuery', endpointURI, defaultGraph, 'select distinct ?o where{ ?s a ?o}');
+                var result = Meteor.call('runQuery', endpointURI, defaultGraph, 'select distinct ?o where{ [] a ?o}');
                 var rsEntities = EJSON.parse(result.content);
                 var dataset = [];
                 var datasetRDF = {};
@@ -2430,7 +2451,7 @@ Api.addRoute('sparql', {authRequired: false}, {
 
               } , 
 
-               SaveConfEntity: function  ( user , Graph , ConfEnt , confgraph , confbus ) {
+               SaveConfEntity: function  ( user , Graph , Source , ConfEnt , confgraph , confbus ) {
                   if (valAccess(this.userId, 2)) {
                 var usr = this.userId; 
               
@@ -2441,7 +2462,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                   if (  _.isUndefined(confexist)){ 
                      newconf.push (ConfEnt);    
                      console.log ("No existe");
-                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus });
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph,  'Source': Source , 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus });
 
                      //return "almacenado";
                   }else 
@@ -2480,7 +2501,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                 
               } , 
               
-              SaveConfLits : function  ( user , Graph , ConfEnt , confgraph , confbus , constats ) {
+              SaveConfLits : function  ( user , Graph , Source ,  ConfEnt , confgraph , confbus , constats ) {
                   if (valAccess(this.userId, 2)) {
                 var usr = this.userId; 
 
@@ -2491,7 +2512,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                   if (  _.isUndefined(confexist)){ 
                      newconf.push (ConfEnt);    
                      console.log ("No existe");
-                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus ,  'ConfStat' : constats });
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph,  'Source': Source , 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus ,  'ConfStat' : constats });
 
                      //return "almacenado";
                   } else {
@@ -2512,7 +2533,32 @@ Api.addRoute('sparql', {authRequired: false}, {
 
                     }
 
-              } , SaveConfStat :function ( user , Graph , ConfEnt , confgraph , confbus , constats )  
+              } , SaveConfSource : function  ( user , Graph , Source , ConfEnt , confgraph , confbus , constats ) {
+                  if (valAccess(this.userId, 2)) {
+                var usr = this.userId; 
+
+                var confexist = Configuration.findOne({ 'Endpoint': Graph  });
+                console.log ("Existe");
+                console.log (confexist);
+                //  var newconf = [];
+                  if (  _.isUndefined(confexist)){ 
+                     //newconf.push (ConfEnt);    
+                     console.log ("No existe");
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph , 'Source': Source , 'ConfEntity' : ConfEnt , 'VisGraph' : confgraph , 'EntSearch' : confbus ,  'ConfStat' : constats });
+
+                     //return "almacenado";
+                  } else {
+                  
+                        return Configuration.update({'_id': confexist['_id']} ,  {$set: { 'Source' : Source } });
+          
+                  }
+                    } else {
+                    return "Sin permisos";
+
+                    }
+
+              }
+              , SaveConfStat :function ( user , Graph , Source , ConfEnt , confgraph , confbus , constats )  
               {     
                     if (valAccess(this.userId, 2)) {
                 var usr = this.userId; 
@@ -2524,7 +2570,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                   if (  _.isUndefined(confexist)){ 
                      newconf.push (constats);    
                      console.log ("No existe");
-                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'ConfEntity' : ConfEnt , 'VisGraph' : confgraph , 'EntSearch' : confbus , 'ConfStat': constats  });
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph, 'Source' : Source ,  'ConfEntity' : ConfEnt , 'VisGraph' : confgraph , 'EntSearch' : confbus , 'ConfStat': constats  });
 
                      //return "almacenado";
                   }else 
@@ -2652,7 +2698,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                          Configuration.insert (conf);
                          console.log (conf.Endpoint + 'Ingresado');
                      }else {
-                         Configuration.update ({ 'Endpoint': conf.Endpoint } , {$set: {'ConfEntity' : conf.ConfEntity , 'VisGraph': conf.VisGraph , 'EntSearch' : conf.EntSearch , 'ConfStat': conf.ConfStat  }} );
+                         Configuration.update ({ 'Endpoint': conf.Endpoint } , {$set: {'Source' : conf.Source  ,'ConfEntity' : conf.ConfEntity , 'VisGraph': conf.VisGraph , 'EntSearch' : conf.EntSearch , 'ConfStat': conf.ConfStat  }} );
                           console.log (conf.Endpoint + 'actualizado');
                      }
                      } );

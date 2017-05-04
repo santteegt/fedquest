@@ -342,7 +342,7 @@ this.SearchView = Backbone.View.extend({
 
 
 
-
+         /*
 
         var prev;
         $("#documentos2").click(function () {
@@ -367,7 +367,7 @@ this.SearchView = Backbone.View.extend({
             var val = 'colecciones';
             prev = selec2(prev, val);
         });
-
+            */
         $('#AllRepo').on('click', function (ev) {
             if (document.getElementsByName('repositoriesListAll')[0].checked) {
                 var inputs = document.getElementsByName('repositoriesList');
@@ -379,6 +379,7 @@ this.SearchView = Backbone.View.extend({
                 var inputs = document.getElementsByName('repositoriesList');
                 for (var i = 0; i < inputs.length; i++) {
                     inputs[i].disabled = false;
+                    inputs[i].checked = false;
                 }
             }
 
@@ -501,9 +502,12 @@ this.SearchView = Backbone.View.extend({
                 });
 
                 for (var oneRes = 0; oneRes < ResqLis.length; oneRes++) {
-                    var Class__ = Endpoint__[0].EntSearch.filter(function (a) {
+                    var Class__ = [];
+                    if (Endpoint__.length > 0){
+                    Class__ = Endpoint__[0].EntSearch.filter(function (a) {
                         return a == ResqLis[oneRes].resourceClass;
                     });
+                    }
 
                     if (Class__.length == 0) {
                         continue;
@@ -555,8 +559,14 @@ this.SearchView = Backbone.View.extend({
                 });
             }
 
-            Query += ' . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
-            var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
+            
+           
+            if (SubQN == 0) {
+                Query += ' ?EntityURI <none> ?Score . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
+            } else {
+                 Query += ' . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
+            }
+             var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
             console.log(jsonRequest);
             Session.set('jsonRequest', jsonRequest);
             App.SearchRun(0, 1);
@@ -567,7 +577,7 @@ this.SearchView = Backbone.View.extend({
         if (term != "null") {
             $(".textToSearch").val(term);
 
-
+              /*
             switch (type) {
                 case 'autores':
                     $("#autores2").attr('checked', 'checked');
@@ -578,7 +588,7 @@ this.SearchView = Backbone.View.extend({
                 case 'colecciones':
                     $("#colecciones2").attr('checked', 'checked');
                     break;
-            }
+            }*/
 
             darclick(FromList);
         }
@@ -703,7 +713,13 @@ linkg2 = function (e) {
     var v2 = en.endpoint;
     var v3 = en.graphURI;
     var redirectWindow = window.open('', '_blank');
-    Meteor.call('runQuery', v2, v3, 'select ?a {<' + v1 + '> <http://purl.org/ontology/bibo/handle> ?a} limit 1', function (error, result) {
+     
+    var source =  Configuration.find({ "Endpoint" : v2 }).fetch()[0].Source;
+    if ( source == undefined || source == "---") {
+         source = "http://purl.org/ontology/bibo/handle";
+     } 
+
+    Meteor.call('runQuery', v2, v3, 'select ?a {<' + v1 + '>  <'+source+'> ?a} limit 1', function (error, result) {
         if (result) {
             var r = JSON.parse(result.content).results.bindings;
             if (r.length == 0) {

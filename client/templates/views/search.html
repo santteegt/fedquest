@@ -16,7 +16,21 @@
                             <input type="button" value={{lang "search"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearch" >                   
 						 </span>
 		</div>
-		</div>
+        {{#if numresourceavailable }}
+        <form class="result-options" >
+        <div class="col-md-12" style="text-align: left; margin-top: -10px;margin-bottom: -5px;"> 
+        <div class="cc-selector"> 
+        {{#each resourcesavailable}}
+        <input id="{{Description}}" class="mainselecttype" type="radio" name="opciones" value="{{Name}}" Checked = "{{Check}}" />
+        <label style="background-image:url('{{Imagen}}');" tipo= "{{Name}}" class="opciones-cc {{Description}}" select="0" for="{{Imagen}}" data-toggle="tooltip" title="{{Description}}"></label>
+        {{/each}}
+            </div>  
+         </div>
+         </form>
+         {{/if}}
+          </div>
+		
+		 {{#unless numresourceavailable}}
 		 <form class="result-options" >
         <div class=col-md-2> 
         <div class="cc-selector"> 
@@ -24,9 +38,11 @@
         <input id="{{Description}}" class="mainselecttype" type="radio" name="opciones" value="{{Name}}" Checked = "{{Check}}" />
         <label style="background-image:url('{{Imagen}}');" tipo= "{{Name}}" class="opciones-cc {{Description}}" select="0" for="{{Imagen}}" data-toggle="tooltip" title="{{Description}}"></label>
         {{/each}}
-            </div> 
+            </div>  
          </div>
          </form>
+         {{/unless}}
+        
 		<!--
 		<form class="result-options">
 		   <div class=col-md-2> 
@@ -54,7 +70,7 @@
         </div>
      
 		<div class="oculto" > 
-		 <div class="input-group">
+		 <div class="input-group col-md-12" id = "endpointselect">
 <div style="float: left;"><input type="checkbox" class="optional" id="AllRepo" name="repositoriesListAll"   ><i>All</i>&nbsp;&nbsp;</div>
 									{{#each endpointsAvailable}}
 									

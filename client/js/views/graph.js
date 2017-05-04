@@ -222,7 +222,7 @@ var d3tip = require('d3-tip')(d3);
               for (var i= 0 ; i< exc.length ;i++){
                  exception =  '?c a  <'+exc[i]+'> ';
                    if ( i > 0 ){
-                   exceptions = exceptions + ' && '+exception;
+                   exceptions = exceptions + ' . '+exception;
                    } else {
                     exceptions = exception;
                    }
@@ -1917,7 +1917,9 @@ var d3tip = require('d3-tip')(d3);
                   var prop = Properties.find({ endpoint: Session.get ('v2') }).fetch();
                    _.map  ( prop , function (p) {
                    if (entity [p.fullName]){
-                    if (typeof entity[p.fullName][0]["@value"] !== 'undefined') {
+                    if (typeof entity[p.fullName][0]["@value"] == 'string'  ) {
+                      console.log ("Sacar subtstring");
+                      console.log (entity[p.fullName][0]["@value"]);
                       var uri = entity[p.fullName][0]["@value"].substring(0, 5).indexOf ("http");
                       console.log (entity[p.fullName][0]["@value"].substring(0, 5));
                        var labelty = "";

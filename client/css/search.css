@@ -35,7 +35,7 @@
 
 .search-area {
 
-    height: 60px; 
+    min-height: 60px; 
     border-style: solid ;
     border-width: 1px;
     background: url('/images/contact-bg.png') no-repeat  top ;
@@ -234,7 +234,7 @@ ul#Sugerencias  li{
 #dwnload
 {
     cursor: pointer;
-    left: 42%;
+    left: 40%;
     position: relative;
 }
 
@@ -288,4 +288,8 @@ border-radius: 5px;
     left: 50%;
     top: 2px;
     cursor: pointer;
+}
+
+#endpointselect {
+    margin-left: 2%;
 }
