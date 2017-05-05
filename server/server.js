@@ -485,7 +485,100 @@ var num_auto=0;
 
     Meteor.startup(function () {
         
-        
+        SyncedCron.add({
+      name: 'GeoInfoProcess',
+      schedule: function(parser) {
+        // parser is a later.parse object
+        return parser.text('every 1 seconds');
+      },
+      job: function() {
+          
+                var EndpointList = Endpoints.find().fetch();
+                var ConfigInfo = Configuration.find().fetch();
+                for (; ; ) {
+                    
+                    var GeoResult = Cache.find({geohash: {$exists: true}}, { sort: {prio: 1}, limit: 1 }).fetch();
+                    if (GeoResult.length == 0) {
+                        EndpointList = Endpoints.find().fetch();
+                        Meteor._sleepForMs(500);
+                        continue;
+                    }
+                    GeoResult=GeoResult[0];
+                    var URIList=Cache.distinct('uriEndpoint', {key: GeoResult.geohash});
+                    var inici=GeoResult.ind;
+                    
+                    for (var indx=inici; indx<URIList.length; indx++ ){
+                        if (URIList[indx] == undefined || URIList[indx] == null ){
+                            continue;
+                        }
+                        var URIEndpoint = URIList[indx];
+                        var URI = URIEndpoint.uri;
+                        var Endpoint = URIEndpoint.endpoint;
+                        var QueryEndpoint = EndpointList.filter(function (a){ return a.name == Endpoint;  })[0];
+                        var ListDescriptiveProperty = ConfigInfo.filter(function (a) {return a.Endpoint== QueryEndpoint.endpoint; } );
+                        ListDescriptiveProperty =_.pluck(ListDescriptiveProperty, 'ConfEntity') [0];
+                        ListDescriptiveProperty =_.pluck(ListDescriptiveProperty, 'descriptiveprop');
+                        ListDescriptiveProperty = _.uniq(ListDescriptiveProperty, function(p){ return p; }).filter(function (a){return a!=undefined && a!=null;});
+                        
+                        var SPARQLLocations = "select ?place ?name ?long ?lat {{ <___> <http://dbpedia.org/ontology/linkedTo> ?place . ?place <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?long . ?place <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat . ?place <http://www.w3.org/2000/01/rdf-schema#label> ?name . }union{ <___> <http://schema.org/mentions> ?place . ?place <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?long . ?place <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat . ?place <http://purl.org/saws/ontology#refersTo> ?name . }}";
+                        
+                        
+                        var SPARQLTitle = "select ?name { ";
+                            for (var idx=0; idx<ListDescriptiveProperty.length; idx++){
+                                SPARQLTitle +=" { ";
+                                SPARQLTitle +=" <___> <"+ListDescriptiveProperty[idx]+"> ?name . ";
+                                SPARQLTitle +=" } ";
+                                if (idx!=ListDescriptiveProperty.length-1){
+                                    SPARQLTitle +=" union ";
+                                }
+                            }
+                        SPARQLTitle += " } limit 1";
+                        
+                        
+                        SPARQLLocations = SPARQLLocations.replace(new RegExp("___", "g"), URI);
+                        SPARQLTitle = SPARQLTitle.replace(new RegExp("___", "g"), URI);
+                        
+                        var r = null;
+                        var DocumentName ='No title found';
+                        try{
+                            var objQueryTitle={sparql: SPARQLTitle, ep: QueryEndpoint.endpoint, gr: QueryEndpoint.graphURI};
+                            var resultTitle=Meteor.call('doQueryCacheStats', objQueryTitle);
+                            r=resultTitle.resultSet.value;
+                            var lsp = JSON.parse(r).results.bindings;
+                            DocumentName=lsp[0].name.value;
+                        }catch(ddd){
+                            console.log(ddd.stack);
+                        }
+                        var prio_=0;
+                        try{
+                            var objQueryLocation={sparql: SPARQLLocations, ep: QueryEndpoint.endpoint, gr: QueryEndpoint.graphURI};
+                            var resultLocations=Meteor.call('doQueryCacheStats', objQueryLocation);
+                            r = resultLocations.resultSet.value;
+                            lsp = JSON.parse(r).results.bindings;
+                            for (var indxp= 0; indxp<lsp.length; indxp++){
+                                prio_++;
+                                var LocationURI=lsp[indxp].place.value;
+                                var LocationName=lsp[indxp].name.value;
+                                var LocationLong=Number(lsp[indxp].long.value);
+                                var LocationLat=Number(lsp[indxp].lat.value);
+                                var GeoPoint = {GeoQueryHash:GeoResult.geohash, Name:LocationName, URI:LocationURI, Long:LocationLong, Lat:LocationLat, Title:DocumentName, URI2:URI, Endpoint:Endpoint, LongR:0, LatR:0};
+                                Cache.insert(GeoPoint);   
+                            }
+                        }catch (ddd){
+                            console.log(ddd.stack);
+                        }
+                        
+                        
+                        Cache.update({geohash: GeoResult.geohash}, {$set: {ind: indx+1, prio:GeoResult.prio+prio_}});
+                        break;
+                    }
+                    if (inici+1>=URIList.length){
+                        Cache.remove({geohash: GeoResult.geohash});
+                    }
+                }
+        return 0;
+      }
+    });
             SyncedCron.add({
       name: 'UpdateStats',
       schedule: function(parser) {
@@ -561,21 +654,29 @@ var num_auto=0;
             var _spar = spar.replace(new RegExp("---", "g"), proper[prope_i].p);
             _spar = _spar.replace(new RegExp("%%%", "g"), proper[prope_i].c);
             var objQuery={sparql: _spar, ep: endpoint.endpoint, gr: endpoint.graphURI};
-            var result = {resultSet:{value:'{  "head": {    "vars": [ "p" , "Score" ]  } ,  "results": {    "bindings": [          ]  }}'}};
+            var result2 = {resultSet:{value:'{  "head": {    "vars": [ "p" , "Score" ]  } ,  "results": {    "bindings": [          ]  }}'}};
+            var result = null;
                    
             var cendp = ConfigInfo.filter(function (a){
                 return a.Endpoint==endpoint.endpoint;
             });
             cendp=cendp[0];
-            if (cendp != undefined){
+            if ( cendp != null && cendp != undefined){
                 var cvarlisc=cendp.ConfEntity.filter(function (a){
-                return a.URI==proper[prope_i].c;
-            });
-            
-
-            if (cvarlisc.length!=0){
-                result=Meteor.call('doQueryCacheStats', objQuery);                    
-            }
+                    return a.URI==proper[prope_i].c;
+                });
+                        if (cvarlisc.length != 0) {
+                            try {
+                                result = Meteor.call('doQueryCacheStats', objQuery);
+                            } catch (excep) {
+                                result = result2;
+                                console.log(excep.stack);
+                            }
+                        } else {
+                            result = result2;
+                        }
+            }else{
+                result = result2;
             }
             
                   
@@ -583,12 +684,14 @@ var num_auto=0;
             if (result == null || result == undefined || result.resultSet == null || result.resultSet== undefined || result.resultSet.value == null || result.resultSet.value== undefined )
             {
                 console.log('Error Sugg_ '+JSON.stringify(objQuery));
-                continue;
+                result=result2;
             }
             var r = result.resultSet.value;
             var lsp = JSON.parse(r).results.bindings;
             for (var k = 0; k < lsp.length; k++) {
-                resp.push({d: lsp[k].p.value, s: lsp[k].Score.value});
+                if (lsp[k].p != undefined && lsp[k].p != null && lsp[k].Score != undefined && lsp[k].Score != null ){
+                    resp.push({d: lsp[k].p.value, s: lsp[k].Score.value});
+                }
             }
             var respo = resp.sort(function (a, b) {
                 return b.s - a.s;
@@ -644,6 +747,9 @@ var num_auto=0;
         Cache._ensureIndex({'key': 1, 'faceted.key':1, 'faceted.value':1});
         Cache._ensureIndex({'key': 1} );
         Cache._ensureIndex({'keyl': 1});
+        
+        Cache._ensureIndex({'geohash': 1});
+        Cache._ensureIndex({'GeoQueryHash': 1});
         
         Cache._ensureIndex({'key': 1, 'nresult':1});
         Cache._ensureIndex({'ttl_date': 1}, {'expireAfterSeconds':1209600});
@@ -1021,6 +1127,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                 return h;
             },
             doQueryCache: function (a) {
+                var GeoInfoHash=0;
                 var FacSe = a.Faceted ? a.Faceted : [];
                 var c = a.ApplyFilter ? a.ApplyFilter : false;
                 var d = a.MainVar ? a.MainVar : "";
@@ -1045,89 +1152,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                             console.log("==Avoiding SPARQL validation on client");
                         }
                         var j = a.sparql.trim().hashCode();
-                        //console.log(j);
-                        //Get profile
-                        /*
-                        var usr = Profile.findOne({idProfile: this.userId});
-                        var appPri = false;
-                        var pon = 1;
-                        var idi = null;
-                        var lsareint = [];
-                        var lsareintP = [];
-                        //console.log(usr);
-
-                        var englsar = {"FoS_0": "Art",
-                            "FoS_1": "Biology",
-                            "FoS_2": "Business",
-                            "FoS_3": "Chemistry",
-                            "FoS_4": "Computer science",
-                            "FoS_5": "Economics",
-                            "FoS_6": "Engineering",
-                            "FoS_7": "Environmental science",
-                            "FoS_8": "Geography",
-                            "FoS_9": "Geology",
-                            "FoS_10": "History",
-                            "FoS_11": "Materials science",
-                            "FoS_12": "Mathematics",
-                            "FoS_13": "Medicine",
-                            "FoS_14": "Philosophy",
-                            "FoS_15": "Physics",
-                            "FoS_16": "Political science",
-                            "FoS_17": "Psychology",
-                            "FoS_18": "Sociology"};
-                        var esplsar = {"FoS_0": "Arte",
-                            "FoS_1": "Biología",
-                            "FoS_2": "Negocios",
-                            "FoS_3": "Química",
-                            "FoS_4": "Ciencias de la computación",
-                            "FoS_5": "Economía",
-                            "FoS_6": "Ingeniería",
-                            "FoS_7": "Ciencias medioambientales",
-                            "FoS_8": "Geografía",
-                            "FoS_9": "Geología",
-                            "FoS_10": "Historia",
-                            "FoS_11": "Ciencias de los materiales",
-                            "FoS_12": "Matemáticas",
-                            "FoS_13": "Medicina",
-                            "FoS_14": "Filosofía",
-                            "FoS_15": "Física",
-                            "FoS_16": "Ciencias políticas",
-                            "FoS_17": "Psicología",
-                            "FoS_18": "Sociología"};
-                        // console.log(this.userId);
-                        if (usr) {
-                            //   console.log(usr);
-
-                            appPri = true;
-                            if (usr.levelAcademic == 1) {
-                                pon = 2;
-                            }
-                            if (usr.levelAcademic == 2) {
-                                pon = 3;
-                            }
-                            if (usr.areasInterest != undefined && Array.isArray(usr.areasInterest)) {
-                                lsareint = usr.areasInterest;
-                            }
-
-                            var lsnn = [];
-                            for (var ik = 0; ik < 19; ik++) {
-                                lsareintP.push(englsar['FoS_' + ik]);
-                            }
-                            for (var ik = 0; ik < 19; ik++) {
-                                lsareintP.push(esplsar['FoS_' + ik]);
-                            }
-                            lsnn = lsareintP;
-                            for (var n = 0; n < lsnn.length; n++) {
-                                lsnn[n] = lsnn[n].removeDiacritics().keyword().trim().toLowerCase().split(" ").unique().filter(function (d) {
-                                    return d !== "";
-                                });
-                            }
-                            lsareintP = lsnn;
-                            idi = usr.language;
-                        }
-                        */
-                        //
-                        //
+                        GeoInfoHash=j;
                         ///Faceted
                         if (FacSe.length != 0) {
                             var kFaceted = Cache.findOne({key: j});
@@ -1152,13 +1177,9 @@ Api.addRoute('sparql', {authRequired: false}, {
                                     all.push(all_);
                                 }
                                 all.push({key: j});
-                                //console.log(JSON.stringify({$and : all }));
+
                                 var k = null;
-                             //   if (!appPri) {
                                     k = Cache.find({$and: all}, {sort: {nresult: 1, firstResult: -1}}).fetch();
-                              ///  } else {
-                               //     k = Prio(j, {$and: all}, {sort: {nresult: 1, firstResult: -1}}, pon, idi, e, f, false, lsareint);
-                              //  }
 
                                 var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
                                 var y = {};
@@ -1268,12 +1289,12 @@ Api.addRoute('sparql', {authRequired: false}, {
                                 y.content = JSON.stringify(z);
                                 h.resultSet = y;
                                 h.resultCount = s;
+                                h.GeoHash=GeoInfoHash;
                                 return h;
                             }
                         }
                         //Faceted
                         var k = null;
-                      //  if (!appPri) {
                             k = Cache.find({
                                 key: j,
                                 nresult: {
@@ -1285,10 +1306,6 @@ Api.addRoute('sparql', {authRequired: false}, {
                                     nresult: +1
                                 }
                             }).fetch();
-                     //   } else {
-                      //      k = Prio(j, {key: j}, null, pon, idi, e, f, true, lsareint);
-                      //  }
-                        /////
                         var l = "";
                         var cacheo = false;
                         if (0 == k.length) {
@@ -1314,14 +1331,11 @@ Api.addRoute('sparql', {authRequired: false}, {
                             var s = 0;
                             var timi = 0.0;
                             var bulk = [];
-                            //TickTock(true);
                             for (var t = 0; t < q; t++) {
                                 var un = false;
-                                //if (m.results.bindings[t]["" + d] == undefined){
-                                   // console.log(m.results.bindings[t]);
-                                    
-                                //}
-                                
+                                if (m.results.bindings[t]["" + d] == undefined){
+                                    continue;
+                                }
                                 var v = m.results.bindings[t]["" + d].value;
                                 if (r["" + v] != undefined) {
                                 } else {
@@ -1336,52 +1350,19 @@ Api.addRoute('sparql', {authRequired: false}, {
                                 var fEndpoint = null;
                                 var fLang = null;
                                 var fYear = null;
-                                //var fScore = 0.0;
-                                //var fSub = null;
-                               // if (m.results.bindings[t].Score != undefined) {
-                                //    fScore = Number(m.results.bindings[t].Score.value);
-                              //  }
-                                
-                               // if (m.results.bindings[t].Sub != undefined && m.results.bindings[t].Sub != null) {
-                              //      fSub=m.results.bindings[t].Sub.value;
-                              //  }
-                                   
-
-                                // if (r_Type["" + v]!= undefined){
-                                //   fType=r_Type["" + v];
-                                //}else{
                                 if (m.results.bindings[t].Type != undefined) {
                                     fType = m.results.bindings[t].Type.value;
                                 }
-                                //  r_Type["" + v]=fType;
-                                // }
-                                // if (r_Endpoint["" + v] != undefined){
-                                //   fEndpoint = r_Endpoint["" + v];
-                                // } else{
                                 if (m.results.bindings[t].Endpoint != undefined) {
                                     fEndpoint = m.results.bindings[t].Endpoint.value;
                                 }
-                                //   r_Endpoint["" + v] = fEndpoint;
-                                // }
-                                //  if (r_Lang["" + v] != undefined){
-                                //    fLang = r_Lang["" + v];
-                                //} else{
                                 if (m.results.bindings[t].Lang != undefined) {
                                     fLang = m.results.bindings[t].Lang.value;
                                 }
-                                //   r_Lang["" + v] = fLang;
-                                // }
-                                // if (r_Year["" + v] != undefined){
-                                //    fYear = r_Year["" + v];
-                                // } else{
+
                                 if (m.results.bindings[t].Year != undefined) {
                                     fYear = m.results.bindings[t].Year.value;
                                 }
-                                //    r_Year["" + v] = fYear;
-                                // }
-
-
-
                                 if (t == 0) {
                                     var u = JSON.parse(l.content);
                                     u.results.bindings = [m.results.bindings[t]];
@@ -1405,29 +1386,14 @@ Api.addRoute('sparql', {authRequired: false}, {
                                     value: JSON.parse(JSON.stringify(JSONOut2)),
                                     ttl_date: new Date(),
                                     nresult: r["" + v],
-                                   // score: Number(fScore),
                                     uri: v,
-                                   // sub: fSub,
                                     faceted: [{key: 'Year', value: Number(fYear) == 0 || isNaN(Number(fYear)) ? null : Number(fYear)}, {key: 'Endpoint', value: fEndpoint}, {key: 'Lang', value: fLang}, {key: 'Type', value: fType}],
                                     firstResult: un,
                                     original: orgi
                                 });
-                                /*Cache.insert({
-                                 key: j,
-                                 value: JSONOut2,
-                                 ttl_date: new Date(),
-                                 nresult: r["" + v],
-                                 score:Number(fScore),
-                                 uri:v,
-                                 sub:fSub,
-                                 faceted: [{key:'Year', value:Number(fYear) == 0 ? null:Number(fYear)  },{key:'Endpoint', value:fEndpoint},{key:'Lang', value:fLang},{key:'Type', value:fType}] ,
-                                 firstResult:un,
-                                 original: orgi
-                                 });*/
-
+                              
                                 l.content = back;
                             }
-                            //Cache.insert({keyp: j});
                             if (bulk.length>0){
                                 Cache.batchInsert(bulk);
                             }
@@ -1437,9 +1403,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                             r = {};
                             r_Sub = {};
                             m = {};
-                         //   l = {};
                             bulk = [];
-                          //  if (!appPri) {
                                 k = Cache.find({
                                     key: j,
                                     nresult: {
@@ -1451,11 +1415,6 @@ Api.addRoute('sparql', {authRequired: false}, {
                                         nresult: +1
                                     }
                                 }).fetch();
-                          //  } else {
-                         //       k = Prio(j, {key: j}, null, pon, idi, e, f, true, lsareint);
-                         //   }
-
-                            //////
                             if (0 == q) {
                                 k = [{
                                         key: j,
@@ -1466,7 +1425,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                         }
 
                         if (cacheo) {
-                            //console.log('calculo facteted');
+                            Cache.insert({geohash: j, ind: 0, prio:0});
                             //Facetas
                             var years = Cache.distinct('faceted.0.value', {key: j, firstResult: true, faceted: {$elemMatch: {key: 'Year'}}});
                             var years2 = [];
@@ -1588,6 +1547,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                         h.stack = C.toString();
                     }
                 }
+                h.GeoHash=GeoInfoHash;
                 return h;
             },
             doQueryDesc: function (jsonRequest, endpoint) {
@@ -1703,6 +1663,17 @@ Api.addRoute('sparql', {authRequired: false}, {
                                         'query': query,
                                         'format': format,
                                         'timeout': timeout
+                                    }
+                        });
+            },runQuerySimple: function (endpointURI, query) {
+                
+                //console.log(endpointURI);
+                //console.log(query); 
+                return HTTP.post(endpointURI,
+                        {
+                            'params':
+                                    {
+                                        'query': query
                                     }
                         });
             },
@@ -2640,8 +2611,66 @@ Api.addRoute('sparql', {authRequired: false}, {
                     return  "Sin permisos";
                  }
 
-              } ,
-
+              },
+            MapLocations : function  ( HashIdMap ) {
+                HashIdMap = Number(HashIdMap);
+                var r = Cache.find({GeoQueryHash: HashIdMap}).fetch();
+                var Response = {};
+                if (r.length > 0) {
+                    var GeoJSON = [];
+                    //var avgLong = 0;
+                    //var avgLat = 0;
+                    //var cont = 0;
+                    for (var ind = 0; ind < r.length; ind++) {
+                        if (!isNaN(r[ind].Long) && !isNaN(r[ind].Lat) && r[ind].Long != 0 && r[ind].Lat != 0) {
+                            var Obj = {type: "Feature", geometry: {type: "Point", coordinates: [r[ind].Long, r[ind].Lat]}, properties: {Repository: r[ind].Endpoint, Name: r[ind].Name, URI: r[ind].URI, Document: r[ind].Title, DocumentURI: r[ind].URI2}};
+                            GeoJSON.push(Obj);
+                            //avgLong += 1 / r[ind].Long;
+                            //avgLat += 1 / r[ind].Lat;
+                            //cont++;
+                        }
+                    }
+                    //avgLong = cont / avgLong;
+                    //avgLat = cont / avgLat;
+                    //var mxdis = -1;
+                    /*
+                    for (var ind = 0; ind < GeoJSON.length; ind++) {
+                        var lo = GeoJSON[ind].geometry.coordinates[0];
+                        var la = GeoJSON[ind].geometry.coordinates[1];
+                        var a3 = avgLong - lo;
+                        var a4 = avgLat - la;
+                        a3 = a3 * a3;
+                        a4 = a4 * a4;
+                        var dis = Math.sqrt(a3 + a4);
+                        if (dis > mxdis) {
+                            mxdis = dis;
+                        }
+                    }
+                    var GeoJSON2 = [];
+                    for (var ind = 0; ind < GeoJSON.length; ind++) {
+                        var lo = GeoJSON[ind].geometry.coordinates[0];
+                        var la = GeoJSON[ind].geometry.coordinates[1];
+                        var a3 = avgLong - lo;
+                        var a4 = avgLat - la;
+                        a3 = a3 * a3;
+                        a4 = a4 * a4;
+                        var dis = Math.sqrt(a3 + a4);
+                        if (dis <= (mxdis * 0.045)) {
+                            GeoJSON2.push(GeoJSON[ind]);
+                        }
+                    }
+                    */
+                    Response = {status:0,data:GeoJSON};
+                }else{
+                    var newr = Cache.find({key: HashIdMap}, {limit: 1}).fetch();
+                    if (newr.length != 0){
+                        Response = {status:1,data:null};
+                    }else{
+                        Response = {status:2,data:null};
+                    }
+                }
+                return Response;
+                },
                 DeleteImagen : function  ( id ) {
                     console.log ("Borrando "+id);
                    Images.remove({_id: id });

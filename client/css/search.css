@@ -290,6 +290,13 @@ border-radius: 5px;
     cursor: pointer;
 }
 
+#expandgeo {
+    left: 25%;
+    top: 2px;
+    cursor: pointer;
+}
+
+
 #endpointselect {
     margin-left: 2%;
 }

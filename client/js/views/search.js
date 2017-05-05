@@ -216,10 +216,13 @@ this.SearchView = Backbone.View.extend({
         var FromList = [];
         Session.set('DespSug', true);
         Session.set('DespFac', true);
+        Session.set('DespGeo', true);
 
         $("#pfac").css("min-height", "40px");
+        $("#pgeo").css("min-height", "10px");
         $("#sug").collapse('show');
         $("#fac").collapse('show');
+        $("#geo").collapse('show');
 
         var term = Session.get('s1');
         var type = Session.get('s2');
@@ -342,32 +345,32 @@ this.SearchView = Backbone.View.extend({
 
 
 
-         /*
-
-        var prev;
-        $("#documentos2").click(function () {
-            cache = {};
-            actu = {};
-            var val = 'documentos';
-            prev = selec2(prev, val);
-
-        });
-
-        $("#autores2").click(function () {
-            cache = {};
-            actu = {};
-            var val = 'autores';
-            prev = selec2(prev, val);
-            console.log($('input[data-name=' + base + ']'));
-        });
-
-        $("#colecciones2").click(function () {
-            cache = {};
-            actu = {};
-            var val = 'colecciones';
-            prev = selec2(prev, val);
-        });
-            */
+        /*
+         
+         var prev;
+         $("#documentos2").click(function () {
+         cache = {};
+         actu = {};
+         var val = 'documentos';
+         prev = selec2(prev, val);
+         
+         });
+         
+         $("#autores2").click(function () {
+         cache = {};
+         actu = {};
+         var val = 'autores';
+         prev = selec2(prev, val);
+         console.log($('input[data-name=' + base + ']'));
+         });
+         
+         $("#colecciones2").click(function () {
+         cache = {};
+         actu = {};
+         var val = 'colecciones';
+         prev = selec2(prev, val);
+         });
+         */
         $('#AllRepo').on('click', function (ev) {
             if (document.getElementsByName('repositoriesListAll')[0].checked) {
                 var inputs = document.getElementsByName('repositoriesList');
@@ -493,7 +496,7 @@ this.SearchView = Backbone.View.extend({
             var SubQN = 0;
             var sources = [];
             for (var oneQuery = 0; oneQuery < FromList.length; oneQuery++) {
-                var EndpointLocal = FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
+                var EndpointLocal = false;//FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
                 var Service = FromList[oneQuery].attributes['data-endpoint'].value;
                 var ServiceName = FromList[oneQuery].attributes['data-name'].value;
 
@@ -503,10 +506,10 @@ this.SearchView = Backbone.View.extend({
 
                 for (var oneRes = 0; oneRes < ResqLis.length; oneRes++) {
                     var Class__ = [];
-                    if (Endpoint__.length > 0){
-                    Class__ = Endpoint__[0].EntSearch.filter(function (a) {
-                        return a == ResqLis[oneRes].resourceClass;
-                    });
+                    if (Endpoint__.length > 0) {
+                        Class__ = Endpoint__[0].EntSearch.filter(function (a) {
+                            return a == ResqLis[oneRes].resourceClass;
+                        });
                     }
 
                     if (Class__.length == 0) {
@@ -527,8 +530,14 @@ this.SearchView = Backbone.View.extend({
                         var Property_ = ResqLis[oneRes].indexProperties[oneProp];
                         var PropertyName_ = ResqLis[oneRes].indexPropertiesName[oneProp];
                         var Label_ = ResqLis[oneRes].labelProperty;
-                        Query += 'select   ?Score1 (\'' + ServiceName + '\' AS ?Endpoint) ?EntityURI (IRI(<' + Class_ + '>) AS ?EntityClass) ?EntityLabel (IRI(<' + Property_ + '>) AS ?Property) (\'' + PropertyName_ + '\' AS ?PropertyLabel) ?PropertyValue  (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type)  ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,' + ty + ',1)) as ?Score ) \n'; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
+                        Query += 'select   ?Score1 ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue  (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type)  ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,' + ty + ',1)) as ?Score ) \n'; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
                         Query += '{\n';
+
+                        Query += 'bind (\'' + ServiceName + '\' AS ?Endpoint) .\n';
+                        Query += 'bind (IRI(<' + Class_ + '>) AS ?EntityClass) .\n';
+                        Query += 'bind (IRI(<' + Property_ + '>) AS ?Property) .\n';
+                        Query += 'bind (\'' + PropertyName_ + '\' AS ?PropertyLabel) .\n';
+
                         Query += '(?EntityURI ?Score1 ?PropertyValue) text:query (<' + Property_ + '> \'(' + TextSearch + ')\' ' + ResultLimitSubQ + ') .\n?EntityURI <' + Label_ + '> ?EntityLabel .\n';
                         Query += 'filter(str(?PropertyValue)!=\'\') .\n';
                         Query += "optional { (?EntityURI ?Score2 ?PropertyValue2) text:query (<http://purl.org/dc/terms/subject> '(" + int + ")' ) .  filter(str(?EntityURI)!=\'\') .} \n"
@@ -559,14 +568,14 @@ this.SearchView = Backbone.View.extend({
                 });
             }
 
-            
-           
+
+
             if (SubQN == 0) {
                 Query += ' ?EntityURI <none> ?Score . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
             } else {
-                 Query += ' . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
+                Query += ' . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
             }
-             var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
+            var jsonRequest = {"sparql": Query, "validateQuery": false, "MainVar": "EntityURI", "ApplyFilter": AppFilt};
             console.log(jsonRequest);
             Session.set('jsonRequest', jsonRequest);
             App.SearchRun(0, 1);
@@ -577,18 +586,18 @@ this.SearchView = Backbone.View.extend({
         if (term != "null") {
             $(".textToSearch").val(term);
 
-              /*
-            switch (type) {
-                case 'autores':
-                    $("#autores2").attr('checked', 'checked');
-                    break;
-                case 'documentos':
-                    $("#documentos2").attr('checked', 'checked');
-                    break;
-                case 'colecciones':
-                    $("#colecciones2").attr('checked', 'checked');
-                    break;
-            }*/
+            /*
+             switch (type) {
+             case 'autores':
+             $("#autores2").attr('checked', 'checked');
+             break;
+             case 'documentos':
+             $("#documentos2").attr('checked', 'checked');
+             break;
+             case 'colecciones':
+             $("#colecciones2").attr('checked', 'checked');
+             break;
+             }*/
 
             darclick(FromList);
         }
@@ -713,13 +722,13 @@ linkg2 = function (e) {
     var v2 = en.endpoint;
     var v3 = en.graphURI;
     var redirectWindow = window.open('', '_blank');
-     
-    var source =  Configuration.find({ "Endpoint" : v2 }).fetch()[0].Source;
-    if ( source == undefined || source == "---") {
-         source = "http://purl.org/ontology/bibo/handle";
-     } 
 
-    Meteor.call('runQuery', v2, v3, 'select ?a {<' + v1 + '>  <'+source+'> ?a} limit 1', function (error, result) {
+    var source = Configuration.find({"Endpoint": v2}).fetch()[0].Source;
+    if (source == undefined || source == "---") {
+        source = "http://purl.org/ontology/bibo/handle";
+    }
+
+    Meteor.call('runQuery', v2, v3, 'select ?a {<' + v1 + '>  <' + source + '> ?a} limit 1', function (error, result) {
         if (result) {
             var r = JSON.parse(result.content).results.bindings;
             if (r.length == 0) {
@@ -913,7 +922,7 @@ actAHyper = function (e) {
     Session.set('TypeVar', TypeVar);
     Session.set('TitleVar', TitleVar[0]);
     for (var oneQuery = 0; oneQuery < FromList.length; oneQuery++) {
-        var EndpointLocal = FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
+        var EndpointLocal = false;//FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
         var Service = FromList[oneQuery].attributes['data-endpoint'].value;
         var ServiceName = FromList[oneQuery].attributes['data-name'].value;
         SubQN++;
@@ -925,13 +934,14 @@ actAHyper = function (e) {
         if (!EndpointLocal) {
             Query += 'service <' + Service + '> {\n';
         }
-        var NewSQ2 = NewSQ.replace(new RegExp("SELECT DISTINCT", "g"), "SELECT DISTINCT ('" + ServiceName + "' AS ?Endpoint) ?Score2 ?Score3 ?Score4 ");
+        var NewSQ2 = NewSQ.replace(new RegExp("SELECT DISTINCT", "g"), "SELECT DISTINCT ?Endpoint ?Score2 ?Score3 ?Score4 ");
         var sr = '';
         if (respp == 2) {
             sr = "";
         } else {
-            sr = "  bind(1 as ?Score1). ";
+            sr = "  bind(1 as ?Score1) . ";
         }
+        sr += "  bind ('" + ServiceName + "' AS ?Endpoint) . ";
         NewSQ2 = NewSQ2.replace(/\}\n\}$/, sr + "optional { (" + MainVar + " ?Score2 ?PropertyValue2) <http://jena.apache.org/text#query> (<http://purl.org/dc/terms/subject> '(" + int + ")' ) .    filter(str(" + MainVar + ")!=\'\') . } \n   optional { " + MainVar + " <http://purl.org/dc/terms/language> ?Lang1 .  } \n optional { " + MainVar + " <http://purl.org/dc/terms/language> ?Lang2 .  filter(str(?Lang2) = '" + idi + "'). bind( 1 as ?Score3  ).  } \n optional { " + MainVar + " <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?Year1 ).  }\n  optional { " + MainVar + " a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document')  } \n optional { {" + MainVar + " a <http://purl.org/ontology/bibo/Article> .  bind(1 as ?Score4  ). } union { " + MainVar + " a <http://purl.org/net/nknouf/ns/bibtex#Mastersthesis> .  bind(1 as ?Score4  ). }  } \n }} ");
 
         Query += NewSQ2 + "\n";
@@ -1149,11 +1159,32 @@ desplegar = function (e) {
     }
     //alert ("Desplegar");
 }
+
+
+desplegar3 = function (e) {
+// $("#sug").collapse('toggle');
+
+    if (Session.get('DespGeo')) {
+        $("#pgeo").css("min-height", "10px");
+        $("#geo").collapse('hide');
+        Session.set('DespGeo', false);
+        // $(".sugestion-panel").css ("min-height", "400px");
+
+    } else {
+        $("#geo").collapse('show');
+        Session.set('DespGeo', true);
+        //$(".sugestion-panel").css ("min-height", "400px");
+        //   $("#sug").collapse();
+    }
+//alert ("Desplegar");
+}
+
 desplegar2 = function (e) {
-    // $("#sug").collapse('toggle');
+// $("#sug").collapse('toggle');
 
     if (Session.get('DespFac')) {
         $("#pfac").css("min-height", "40px");
+        $("#pgeo").css("min-height", "10px");
         $("#fac").collapse('hide');
         Session.set('DespFac', false);
         // $(".sugestion-panel").css ("min-height", "400px");
@@ -1164,7 +1195,7 @@ desplegar2 = function (e) {
         //$(".sugestion-panel").css ("min-height", "400px");
         //   $("#sug").collapse();
     }
-    //alert ("Desplegar");
+//alert ("Desplegar");
 }
 
 Template.search.events({
