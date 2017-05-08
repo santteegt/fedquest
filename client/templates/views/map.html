@@ -1,0 +1,28 @@
+<template name="map">
+    {{#if Template.subscriptionsReady}}
+    <div id= "areagrafo"  state = "{{Config}}" class="col-xs-9 col-sm-8 main tree-main-container"  style="display:block; height:100%; width:100%" ng-model="value">
+
+
+    </div>
+
+
+    <div class="footer">
+        <div class="row">
+            <!--
+            <div class="col-xs-2">
+            </div> -->
+            <div class="col-xs-12">
+                <div style="position:absolute; right:0; padding: 0 35px;">
+                    <small class="footer-legend"><strong>Developed by:</strong></small>
+                    <img src="/images/ucuenca-logo.png" alt="ucuenca" style="height:40px" draggable="false">
+                    <small class="footer-legend"><strong>Powered by:</strong></small>
+                    <!-- <img src="images/cepra-logo.png" alt="ucuenca" style="height:30px" draggable="false"> -->
+                    <img src="/images/gtr-logo.png" alt="ucuenca" style="height:30px" draggable="false">
+                    <small class="footer-legend">GT-Repositorios</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='notifications top-right' style="width: 250px;"></div>
+    {{/if}}
+</template>

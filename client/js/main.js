@@ -145,6 +145,7 @@ if (Meteor.isClient) {
                 }).show();
             } else {
                 if (result.resultSet) {
+                    Session.set("LinkGeo", result.GeoHash);
                     if (qm > 0) {
                         pa = -1;
                         Session.set("NResult", result.resultCount);
@@ -1251,8 +1252,8 @@ if (Meteor.isClient) {
             };
         },
         StatLoad: function () {
-            var endp = Session.get('Graph');    
-             if (endp !== undefined && endp != null && endp != "---") {
+            var endp = Session.get('Graph');
+            if (endp !== undefined && endp != null && endp != "---") {
                 console.log(endp);
                 console.log(Configuration.find({"Endpoint": endp}).fetch()[0].ConfStat);
                 return Configuration.find({"Endpoint": endp}).fetch()[0].ConfStat;
@@ -1318,7 +1319,7 @@ if (Meteor.isClient) {
         PropertiesAvailable: function () {
             var valores = [];
             var graph = Session.get('Graph');
-           // console.log("Graficar");
+            // console.log("Graficar");
             if (graph !== undefined) {
                 valores = Properties.find({'endpoint': graph}).fetch();
             } else {
@@ -1337,15 +1338,15 @@ if (Meteor.isClient) {
         EntitiesAvailable: function () {
             var valores = [];
             var graph = Session.get('Graph');
-          //  console.log("Graficar");
-          //  console.log (graph);
-            if (!(_.isUndefined(graph) || graph == null ) && graph != "---" ) {
+            //  console.log("Graficar");
+            //  console.log (graph);
+            if (!(_.isUndefined(graph) || graph == null) && graph != "---") {
                 //if (graph !== undefined &&  graph !== null ){ 
                 valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
             } else {
                 //valores = Properties.find().fetch();
                 //valores = [ {name : ""} ];
-                   console.log ("No grafica Available");
+                console.log("No grafica Available");
             }
             //console.log (valores.length);
 
@@ -1356,12 +1357,12 @@ if (Meteor.isClient) {
 
     Template.completpropertysingle.helpers({
         PropertiesAvailableSingle: function ( ) {
-          //  console.log ("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-           // console.log (param);
+            //  console.log ("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+            // console.log (param);
 
             var valores = [];
             var graph = Session.get('Graph');
-           // console.log("Graficar");
+            // console.log("Graficar");
             if (graph !== undefined) {
                 valores = Properties.find({'endpoint': graph}).fetch();
             } else {
@@ -1370,16 +1371,16 @@ if (Meteor.isClient) {
             }
             console.log(valores.length);
 
-            
-              /*    _.each ( valores , function (e , idx ) { 
-                      if (idx == 2 &&  "FontProp" == param ){
-                      e.isSelected = "selected";
-                  } else {
-                      e.isSelected = "false";
-                  }
-                });
 
-           console.log (valores);*/
+            /*    _.each ( valores , function (e , idx ) { 
+             if (idx == 2 &&  "FontProp" == param ){
+             e.isSelected = "selected";
+             } else {
+             e.isSelected = "false";
+             }
+             });
+             
+             console.log (valores);*/
 
             return valores;
 
@@ -1391,7 +1392,7 @@ if (Meteor.isClient) {
         PropertiesAvailable: function () {
             var valores = [];
             var graph = Session.get('Graph');
-          //  console.log("Graficar");
+            //  console.log("Graficar");
             if (graph !== undefined) {
                 valores = Properties.find({'endpoint': graph}).fetch();
             } else {
@@ -1413,9 +1414,9 @@ if (Meteor.isClient) {
             var valores = [];
             var graph = Session.get('Graph');
             // var act = Session.get ('updatetables');
-           // console.log("Graficar lista 1");
-           // console.log(type);
-           // console.log (graph); 
+            // console.log("Graficar lista 1");
+            // console.log(type);
+            // console.log (graph); 
             if (graph !== undefined && graph !== null && graph != "---") {
                 valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
                 var valorselect = "";
@@ -1427,9 +1428,9 @@ if (Meteor.isClient) {
 
                     valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].EntSearch;
                     var selected = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].Source;
-                    console.log ("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-                    console.log (selected);
-                     $('#FontProp').val (selected);
+                    console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                    console.log(selected);
+                    $('#FontProp').val(selected);
                 }
                 console.log("Valores registrados");
                 console.log(valorselect);
@@ -2396,6 +2397,19 @@ if (Meteor.isClient) {
                 return "glyphicon glyphicon-chevron-down";
             }
 
+        }, GeoLink: function () {
+            var des = window.location.protocol + '//' + window.location.host + '/map/' + Session.get("LinkGeo");
+            return des;
+
+        }, DespGeo: function () {
+            var des = Session.get("DespGeo");
+            if (des) {
+
+                return "glyphicon glyphicon-chevron-up";
+            } else {
+                return "glyphicon glyphicon-chevron-down";
+            }
+
         }, DespFac: function () {
             var des = Session.get("DespFac");
             if (des) {
@@ -2469,8 +2483,41 @@ if (Meteor.isClient) {
             return pagcon;
         }, resourcesavailable: function () {
 
-            return  Session.get ( 'TypesAvailable' );
-          /*  var hashEnt = {};
+            return  Session.get('TypesAvailable');
+            /*  var hashEnt = {};
+             var ConfigEnt = [];
+             _.each(Configuration.find().fetch(), function (conf) {
+             console.log("Recursos disponibles");
+             console.log(conf.EntSearch);
+             _.each(conf.EntSearch, function (ent) {
+             var confe = _.find(conf.ConfEntity, function (ce) {
+             return ce.URI == ent
+             });
+             if (!_.isUndefined(confe))
+             {
+             if (!hashEnt.hasOwnProperty(ent)) {
+             hashEnt [ent] = {'Name': confe.URI, 'Imagen': confe.file, 'Description': confe.name};
+             if (Session.get('s2') == confe.URI) {
+             hashEnt[ent].Check = "'true'";
+             }
+             }
+             }
+             
+             });
+             });
+             console.log("Hash");
+             console.log(hashEnt);
+             
+             var arrayent = Object.keys(hashEnt).map(function (key) {
+             return  hashEnt [key];
+             });
+             console.log("Lista");
+             console.log(arrayent);
+             return arrayent;*/
+
+
+        }, numresourceavailable: function () {
+            var hashEnt = {};
             var ConfigEnt = [];
             _.each(Configuration.find().fetch(), function (conf) {
                 console.log("Recursos disponibles");
@@ -2499,44 +2546,11 @@ if (Meteor.isClient) {
             });
             console.log("Lista");
             console.log(arrayent);
-            return arrayent;*/
-
-
-        } , numresourceavailable : function () {
-               var hashEnt = {};
-            var ConfigEnt = [];
-            _.each(Configuration.find().fetch(), function (conf) {
-                console.log("Recursos disponibles");
-                console.log(conf.EntSearch);
-                _.each(conf.EntSearch, function (ent) {
-                    var confe = _.find(conf.ConfEntity, function (ce) {
-                        return ce.URI == ent
-                    });
-                    if (!_.isUndefined(confe))
-                    {
-                        if (!hashEnt.hasOwnProperty(ent)) {
-                            hashEnt [ent] = {'Name': confe.URI, 'Imagen': confe.file, 'Description': confe.name};
-                            if (Session.get('s2') == confe.URI) {
-                                hashEnt[ent].Check = "'true'";
-                            }
-                        }
-                    }
-
-                });
-            });
-            console.log("Hash");
-            console.log(hashEnt);
-
-            var arrayent = Object.keys(hashEnt).map(function (key) {
-                return  hashEnt [key];
-            });
-            console.log("Lista");
-            console.log(arrayent);
-            Session.set ( 'TypesAvailable' , arrayent );
+            Session.set('TypesAvailable', arrayent);
             return arrayent.length > 4;
 
-        } , invnumresourceavailable : function () {
-            
+        }, invnumresourceavailable: function () {
+
         }
     });
 
@@ -2710,8 +2724,8 @@ if (Meteor.isClient) {
                     }
 
 
-                    OneResult.Icon=lsIcon[''+OneResult.Type];
-                    
+                    OneResult.Icon = lsIcon['' + OneResult.Type];
+
                     var Resourcesfav = Favresources.find({idUser: Meteor.userId()}).fetch();
 
                     var favorite = Resourcesfav.find(function (val) {
@@ -2858,10 +2872,10 @@ if (Meteor.isClient) {
                 }
 
             }
-        } 
+        }
 //toShow.sort(compare);
-      console.log ("Resultado a graficar");
-      console.log (toShow);
+        console.log("Resultado a graficar");
+        console.log(toShow);
 
         return toShow;
     }

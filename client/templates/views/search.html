@@ -1,386 +1,386 @@
 
-			<template name="search">
+<template name="search">
 
-		<div class="search-section container-fluid" style="overflow: scroll"> 
-	    <div class="first-search"> 
-	    <div class="firstsection">
-		<div class="title-seach text-center">
-		<p class="recurso"> {{lang "resources-search"}} </p>
-	    </div>
-		<div class="search-area text-center">
-	    <div class="row">
-		<div class="col-md-10">
-		<div class="Search-bar input-group"> 
-		  <input type="text" value="" name="terms" onclick="Session.set('auxAct',Session.get('auxAct')+1);" onkeydown="Session.set('auxAct',Session.get('auxAct')+1); if(event.keyCode == 13){$('.runSearch').click();}" class="required form-control textToSearch" id="mce-text" placeholder={{lang "placeholder-search"}} required>
-                          <span class="input-group-btn">
-                            <input type="button" value={{lang "search"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearch" >                   
-						 </span>
-		</div>
-        {{#if numresourceavailable }}
-        <form class="result-options" >
-        <div class="col-md-12" style="text-align: left; margin-top: -10px;margin-bottom: -5px;"> 
-        <div class="cc-selector"> 
-        {{#each resourcesavailable}}
-        <input id="{{Description}}" class="mainselecttype" type="radio" name="opciones" value="{{Name}}" Checked = "{{Check}}" />
-        <label style="background-image:url('{{Imagen}}');" tipo= "{{Name}}" class="opciones-cc {{Description}}" select="0" for="{{Imagen}}" data-toggle="tooltip" title="{{Description}}"></label>
-        {{/each}}
-            </div>  
-         </div>
-         </form>
-         {{/if}}
-          </div>
-		
-		 {{#unless numresourceavailable}}
-		 <form class="result-options" >
-        <div class=col-md-2> 
-        <div class="cc-selector"> 
-        {{#each resourcesavailable}}
-        <input id="{{Description}}" class="mainselecttype" type="radio" name="opciones" value="{{Name}}" Checked = "{{Check}}" />
-        <label style="background-image:url('{{Imagen}}');" tipo= "{{Name}}" class="opciones-cc {{Description}}" select="0" for="{{Imagen}}" data-toggle="tooltip" title="{{Description}}"></label>
-        {{/each}}
-            </div>  
-         </div>
-         </form>
-         {{/unless}}
+    <div class="search-section container-fluid" style="overflow: scroll"> 
+        <div class="first-search"> 
+            <div class="firstsection">
+                <div class="title-seach text-center">
+                    <p class="recurso"> {{lang "resources-search"}} </p>
+                </div>
+                <div class="search-area text-center">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="Search-bar input-group"> 
+                                <input type="text" value="" name="terms" onclick="Session.set('auxAct', Session.get('auxAct') + 1);" onkeydown="Session.set('auxAct', Session.get('auxAct') + 1); if (event.keyCode == 13){$('.runSearch').click(); }" class="required form-control textToSearch" id="mce-text" placeholder={{lang "placeholder-search"}} required>
+                                <span class="input-group-btn">
+                                    <input type="button" value={{lang "search"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearch" >                   
+                                </span>
+                            </div>
+                            {{#if numresourceavailable }}
+                            <form class="result-options" >
+                                <div class="col-md-12" style="text-align: left; margin-top: -10px;margin-bottom: -5px;"> 
+                                    <div class="cc-selector"> 
+                                        {{#each resourcesavailable}}
+                                        <input id="{{Description}}" class="mainselecttype" type="radio" name="opciones" value="{{Name}}" Checked = "{{Check}}" />
+                                        <label style="background-image:url('{{Imagen}}');" tipo= "{{Name}}" class="opciones-cc {{Description}}" select="0" for="{{Imagen}}" data-toggle="tooltip" title="{{Description}}"></label>
+                                        {{/each}}
+                                    </div>  
+                                </div>
+                            </form>
+                            {{/if}}
+                        </div>
+
+                        {{#unless numresourceavailable}}
+                        <form class="result-options" >
+                            <div class=col-md-2> 
+                                <div class="cc-selector"> 
+                                    {{#each resourcesavailable}}
+                                    <input id="{{Description}}" class="mainselecttype" type="radio" name="opciones" value="{{Name}}" Checked = "{{Check}}" />
+                                    <label style="background-image:url('{{Imagen}}');" tipo= "{{Name}}" class="opciones-cc {{Description}}" select="0" for="{{Imagen}}" data-toggle="tooltip" title="{{Description}}"></label>
+                                    {{/each}}
+                                </div>  
+                            </div>
+                        </form>
+                        {{/unless}}
+
+                        <!--
+                        <form class="result-options">
+                           <div class=col-md-2> 
+                                  <div class="cc-selector"> 
+                                  <input id="documentos2" type="radio" name="opciones" value="documentos" />
+                                  <label class="opciones-cc documentos" for="documentos2" data-toggle="tooltip" title={{lang "tip-document"}}></label>
+                      <input id="autores2" type="radio" name="opciones" value="autores" />
+                                  <label class="opciones-cc autores" for="autores2" data-toggle="tooltip" title={{lang "tip-author"}}></label>
         
-		<!--
-		<form class="result-options">
-		   <div class=col-md-2> 
-			  <div class="cc-selector"> 
-			  <input id="documentos2" type="radio" name="opciones" value="documentos" />
-			  <label class="opciones-cc documentos" for="documentos2" data-toggle="tooltip" title={{lang "tip-document"}}></label>
-              <input id="autores2" type="radio" name="opciones" value="autores" />
-			  <label class="opciones-cc autores" for="autores2" data-toggle="tooltip" title={{lang "tip-author"}}></label>
+                                  <input id="colecciones2" type="radio" name="opciones" value="colecciones" />
+                                  <label class="opciones-cc colecciones" for="colecciones2" data-toggle="tooltip" title={{lang "tip-collection"}}></label>
+                              </div>
+                                  </div>
+                                </form > -->
+                    </div>
+                </div>
 
-			  <input id="colecciones2" type="radio" name="opciones" value="colecciones" />
-			  <label class="opciones-cc colecciones" for="colecciones2" data-toggle="tooltip" title={{lang "tip-collection"}}></label>
-		      </div>
-			  </div>
-			</form > -->
-		</div>
-		</div>
-		
-		<div class="title-seach row">
-		<div class="col-md-6">
-		<a href="#" class="avanzado" onclick="hide (event);"> {{lang "advance-search"}} </a>
-		</div>
-		<div class="col-md-6" style="align: right">
-		<p> {{NresultFullQuery}}</p>
-		</div>
+                <div class="title-seach row">
+                    <div class="col-md-6">
+                        <a href="#" class="avanzado" onclick="hide (event);"> {{lang "advance-search"}} </a>
+                    </div>
+                    <div class="col-md-6" style="align: right">
+                        <p> {{NresultFullQuery}}</p>
+                    </div>
+                </div>
+
+                <div class="oculto" > 
+                    <div class="input-group col-md-12" id = "endpointselect">
+                        <div style="float: left;"><input type="checkbox" class="optional" id="AllRepo" name="repositoriesListAll"   ><i>All</i>&nbsp;&nbsp;</div>
+                        {{#each endpointsAvailable}}
+
+                        <div style="float: left;"><input type="checkbox" data-base="{{base}}" checked="true"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" >{{name}}&nbsp;&nbsp;</div>
+
+                        {{/each}}
+
+                    </div>
+                </div> 
+
+            </div>
         </div>
-     
-		<div class="oculto" > 
-		 <div class="input-group col-md-12" id = "endpointselect">
-<div style="float: left;"><input type="checkbox" class="optional" id="AllRepo" name="repositoriesListAll"   ><i>All</i>&nbsp;&nbsp;</div>
-									{{#each endpointsAvailable}}
-									
-									<div style="float: left;"><input type="checkbox" data-base="{{base}}" checked="true"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" >{{name}}&nbsp;&nbsp;</div>
 
-									{{/each}}
+        <div class="second-area">
+            <div class="row">
+                <div class="sugestion-area col-md-3"> 
 
-								</div>
-		</div> 
-	  
-		</div>
-		</div>
+                    <div class="sugestion-panel" id = "pgeo">
+                        <span id="Title-suggestion" > <b>Geo </b>  </span>
+                        <span class = "{{DespGeo}}" id= "expandgeo"  onclick = "desplegar3 (this)"  > </span>
+                        <div class="result-suggestion collapse" id = "geo" style="padding: 5px;">
+                            <a href="{{GeoLink}}" target="_blank">Ver mapa</a>
+                        </div>
+                    </div>
 
-		<div class="second-area">
-	    <div class="row">
-			<div class="sugestion-area col-md-3"> 
-                            
-                                <div class="sugestion-panel" id = "pfac">
-					<span id="Title-suggestion" > <b>{{lang "fac"}} </b>  </span>
-					<span class = "{{DespFac}}" id= "expandfac"  onclick = "desplegar2 (this)"  > </span>
-					<div class="result-suggestion collapse" id = "fac" style="padding: 5px;">
-                                            {{#if BresultFullQuery}}
-                                                
-                                                {{#each facetedOptions}}
-                                                    <h4>{{Title}}</h4>
-                                                    {{#if Range}}
-                                                    
-                                                        {{#if Exists}}
-                                                        <div id="slider-range" data-inf="{{Values2}}" data-min="{{Min}}" data-max="{{Max}}"></div>
-                                                            <p>
-                                                                <label for="amount">{{lang "lblRange"}}:</label>
-                                                                <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
-                                                              </p>
-                                                              <script>
-                                                                  $(function(){
-                                                                      facetedRange();
-                                                                      
-                                                                      
-                                                                  });
-                                                                  
-                                                                  </script>
+                    <div class="sugestion-panel" id = "pfac">
+                        <span id="Title-suggestion" > <b>{{lang "fac"}} </b>  </span>
+                        <span class = "{{DespFac}}" id= "expandfac"  onclick = "desplegar2 (this)"  > </span>
+                        <div class="result-suggestion collapse" id = "fac" style="padding: 5px;">
+                            {{#if BresultFullQuery}}
 
-                                                                        {{else}}
-                                                                        {{lang "noData"}}
-                                                          {{/if}}
-                                                    {{else}}
-                                                    {{#if Exists}}
-                                                        <div class="input-group" >
-                                                        {{#each Values}}
-                                                            <div style="float: left;"><input type="checkbox" data-count="{{count}}" data-key="{{key}}" checked="true"  class="optional" name="fcls_{{Title}}"> ({{count}}) {{key2}}&nbsp;&nbsp;</div>
-                                                    
-                                                    
-                                                        {{/each}}
-                                                        </div>
-                                                    {{else}}
-                                                    {{lang "noData"}}
-                                                          {{/if}}
-                                                    {{/if}}
-                                                {{/each}}
-                                                <p>
-                                                 <span class="input-group-btn">
-                                                    <input type="button" value={{lang "run-query"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearchFaceted" >                   
-                                                </span>
-                                                </p>
-                                                <script>
-                                                    
-                                                    function get_checkList_values3(CheckName) {
-                                                    var inputs = document.getElementsByName(CheckName);
-                                                    var values = [];
-                                                    for (var i = 0; i < inputs.length; i++) {
-                                                        if (inputs[i].checked) {
-                                                            if (inputs[i].attributes['data-key']){
-                                                                values.push(inputs[i].attributes['data-key'].value);
-                                                            }else{
-                                                                values.push(null);
-                                                            }
-                                                        }
-                                                    }
-                                                    return values;
-                                                }
-                                                    
-                                                                        $( function() {
-                                                                     
-                                                        $('input.runSearchFaceted').on('click', function (ev) {
+                            {{#each facetedOptions}}
+                            <h4>{{Title}}</h4>
+                            {{#if Range}}
 
-                                                            //alert('d');
-                                                            var fac=[];
+                            {{#if Exists}}
+                            <div id="slider-range" data-inf="{{Values2}}" data-min="{{Min}}" data-max="{{Max}}"></div>
+                            <p>
+                                <label for="amount">{{lang "lblRange"}}:</label>
+                                <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+                            </p>
+                            <script>
+                                $(function(){
+                                facetedRange();
+                                });
+                            </script>
 
-                                                            if ($( "#slider-range" ).length>0){
-                                                                var f1={key:'Year', value:[$( "#slider-range" ).slider( "values", 0 ), $( "#slider-range" ).slider( "values", 1 )]};
-                                                                fac.push(f1);
-                                                            }
-
-                                                            var ls = get_checkList_values3 ( 'fcls_Types');
-                                                            fac.push({key:'Type', value:ls});
-
-                                                            var ls = get_checkList_values3 ( 'fcls_Endpoints');
-                                                            fac.push({key:'Endpoint', value:ls});
-                                                            var ls = get_checkList_values3 ( 'fcls_Langs');
-                                                            fac.push({key:'Lang', value:ls});
+                            {{else}}
+                            {{lang "noData"}}
+                            {{/if}}
+                            {{else}}
+                            {{#if Exists}}
+                            <div class="input-group" >
+                                {{#each Values}}
+                                <div style="float: left;"><input type="checkbox" data-count="{{count}}" data-key="{{key}}" checked="true"  class="optional" name="fcls_{{Title}}"> ({{count}}) {{key2}}&nbsp;&nbsp;</div>
 
 
-                                                            var jsonRequest = Session.get('jsonRequest');
-                                                            jsonRequest['Faceted']=fac;
-                                                            Session.set('jsonRequest', jsonRequest);
-                                                            App.SearchRun(0, 3);
+                                {{/each}}
+                            </div>
+                            {{else}}
+                            {{lang "noData"}}
+                            {{/if}}
+                            {{/if}}
+                            {{/each}}
+                            <p>
+                                <span class="input-group-btn">
+                                    <input type="button" value={{lang "run-query"}} name="subscribe" id="mc-embedded-subscribe" class="btn btn-default runSearchFaceted" >                   
+                                </span>
+                            </p>
+                            <script>
 
-                                                        });
-                                               } );
-                                                                        </script> 
-                                                
-                                            {{else}}
-                                                {{lang "noData"}}
-                                            {{/if}}
-					</div>
-				</div>
-                            
-				<div class="sugestion-panel" id = "psug">
-					<span id="Title-suggestion" > <b>{{lang "sug"}} </b>  </span>
-					<span class = "{{DespSug}}" id= "expandsugg"  onclick = "desplegar (this)"  > </span>
-					<div class="result-suggestion collapse" id = "sug">
-						
-					<UL type = "disk" id="Sugerencias">
-        			<!--<li> Buscar por autores con nombre "DIEGO" </li> onclick = "desplegar (this)" data-toggle="collapse" data-target="#sug"
-        			<li> Buscar colecciones que contenga obras cuyo autor se llame "Diego" </li>
-        			<li> Buscar obras cuyo autor se llame "DIEGO" </li>
-        			<li>Perú </li> -->
-        			{{#each suggestedQueries}}
-        			  	<li class="suggestion-group"><a data-title ="{{title}}" href='#' onclick="actAHyper(event);" >{{description}}</a></li>
-					{{/each}}
-        			</UL>
-					</div>
-				</div>
-			</div>
-			<div class="result-area col-md-9 ">
-	    	<div class="result-group">
-	    	 <!-- 	<div class="text-center  nresult col-md-9">
-						<p>{{NresultFullQuery}}</p>
-					</div>
-                	   
-             
-			<div class="result col-md-9">
-			<div class="fuente-area col-md-14 text-center"> 
-			<span class="glyphicon glyphicon-file"></span>
-			UCUENCA
-			</div>
-		<div class="result-text col-md-14">	
-		<span class="Title-result"> <u> Framework para soportar la Metodologia de Linked Open Data   </u> </span>
-		<p > <b> Abstract : </b> La generación de datos enlazados (LOD) actualmente se ha vuelto una actividad cada vez más común. Sin
-embargo, al tratarse de una tendencia relativamente nueva, el desarrollo de herramientas tanto teóricas,
-metodológicas como tecnológicas ha sido reducido. La mayoría de soluciones que busca brindar soporte para
-el proceso en la publicación de LOD. </p>
-		
-		<div class="opciones-area opt-result">
-		<div class="opt-fuente  col-md-4">
-		Ver Fuente
-		</div>
-		<div class="opt-elda col-md-4">
-		Ver RDF
-		</div>
-		<div class="opt-grafo col-md-4">
-		Ver Grafo
-	
-		</div>
-		</div>
-		</div>
-		</div>
-		 		   -->
+                                function get_checkList_values3(CheckName) {
+                                var inputs = document.getElementsByName(CheckName);
+                                var values = [];
+                                for (var i = 0; i < inputs.length; i++) {
+                                if (inputs[i].checked) {
+                                if (inputs[i].attributes['data-key']){
+                                values.push(inputs[i].attributes['data-key'].value);
+                                } else{
+                                values.push(null);
+                                }
+                                }
+                                }
+                                return values;
+                                }
+
+                                $(function() {
+
+                                $('input.runSearchFaceted').on('click', function (ev) {
+
+                                //alert('d');
+                                var fac = [];
+                                if ($("#slider-range").length > 0){
+                                var f1 = {key:'Year', value:[$("#slider-range").slider("values", 0), $("#slider-range").slider("values", 1)]};
+                                fac.push(f1);
+                                }
+
+                                var ls = get_checkList_values3 ('fcls_Types');
+                                fac.push({key:'Type', value:ls});
+                                var ls = get_checkList_values3 ('fcls_Endpoints');
+                                fac.push({key:'Endpoint', value:ls});
+                                var ls = get_checkList_values3 ('fcls_Langs');
+                                fac.push({key:'Lang', value:ls});
+                                var jsonRequest = Session.get('jsonRequest');
+                                jsonRequest['Faceted'] = fac;
+                                Session.set('jsonRequest', jsonRequest);
+                                App.SearchRun(0, 3);
+                                });
+                                });
+                            </script> 
+
+                            {{else}}
+                            {{lang "noData"}}
+                            {{/if}}
+                        </div>
+                    </div>
+
+                    <div class="sugestion-panel" id = "psug">
+                        <span id="Title-suggestion" > <b>{{lang "sug"}} </b>  </span>
+                        <span class = "{{DespSug}}" id= "expandsugg"  onclick = "desplegar (this)"  > </span>
+                        <div class="result-suggestion collapse" id = "sug">
+
+                            <UL type = "disk" id="Sugerencias">
+                                <!--<li> Buscar por autores con nombre "DIEGO" </li> onclick = "desplegar (this)" data-toggle="collapse" data-target="#sug"
+                                <li> Buscar colecciones que contenga obras cuyo autor se llame "Diego" </li>
+                                <li> Buscar obras cuyo autor se llame "DIEGO" </li>
+                                <li>Perú </li> -->
+                                {{#each suggestedQueries}}
+                                <li class="suggestion-group"><a data-title ="{{title}}" href='#' onclick="actAHyper(event);" >{{description}}</a></li>
+                                {{/each}}
+                            </UL>
+                        </div>
+                    </div>
+                </div>
+                <div class="result-area col-md-9 ">
+                    <div class="result-group">
+                        <!-- 	<div class="text-center  nresult col-md-9">
+                                                       <p>{{NresultFullQuery}}</p>
+                                               </div>
+                                  
+                    
+                               <div class="result col-md-9">
+                               <div class="fuente-area col-md-14 text-center"> 
+                               <span class="glyphicon glyphicon-file"></span>
+                               UCUENCA
+                               </div>
+                       <div class="result-text col-md-14">	
+                       <span class="Title-result"> <u> Framework para soportar la Metodologia de Linked Open Data   </u> </span>
+                       <p > <b> Abstract : </b> La generación de datos enlazados (LOD) actualmente se ha vuelto una actividad cada vez más común. Sin
+       embargo, al tratarse de una tendencia relativamente nueva, el desarrollo de herramientas tanto teóricas,
+       metodológicas como tecnológicas ha sido reducido. La mayoría de soluciones que busca brindar soporte para
+       el proceso en la publicación de LOD. </p>
+                       
+                       <div class="opciones-area opt-result">
+                       <div class="opt-fuente  col-md-4">
+                       Ver Fuente
+                       </div>
+                       <div class="opt-elda col-md-4">
+                       Ver RDF
+                       </div>
+                       <div class="opt-grafo col-md-4">
+                       Ver Grafo
+               
+                       </div>
+                       </div>
+                       </div>
+                       </div>
+                        -->
 
 
-		 		{{#each resultFullQuery}}
+                        {{#each resultFullQuery}}
 
 
-		<div class="result col-md-9">
-			<div class="fuente-area col-md-14 text-center"> 
-			<span class="glyphicon {{Icon}}"></span>
-			{{Origin}}
-			 <a href="#" title="QR Code" class="qricon" datauri ="{{URI}}"  onclick="qrmodalshow('{{URI}}','{{Origin}}','{{Icon}}');"   ><img src="/images/qr.png" width=14px ></a> 
-			 <span id="dwnload" class="glyphicon glyphicon-save" onclick="download('{{URI}}')"> </span>
-			<!--<a href="#" class="qricon" onclick="alert ('hola');"  >o</a>  -->
-			  <!-- <button type="button"  class="qricon" data-toggle="modal"  onclick="qrmodalshow(event);" data-target="#myqrmodal"> </button>-->
-			</div>
-		
-		<div class="result-text col-md-14">	
-		<span class="Title-result"> <u> {{Label}}   </u>  </span>
-         <a href="#" title="Favoritos" class="fav"  onclick="favaction ('{{URI}}','{{Label}}');"   ><img class= "imgfav" src="{{Fav}}" width=19px ></a> 
-      <!-- <img class= "imgfav" src="/images/stargray.png" width=19px >-->
-		<br/>
-		{{#each MatchsProperty}}
-												<b> {{ lang p }}</b> : 
-												<div class ="contvarpro" >
-													{{#if l}}
-													<span class= 'hglttxt'>{{{s}}}</span><a href='#' class='view_more_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').show();$(this).parent().find('.view_less_button').show();  ">...{{lang "text-more"}}</a><span class='rest_of_text hglttxt' style='display: none;'>{{{c}}}</span>
-													<a href='#' class='view_less_button' onclick="$(this).hide();$(this).parent().find('.rest_of_text').hide();$(this).parent().find('.view_more_button').show();" style='display: none;' >...{{lang "text-less"}}</a>
-													{{else}}
-													{{{v}}}
-													{{/if}}
+                        <div class="result col-md-9">
+                            <div class="fuente-area col-md-14 text-center"> 
+                                <span class="glyphicon {{Icon}}"></span>
+                                {{Origin}}
+                                <a href="#" title="QR Code" class="qricon" datauri ="{{URI}}"  onclick="qrmodalshow('{{URI}}','{{Origin}}','{{Icon}}');"   ><img src="/images/qr.png" width=14px ></a> 
+                                <span id="dwnload" class="glyphicon glyphicon-save" onclick="download('{{URI}}')"> </span>
+                                <!--<a href="#" class="qricon" onclick="alert ('hola');"  >o</a>  -->
+                                <!-- <button type="button"  class="qricon" data-toggle="modal"  onclick="qrmodalshow(event);" data-target="#myqrmodal"> </button>-->
+                            </div>
 
-												</div>
-												{{/each}}
-		
-		<div class="opciones-area opt-result">
-		<div class="col-md-4">
-		<a   class="opt-fuente" href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg2(event);" >{{ lang "view-source"}}</a>
-		</div>
-		<div class="col-md-4 opt-eldadiv">
-				<!--<a  class="opt-elda" href="{{URI}}" target="_blank" id="RDFPAGE" >{{ lang "view-rdf"}}</a>
-		</div>-->
-		<a  class="opt-elda" href="#"   data-uri="{{URI}}" onclick="rdflink ('{{URI}}');" >{{ lang "view-rdf"}}</a>
-		</div>
-		<div class="col-md-4"  >
-		<a  class="opt-grafo"  href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg(event);" >{{ lang "view-graph"}}</a>
-		</div>
-		</div>
-		</div>
-		</div>
+                            <div class="result-text col-md-14">	
+                                <span class="Title-result"> <u> {{Label}}   </u>  </span>
+                                <a href="#" title="Favoritos" class="fav"  onclick="favaction ('{{URI}}','{{Label}}');"   ><img class= "imgfav" src="{{Fav}}" width=19px ></a> 
+                                <!-- <img class= "imgfav" src="/images/stargray.png" width=19px >-->
+                                <br/>
+                                {{#each MatchsProperty}}
+                                <b> {{ lang p }}</b> : 
+                                <div class ="contvarpro" >
+                                    {{#if l}}
+                                    <span class= 'hglttxt'>{{{s}}}</span><a href='#' class='view_more_button' onclick="$(this).hide(); $(this).parent().find('.rest_of_text').show(); $(this).parent().find('.view_less_button').show(); ">...{{lang "text-more"}}</a><span class='rest_of_text hglttxt' style='display: none;'>{{{c}}}</span>
+                                    <a href='#' class='view_less_button' onclick="$(this).hide(); $(this).parent().find('.rest_of_text').hide(); $(this).parent().find('.view_more_button').show();" style='display: none;' >...{{lang "text-less"}}</a>
+                                    {{else}}
+                                    {{{v}}}
+                                    {{/if}}
 
-         	    {{/each}}
-		</div>
-		 <div >
-				<div class="row">
-					<div class="col-md-9 text-center pagination">
-					
-					{{#with paginationSettings}}
-					<div id="page-selection" ></div>
-					{{/with}}
-			</div>
-		</div>
-	</div>
-		</div>
-	    </div>
+                                </div>
+                                {{/each}}
 
-	   
+                                <div class="opciones-area opt-result">
+                                    <div class="col-md-4">
+                                        <a   class="opt-fuente" href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg2(event);" >{{ lang "view-source"}}</a>
+                                    </div>
+                                    <div class="col-md-4 opt-eldadiv">
+                                        <!--<a  class="opt-elda" href="{{URI}}" target="_blank" id="RDFPAGE" >{{ lang "view-rdf"}}</a>
+                        </div>-->
+                                        <a  class="opt-elda" href="#"   data-uri="{{URI}}" onclick="rdflink ('{{URI}}');" >{{ lang "view-rdf"}}</a>
+                                    </div>
+                                    <div class="col-md-4"  >
+                                        <a  class="opt-grafo"  href="#"  data-uri="{{URI}}" data-endpoint="{{Origin}}" onclick="linkg(event);" >{{ lang "view-graph"}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-	   </div>
-	   
- </div> 
+                        {{/each}}
+                    </div>
+                    <div >
+                        <div class="row">
+                            <div class="col-md-9 text-center pagination">
 
- <div class="modal   fade" id="myqrmodal" role="dialog">
-    <div class="modal-dialog modal-sm">
-      <div class="modal-content ">
-        <div class="modal-header modal-show">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title"> Código QR </h4>
+                                {{#with paginationSettings}}
+                                <div id="page-selection" ></div>
+                                {{/with}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
         </div>
-        <div class="modal-body text-center">
-          <ul class="nav navqr nav-tabs">
-        <li class="active"><a data-toggle="tab" href="#qrarea1"> RDF </a></li>
-        <li class="optionalqr"><a data-toggle="tab" href="#qrarea2"> FUENTE </a></li>
-          
-          </ul>
-        <div class="tab-content">
-        <div id="qrarea1" class="tab-pane fade in active">
-        
+
+    </div> 
+
+    <div class="modal   fade" id="myqrmodal" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content ">
+                <div class="modal-header modal-show">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title"> Código QR </h4>
+                </div>
+                <div class="modal-body text-center">
+                    <ul class="nav navqr nav-tabs">
+                        <li class="active"><a data-toggle="tab" href="#qrarea1"> RDF </a></li>
+                        <li class="optionalqr"><a data-toggle="tab" href="#qrarea2"> FUENTE </a></li>
+
+                    </ul>
+                    <div class="tab-content">
+                        <div id="qrarea1" class="tab-pane fade in active">
+
+                        </div>
+                        <div id="qrarea2" class="tab-pane fade">
+
+                        </div>
+                    </div>
+                    <!-- <div  class="qrarea" > -->
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
         </div>
-        <div id="qrarea2" class="tab-pane fade">
-        
-        </div>
-        </div>
-         <!-- <div  class="qrarea" > -->
-          </div>
-      
-        <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-        </div>
-      </div>
     </div>
-  </div>
 
 
 
 
- <div class="modal   fade" id="mydwmodal" role="dialog">
-    <div class="modal-dialog modal-sm">
-      <div class="modal-content ">
-        <div class="modal-header modal-show">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title"> Descargar </h4>
+    <div class="modal   fade" id="mydwmodal" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content ">
+                <div class="modal-header modal-show">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title"> Descargar </h4>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="form-group dwnoptions">
+                        <label for="formatdwn" class="control-label col-sm-3"> Formato:</label>
+                        <div class=" col-xs-5 col-sm-5 selectContainer">
+                            <select class="form-control" id="format">
+                                <option value= 0 > XML </option>
+                                <option value= 1 > Text</option>
+                                <option value= 2 > JSON </option>
+                                <option value= 3 > RDF/XML</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="dwnbuton" onclick= "downloadaction()"> Descargar </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
         </div>
-        <div class="modal-body text-center">
-        <div class="form-group dwnoptions">
-        <label for="formatdwn" class="control-label col-sm-3"> Formato:</label>
-        <div class=" col-xs-5 col-sm-5 selectContainer">
-        <select class="form-control" id="format">
-        <option value= 0 > XML </option>
-        <option value= 1 > Text</option>
-        <option value= 2 > JSON </option>
-        <option value= 3 > RDF/XML</option>
-     </select>
-   </div>
-  </div>
-          </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-default" id="dwnbuton" onclick= "downloadaction()"> Descargar </button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-        </div>
-      </div>
     </div>
-  </div>
 
 
- <!--	<div class="footer" >
-				<div class="row">
-					<div class="col-xs-12">
-					
-					{{#with paginationSettings}}
-					<div id="page-selection" ></div>
-					{{/with}}
-			</div>
-		</div>
-	</div>  -->
- 	 
+    <!--	<div class="footer" >
+                                   <div class="row">
+                                           <div class="col-xs-12">
+                                           
+                                           {{#with paginationSettings}}
+                                           <div id="page-selection" ></div>
+                                           {{/with}}
+                           </div>
+                   </div>
+           </div>  -->
+
 </template>
