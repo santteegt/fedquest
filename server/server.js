@@ -1387,6 +1387,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                                     ttl_date: new Date(),
                                     nresult: r["" + v],
                                     uri: v,
+                                    uriEndpoint: {uri:v, endpoint:fEndpoint},
                                     faceted: [{key: 'Year', value: Number(fYear) == 0 || isNaN(Number(fYear)) ? null : Number(fYear)}, {key: 'Endpoint', value: fEndpoint}, {key: 'Lang', value: fLang}, {key: 'Type', value: fType}],
                                     firstResult: un,
                                     original: orgi
