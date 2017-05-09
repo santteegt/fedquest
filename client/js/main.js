@@ -1204,11 +1204,19 @@ if (Meteor.isClient) {
     Template.confpanel.helpers({
         EntitiesLoad: function () {
             var endp = Session.get('Graph');
+            var confent = Configuration.find({"Endpoint": endp}).fetch()[0];
             //if (endp !== undefined  && endp != null){
-            if (!_.isUndefined(endp) && endp != "---") {
+            if (!_.isUndefined(endp) && endp != "---" && (!_.isUndefined(confent))) {
                 console.log(endp);
-                console.log(Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity);
-                return Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity;
+             //   console.log(Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity);
+            // var confent = Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity;
+                   if (!_.isUndefined(confent.ConfEntity )) {
+                     return confent.ConfEntity ;
+                   } else {
+                     return [];
+                   }
+                
+
             } else
             {
                 return [];
@@ -1253,10 +1261,17 @@ if (Meteor.isClient) {
         },
         StatLoad: function () {
             var endp = Session.get('Graph');
-            if (endp !== undefined && endp != null && endp != "---") {
+            var config = Configuration.find({"Endpoint": endp}).fetch()[0];
+
+            if ( (!_.isUndefined(endp)) && endp != null && endp != "---" && (!_.isUndefined(config)) ) {
                 console.log(endp);
-                console.log(Configuration.find({"Endpoint": endp}).fetch()[0].ConfStat);
-                return Configuration.find({"Endpoint": endp}).fetch()[0].ConfStat;
+                
+                if  (!_.isUndefined(config.ConfStat)) {
+
+                return config.ConfStat;
+            } else {
+                return [];
+            }
             } else
             {
                 return [];
@@ -1324,7 +1339,7 @@ if (Meteor.isClient) {
                 valores = Properties.find({'endpoint': graph}).fetch();
             } else {
                 //valores = Properties.find().fetch();
-                valores = [{name: ""}];
+                valores = [];
             }
             console.log(valores.length);
 
@@ -1413,13 +1428,16 @@ if (Meteor.isClient) {
 
             var valores = [];
             var graph = Session.get('Graph');
+             var conf =  Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0];
             // var act = Session.get ('updatetables');
             // console.log("Graficar lista 1");
             // console.log(type);
             // console.log (graph); 
-            if (graph !== undefined && graph !== null && graph != "---") {
+            if (graph !== undefined && graph !== null && graph != "---"  ) {
                 valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
-                var valorselect = "";
+                var valorselect = [];
+                if (! _.isUndefined(conf)) {
+
                 if (type == "distriList") {
 
                     valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].VisGraph;
@@ -1431,14 +1449,22 @@ if (Meteor.isClient) {
                     console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
                     console.log(selected);
                     $('#FontProp').val(selected);
+                } 
+                } else {
+                    valorselect = [];
                 }
+
                 console.log("Valores registrados");
                 console.log(valorselect);
                 //  console.log (_.pluck(valores, 'name'));
                 // if (   typeof valoreselect === 'undefined'  ) 
                 //  {   
                 var filtrado = _.filter(valores, function (element) {
+                    if (element != null ) {
                     return  !(_.contains(valorselect, element.fullName));
+                    } else {
+                       return false;  
+                    }
                 });
                 valores = filtrado;
                 console.log("Filtrado");
@@ -1453,7 +1479,8 @@ if (Meteor.isClient) {
             } else {
                 //valores = Properties.find().fetch();
 
-                valores = [{name: "", fullName: ""}];
+                //valores = [{name: "", fullName: ""}];
+                valores = [];
                 Session.set('refresh', true);
             }
             console.log(valores.length);
@@ -1468,13 +1495,16 @@ if (Meteor.isClient) {
 
 
             var graph = Session.get('Graph');
+            var conf =  Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0];
             //var act = Session.get ('updatetables');
             //console.log("Graficar lista2");
             //console.log(type);
 
-            if (graph !== undefined && graph !== null && graph != "---") {
+            if (graph !== undefined && graph !== null && graph != "---"  ){
                 valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
-                var valorselect = "";
+                var valorselect = [];
+                if (! _.isUndefined(conf)) {
+
                 if (type == "distriList") {
 
                     valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].VisGraph;
@@ -1482,14 +1512,20 @@ if (Meteor.isClient) {
                 } else {
 
                     valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].EntSearch;
-                }
+                } 
+                } 
+                   
                 console.log("Valores registrados");
                 console.log(valorselect);
                 //  console.log (_.pluck(valores, 'name'));
                 // if (  typeof valoreselect == 'undefined' ) 
                 //  {   
                 var filtrado = _.filter(valores, function (element) {
+                    if (element != null ) {
                     return  _.contains(valorselect, element.fullName);
+                    } else {
+                        return false;
+                    } 
                 });
                 console.log("Filtrado");
                 console.log(filtrado);
@@ -1499,7 +1535,9 @@ if (Meteor.isClient) {
 
             } else {
                 //valores = Properties.find().fetch();
-                valores = [{name: "", fullName: ""}];
+               // valores = [{name: "", fullName: ""}];
+                // valores = [];
+                return valores;
             }
             console.log(valores.length);
             //Session.set ('updatetables', false);

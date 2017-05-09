@@ -143,6 +143,7 @@ editStat = function (e) {
    var URI = e.getAttribute('URIOPT');
    var graphend = Session.get ('Graph');
    var conf = Configuration.find ({ "Endpoint" : graphend , 'ConfStat.URI' : URI  }).fetch()[0];
+   if (!_.isUndefined(conf)) {
    console.log ("Editar");
    console.log (conf); 
    var Selected = _.find( conf.ConfStat , function( el ){ return el.URI === URI  });
@@ -155,6 +156,7 @@ editStat = function (e) {
     console.log (Selected.typegraph);
 
     $('div #ConfigStat').modal();
+   }
 
 };
 
@@ -435,16 +437,19 @@ deleteConfigStat = function (e) {
  // console.log (this.data.isSelected);
 
    var graphend = Session.get ('Graph');
-   var conf = Configuration.find ({ "Endpoint" : graphend }).fetch()[0].Source;
+   var config =  Configuration.find ({ "Endpoint" : graphend }).fetch()[0];
+   if ( !_.isUndefined(config) ) {
+   //console.log (config);
+   var conf = config.Source;
   //console.log ("config Carga");
   // console.log (conf);
-   if (conf != undefined && conf == this.data.fullName &&  id == "FontProp")      
+   if (conf !== undefined && conf == this.data.fullName &&  id == "FontProp")      
    {   //console.log ("*************************************"); 
       // console.log (conf);
        $("select#FontProp").val(conf);  
    }
 
-  
+  }
  // http://purl.org/ontology/bibo/abstract
 });
 
