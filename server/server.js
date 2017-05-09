@@ -2480,11 +2480,11 @@ Api.addRoute('sparql', {authRequired: false}, {
                 var confexist = Configuration.findOne({ 'Endpoint': Graph  });
                 console.log ("Existe");
                 console.log (confexist);
-                  var newconf = [];
+                  //var newconf = [];
                   if (  _.isUndefined(confexist)){ 
-                     newconf.push (ConfEnt);    
+                   //  newconf.push (ConfEnt);    
                      console.log ("No existe");
-                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph,  'Source': Source , 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus ,  'ConfStat' : constats });
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph,  'Source': Source , 'ConfEntity' : ConfEnt , 'VisGraph' : confgraph , 'EntSearch' : confbus ,  'ConfStat' : constats });
 
                      //return "almacenado";
                   } else {
