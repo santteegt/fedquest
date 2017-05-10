@@ -517,10 +517,14 @@ var num_auto=0;
                         var QueryEndpoint = EndpointList.filter(function (a){ return a.name == Endpoint;  })[0];
                         //var ListDescriptiveProperty = ConfigInfo.filter(function (a) {return a.Endpoint== QueryEndpoint.endpoint; } );
                         var ListDescriptiveProperty =_.pluck(ConfigInfo, 'ConfEntity');
+                        var ListAux=[];
                         for (var idx=0; idx<ListDescriptiveProperty.length; idx++){
-                            ListDescriptiveProperty[idx]=ListDescriptiveProperty[idx][0];
+                            if (ListDescriptiveProperty[idx]!=null && ListDescriptiveProperty[idx]!= undefined){
+                               ListAux = ListAux.concat(ListDescriptiveProperty[idx]);
+                            }
+                            
                         }
-                        ListDescriptiveProperty =_.pluck(ListDescriptiveProperty, 'descriptiveprop');
+                        ListDescriptiveProperty =_.pluck(ListAux, 'descriptiveprop');
                         ListDescriptiveProperty = _.uniq(ListDescriptiveProperty, function(p){ return p; }).filter(function (a){return a!=undefined && a!=null;});
                         
                         var SPARQLLocations = "select ?place ?name ?long ?lat {{ <___> <http://dbpedia.org/ontology/linkedTo> ?place . ?place <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?long . ?place <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat . ?place <http://www.w3.org/2000/01/rdf-schema#label> ?name . }union{ <___> <http://schema.org/mentions> ?place . ?place <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?long . ?place <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat . ?place <http://purl.org/saws/ontology#refersTo> ?name . }}";
