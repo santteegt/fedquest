@@ -515,8 +515,11 @@ var num_auto=0;
                         var URI = URIEndpoint.uri;
                         var Endpoint = URIEndpoint.endpoint;
                         var QueryEndpoint = EndpointList.filter(function (a){ return a.name == Endpoint;  })[0];
-                        var ListDescriptiveProperty = ConfigInfo.filter(function (a) {return a.Endpoint== QueryEndpoint.endpoint; } );
-                        ListDescriptiveProperty =_.pluck(ListDescriptiveProperty, 'ConfEntity') [0];
+                        //var ListDescriptiveProperty = ConfigInfo.filter(function (a) {return a.Endpoint== QueryEndpoint.endpoint; } );
+                        var ListDescriptiveProperty =_.pluck(ConfigInfo, 'ConfEntity');
+                        for (var idx=0; idx<ListDescriptiveProperty.length; idx++){
+                            ListDescriptiveProperty[idx]=ListDescriptiveProperty[idx][0];
+                        }
                         ListDescriptiveProperty =_.pluck(ListDescriptiveProperty, 'descriptiveprop');
                         ListDescriptiveProperty = _.uniq(ListDescriptiveProperty, function(p){ return p; }).filter(function (a){return a!=undefined && a!=null;});
                         
