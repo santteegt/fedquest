@@ -2231,6 +2231,7 @@ Api.addRoute('sparql', {authRequired: false}, {
             deleteEndpoint: function (id, endpointURI, defaultGraph) {
                 Properties.remove({endpoint: endpointURI, graphURI: defaultGraph});
                 Endpoints.remove(id);
+                Entities.remove({endpoint: endpointURI, graph: defaultGraph }); 
                 Configuration.remove ( {"Endpoint": endpointURI });
                 console.log("==Endpoint removed: " + endpointURI + " - " + defaultGraph);
                 Meteor.call('updateStats');
@@ -2411,15 +2412,21 @@ Api.addRoute('sparql', {authRequired: false}, {
                  SaveEntities: function  (endpointURI , defaultGraph , EntitiesArray ) {
                  Entities.remove({endpoint: endpointURI, graph: defaultGraph});
 
+
                  console.log ("Almacenando Entidades");
                  console.log (EntitiesArray);
                  //   var identifier = null; 
                //    for ( var Ent in  EntitiesArray ){
                         
                  //identifier = Entities.insert ( { endpoint: endpointURI , graph : defaultGraph , entities : { fullName : Ent.fullName , prefix: Ent.prefix , name : Ent.name , ent: Ent.ent , dim: Ent.dim } });
-                  identifier = Entities.insert ( { endpoint: endpointURI , graph : defaultGraph , entities :  EntitiesArray  });
+                 if (EntitiesArray.length > 0) {
+                  
+                identifier = Entities.insert ( { endpoint: endpointURI , graph : defaultGraph , entities :  EntitiesArray  });
 
                  console.log (identifier);
+                 return "Exito";
+
+                 } else {
                         
                      //   Entities.update ( {'_id': identifier}, {$set: {endpoint: endpointURI , graph : defaultGraph , fullName : Ent.fullName , prefix: Ent.prefix , name : Ent.name , ent: Ent.ent , dim: Ent.dim }});
 
@@ -2427,6 +2434,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                       //   }
 
                  return "Error";
+                 }
 
               } , 
 
