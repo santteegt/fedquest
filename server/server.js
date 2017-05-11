@@ -2703,8 +2703,8 @@ Api.addRoute('sparql', {authRequired: false}, {
                     console.log (typeof "prueba");
                      var Config = JSON.parse(filedata);
                        console.log (Config);
-                    var confend  =  Config[1].Endpoint;
-                    console.log (confend);
+                    //var confend  =  Config[1].Endpoint;
+                    //console.log (confend);
                       var fail = false ;
                       var faildetail  = "";
                     _.each ( Config , function (conf , idx ) {
