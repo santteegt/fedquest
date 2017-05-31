@@ -111,6 +111,17 @@
       </select>
 </template>
 
+<template name = "multiproperty"  >
+       <select   id="{{identifier}}" class="selectpicker" multiple >
+       <option> --- </option>
+       {{#each PropertiesAvailable  }}
+      <!-- <option value="{{name}}"> {{name}} </option>-->
+      {{> optproperty}}
+        {{/each}} 
+      </select>
+</template>
+
+
 <template name="optproperty">
    <option value="{{fullName}}"> {{name}} </option>
 </template>
@@ -250,7 +261,8 @@
           <div class="form-group">
             <label for= "CompleteLabel" class="control-label col-sm-3"> {{ lang "autocomplete"}}  </label>
             <div class="col-sm-4">
-         {{> completproperty}}
+              {{> multiproperty identifier = "propertypicker"}}
+         <!--{{> completproperty}} -->
        </div>
      </div>
  
@@ -262,7 +274,8 @@
            <option>Subject</option>
            <option>Abstract</option>
          </select> -->
-         {{>  indexproperty}}
+         <!-- {{>  indexproperty}} -->
+         {{> multiproperty identifier = "indexpropertypicker"}}
          
        </div>
      </div>
@@ -336,20 +349,31 @@
             <label for= "DesLabel" class="control-label col-sm-3"> 
             {{ lang "attr_desc"}}  </label>
             <div class="col-sm-4">
-            {{>  completpropertysingle identifier = "StatDesPicker"}}
+           <!-- {{> multiproperty identifier = "StatDesPicker"}} -->
+             {{>  completpropertysingle identifier = "StatDesPicker"}} 
             </div>
+          </div>
+          <div class="form-group">
+          <label for= "TypeLabel" class="control-label col-sm-3"> {{ lang "Data_type" }}  </label>
+            <div class="col-sm-6">
+          <input type="radio" name="TypeFieldStat" value="String"> {{lang "String"}} 
+          <input type="radio" name="TypeFieldStat" value="Number">  {{ lang "Number"}}
+          <input type="radio" name="TypeFieldStat" value="Date">  {{ lang "Date"}}
+          </div>
           </div>
           <div class="form-group">
             <label for= "RelLabel" class="control-label col-sm-3"> {{ lang "rel_analized"}} </label>
             <div class="col-sm-4">
-            {{>  completpropertysingle identifier = "StatRelPicker"}}
+            {{> multiproperty identifier = "StatRelPicker"}}
+            <!-- {{>  completpropertysingle identifier = "StatRelPicker"}} -->
             </div>
           </div>
           <div class="form-group">
-          <label for= "TypeLabel" class="control-label col-sm-3"> Tipo de Gráfico  </label>
-            <div class="col-sm-4">
+          <label for= "TypeLabel" class="control-label col-sm-3"> {{ lang "Chart_type"}}  </label>
+            <div class="col-sm-6">
           <input type="radio" name="TypeStat" value="Pie"> {{lang "pie"}} 
           <input type="radio" name="TypeStat" value="Hist">  {{ lang "hist"}}
+          <input type="radio" name="TypeStat" value="Etiq">  {{ lang "Etiq"}}
           </div>
           </div>
           </form>

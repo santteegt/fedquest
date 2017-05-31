@@ -1298,14 +1298,15 @@ if (Meteor.isClient) {
                                 label: lang.lang("graph_type")
                             }
                             , {
-                                key: 'URI',
+                             //   key: 'URI',
+                               key: 'name',
                                 label: lang.lang("delete"),
                                 fn: function (value, object) {
                                     return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigStatbutton' onClick='deleteConfigStat(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
                                 }
                             }
                             , {
-                                key: 'URI',
+                                key: 'name',
                                 label: lang.lang("edit"),
                                 fn: function (value, object) {
                                     return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigStatbutton' onClick='editStat(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-edit'></span></button></td>");
@@ -1404,6 +1405,24 @@ if (Meteor.isClient) {
 
 
     Template.indexproperty.helpers({
+        PropertiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get('Graph');
+            //  console.log("Graficar");
+            if (graph !== undefined) {
+                valores = Properties.find({'endpoint': graph}).fetch();
+            } else {
+                //valores = Properties.find().fetch();
+                valores = [{name: ""}];
+            }
+            console.log(valores.length);
+
+            return valores;
+
+        }
+    });
+
+    Template.multiproperty.helpers({
         PropertiesAvailable: function () {
             var valores = [];
             var graph = Session.get('Graph');
@@ -3155,7 +3174,13 @@ if (Meteor.isClient) {
             "Prop_des": "Descriptive Property",
             "Obj_Name": "Name",
             "queries": "Queries",
-            "confpanel": "Configuration"
+            "confpanel": "Configuration",
+            "Etiq":"Labels",
+            "Number":"Number",
+            "String":"String" , 
+            "Data_type": "Data type" , 
+            "Chart_type" : "Chart type"
+
         };
 
         var idiomEsp = {
@@ -3363,7 +3388,12 @@ if (Meteor.isClient) {
             "Prop_des": "Propiedad Descriptiva",
             "Obj_Name": "Nombre",
             "queries": "Consultas",
-            "confpanel": "Configuración"
+            "confpanel": "Configuración" ,
+            "Etiq":"Etiquetas" ,
+            "Number":"Número",
+            "String":"Texto" ,
+            "Data_type": "Tipo de Campo" ,
+            "Chart_type" : "Tipo de Gráfico"
         };
 
 

@@ -142,17 +142,22 @@ editStat = function (e) {
 
    var URI = e.getAttribute('URIOPT');
    var graphend = Session.get ('Graph');
-   var conf = Configuration.find ({ "Endpoint" : graphend , 'ConfStat.URI' : URI  }).fetch()[0];
+   var conf = Configuration.find ({ "Endpoint" : graphend , 'ConfStat.name' : URI  }).fetch()[0];
    if (!_.isUndefined(conf)) {
    console.log ("Editar");
    console.log (conf); 
-   var Selected = _.find( conf.ConfStat , function( el ){ return el.URI === URI  });
+  // var Selected = _.find( conf.ConfStat , function( el ){ return el.URI === URI  });
+   var Selected = _.find( conf.ConfStat , function( el ){ return el.name === URI  });
    console.log (Selected);
     $("input:text[id='StatClassName']").val (Selected.name);
     $("select[id='StatURIpicker']").val (Selected.URI);
     $("Select[id='StatDesPicker']").val (Selected.descriptiveprop);
-    $("Select[id='StatRelPicker']").val (Selected.Relprop);
+    //$("Select[id='StatRelPicker']").val (Selected.Relprop);
+    $("Select[id='StatRelPicker']").selectpicker('val', Selected.Relprop);
     $("input:radio[value="+Selected.typegraph+"]").prop("checked","true");
+    $("input:radio[value="+Selected.dataformat+"]").prop("checked","true");
+
+    //$("input[name='TypeFieldStat']:checked").val ();
     console.log (Selected.typegraph);
 
     $('div #ConfigStat').modal();
@@ -258,6 +263,7 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , [] , ConfE
     StatEntity.descriptiveprop =  $("Select[id='StatDesPicker']").val ();
     StatEntity.Relprop =  $("Select[id='StatRelPicker']").val ();
     StatEntity.typegraph =  $("input[name='TypeStat']:checked").val ();
+    StatEntity.dataformat = $("input[name='TypeFieldStat']:checked").val ();
     console.log (StatEntity.name);
     console.log (StatEntity.URI);
     console.log (StatEntity.descriptiveprop);
@@ -269,6 +275,7 @@ var result = Meteor.call('SaveConfEntity', Meteor.userId() ,  graph , [] , ConfE
       console.log (error);
       if ( _.isUndefined(error)  ) {
             console.log ("Almacenado");
+             $('div #ConfigStat').modal('hide');
       } else {
             alert(error);
       }
@@ -533,9 +540,19 @@ console.log ("render graph");/*
  var graph = $("#endpointpicker").val();
  Session.set ('Graph',graph);*/
 };
-
+/*
 Template.indexproperty.rendered = function(){
   $('#indexpropertypicker').selectpicker();
+};*/
+
+Template.multiproperty.rendered = function(e){
+ // console.log ("||||||||||||||||||||||||||||||||||||||||||||||");
+ // console.log (this);
+  //console.log (this.data);
+ // console.log (this.data.identifier);
+ // $('.selectpicker').selectpicker();
+    $('#'+this.data.identifier+'').selectpicker();
+  
 };
 
 var renderTimeout = false;
@@ -544,8 +561,10 @@ Template.optproperty.rendered = function(){
     Meteor.clearTimeout(renderTimeout);
   }
   renderTimeout = Meteor.setTimeout(function() {
-    $('#propertypicker').selectpicker("refresh");
-     $('#indexpropertypicker').selectpicker("refresh");
+   //  $('#propertypicker').selectpicker("refresh");
+   // $('#indexpropertypicker').selectpicker("refresh");
+   // $('#StatRelPicker').selectpicker("refresh");
+     $('.selectpicker').selectpicker("refresh");
     renderTimeout = false;
   }, 10);
 };

@@ -2438,7 +2438,7 @@ Api.addRoute('sparql', {authRequired: false}, {
 
               } , 
 
-               SaveConfEntity: function  ( user , Graph , Source , ConfEnt , confgraph , confbus ) {
+               SaveConfEntity: function  ( user , Graph , Source , ConfEnt , confgraph , confbus  , constats) {
                   if (valAccess(this.userId, 2)) {
                 var usr = this.userId; 
               
@@ -2449,7 +2449,7 @@ Api.addRoute('sparql', {authRequired: false}, {
                   if (  _.isUndefined(confexist)){ 
                      newconf.push (ConfEnt);    
                      console.log ("No existe");
-                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph,  'Source': Source , 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus });
+                    return  Configuration.insert({idUser: this.userId , 'Endpoint': Graph,  'Source': Source , 'ConfEntity' : newconf , 'VisGraph' : confgraph , 'EntSearch' : confbus ,  'ConfStat' : constats });
 
                      //return "almacenado";
                   }else 
@@ -2563,7 +2563,8 @@ Api.addRoute('sparql', {authRequired: false}, {
                   }else 
                   {  
                       
-                    var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfStat.URI' : constats.URI });
+                  //  var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfStat.URI' : constats.URI });
+                  var confexist2 = Configuration.findOne({ 'Endpoint': Graph , 'ConfStat.name' : constats.name });
                     
                        if ( _.isUndefined(confexist2) ) 
                         {   newconf =   confexist.ConfStat;
@@ -2574,7 +2575,8 @@ Api.addRoute('sparql', {authRequired: false}, {
                         else 
                         {   newconf =   confexist2.ConfStat;
                           //  var idx =  _.findIndex(newconf , { URI :  ConfEnt.URI });
-                            var idx =  _.indexOf(_.pluck(newconf, 'URI'), constats.URI);
+                         //   var idx =  _.indexOf(_.pluck(newconf, 'URI'), constats.URI);
+                            var idx =  _.indexOf(_.pluck(newconf, 'name'), constats.name);
                             newconf [idx] =  constats; 
                             console.log ("El mismo");
                             console.log (newconf);
