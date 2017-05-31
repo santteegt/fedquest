@@ -133,6 +133,7 @@ newEntity = function (e) {
 
 newStat = function (e) {
   $("#ModalFormStat").trigger('reset'); 
+  $("#StatRelPicker").val('').selectpicker('refresh');
   $('div #ConfigStat').modal();
 
 };

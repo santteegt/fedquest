@@ -137,12 +137,15 @@ URI:  {
     label : "descriptiveprop"
  } ,
  Relprop : {
-    type :  String , 
+    type :  [String] , 
     label : "Relprop"  
  } , 
  typegraph : {
      type: String , 
     label:  "typegraph"
+ } , dataformat : {
+    type: String ,
+    label:  "dataformat"
  }
 
 
