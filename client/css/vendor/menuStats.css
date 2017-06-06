@@ -9,9 +9,9 @@
 #menuStats {
   position: fixed;
   top: 15px;
-  width: 10%;
+  width: 12%;
   color: #ffffff;
-  height: 200px;
+  height: 100%;
   text-align: left;
   padding-top: 15px;
   /* Adds shadow to the bottom of the bar */

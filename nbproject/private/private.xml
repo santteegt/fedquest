@@ -3,7 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/cedia/Gitint/sparql-fedquest/server/server.js</file>
+            <file>file:/home/cedia/stats/sparql-fedquest/client/templates/views/confpanel.html</file>
+            <file>file:/home/cedia/stats/sparql-fedquest/client/js/main.js</file>
+            <file>file:/home/cedia/stats/sparql-fedquest/client/templates/views/stats.html</file>
+            <file>file:/home/cedia/stats/sparql-fedquest/server/server.js</file>
+            <file>file:/home/cedia/stats/sparql-fedquest/client/js/views/confpanel.js</file>
         </group>
     </open-files>
 </project-private>

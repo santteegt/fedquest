@@ -203,7 +203,7 @@ Hooks.onCreateUser = function (userId) {
  var prof = Profile.findOne({'idProfile': userId });
 
  console.log ("Nivel de acceso");
- console.log (alevel);
+ //console.log (alevel);
  if (typeof usr.profile === 'undefined'){
   Profile.insert({idProfile: userId , nameUser: "", direction: "" , levelAcademic: "0", areasInterest: [], language: "es", password: "", secMail:  usr.emails[0].address , accessLevel: "0"});
   Meteor.users.update({_id:userId}, {$set:{"profile":{ lang: "es" ,  'access':0 }}});
@@ -503,7 +503,7 @@ var num_auto=0;
                     var GeoResult = Cache.find({geohash: {$exists: true}}, { sort: {prio: 1}, limit: 1 }).fetch();
                     if (GeoResult.length == 0) {
                         EndpointList = Endpoints.find().fetch();
-                        Meteor._sleepForMs(500);
+                        Meteor._sleepForMs(50000);
                         continue;
                     }
                     GeoResult=GeoResult[0];
@@ -589,19 +589,19 @@ var num_auto=0;
         return 0;
       }
     });
-            SyncedCron.add({
-      name: 'UpdateStats',
-      schedule: function(parser) {
-        // parser is a later.parse object
-        return parser.text('every 336 hours');
-      },
-      job: function() {
-          try{
-            Meteor.call('updateStats');
-          }catch(e){}
-        return 0;
-      }
-    });
+            //SyncedCron.add({
+  //    name: 'UpdateStats',
+  //    schedule: function(parser) {
+  //      // parser is a later.parse object
+  //      return parser.text('every 336 hours');
+  //    },
+  //    job: function() {
+  ////        try{
+  //          Meteor.call('updateStats');
+  //        }catch(e){}
+ //       return 0;
+ //     }
+ //   });
     
     SyncedCron.add({
       name: 'UpdateSugg',
@@ -616,7 +616,7 @@ var num_auto=0;
             var pend = Cache.find({queue: {$exists: true}}, {sort: {qord: -1}, limit: 1}).fetch();
             if (pend.length == 0) {
                 endp = Endpoints.find().fetch();
-                Meteor._sleepForMs(500);
+                Meteor._sleepForMs(50000);
                 continue;
             }
             var sug = pend[0];
@@ -811,208 +811,407 @@ Api.addRoute('sparql', {authRequired: false}, {
 });
 
 
+function getSubsets(inp) {
+  if (inp.length == 1) {
+      // return the single item set plus the empty set
+      return [inp, []];
+  } else {
+      var e = inp.pop();
+      var s = getSubsets(inp);
+      // duplicate the elements of s into s1 without creating references.  
+      // this might not be the best technique
+      var s1 = s.concat(JSON.parse(JSON.stringify(s)));
+      // add e to the second group of duplicates
+      for (var i=s.length; i < s1.length; i++) {
+          s1[i].push(e);
+      }
+      return s1;
+  }    
+};
 
+
+function exclusiveSubset(EP, contTot, Subset, lsKW){
+    
+    var resub=lsKW.filter(function (a) {
+        
+        if(a.EP !=EP){
+            return false;
+        }
+        
+        for (var i=0; i<Subset.length;i++){
+            if (a.uri.indexOf(Subset[i])!=-1){
+                
+            }else{
+                return false;
+            }
+        }
+        
+        return a.uri.length>Subset.length; 
+    });
+    var res=0;
+    if (resub.length==0){
+        return contTot;
+    }else{
+        for (var i=0; i<resub.length;i++){
+            res +=exclusiveSubset(EP, resub[i].value,resub[i].uri,  lsKW);
+        }
+        return contTot-res;
+    }
+}
 
         Meteor.methods({
             eventsOnHooksInit: function () {},
             updateStats: function () {
 
+                Statsc.remove({});
                 var __mongo_stats = [];
                 var endp = Endpoints.find().fetch();
+                
+                var ConfigInfo = Configuration.find().fetch();
+                var proper = [];
+                    for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                        var lsEntities=ConfigInfo[qm].ConfStat;
+                        if ( lsEntities != undefined && lsEntities != null){
+                            for (var qqm=0; qqm < lsEntities.length ;qqm++){
+                                proper.push(lsEntities[qqm].URI);
+                            }
+                        }
+                    }
+                proper = _.uniq(proper, function(p){ return p; });
+                var lsEntities =proper;                
                 //Numero totales
-                var sparql_p = "select (count(*) AS ?P) ('__' AS ?EP) {?x a <http://xmlns.com/foaf/0.1/Person>}";
-                var sparql_d = "select (count(*) AS ?D) ('__' AS ?EP) {?x a <http://purl.org/ontology/bibo/Document>}";
-                var sparql_c = "select (count(*) AS ?C) ('__' AS ?EP) {?x a <http://purl.org/ontology/bibo/Collection>}";
-                //Consulta  
-                var sparql_ = 'select * {\n';
-                for (var i = 0; i < endp.length; i++) {
-                    var endpoint = endp[i];
-                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
-                    sparql_ += sparql_p.replace(new RegExp("__", "g"), endpoint.name) + '\n';
-                    sparql_ += '}}union' + '\n';
-                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
-                    sparql_ += sparql_d.replace(new RegExp("__", "g"), endpoint.name) + '\n';
-                    sparql_ += '}}union' + '\n';
-                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
-                    sparql_ += sparql_c.replace(new RegExp("__", "g"), endpoint.name) + '\n';
-                    sparql_ += '}}' + '\n';
-                    if (i != endp.length - 1) {
-                        sparql_ += 'union' + '\n';
+                var sparql_CountEntities = "select (count(*) AS ?C)  { ?x a <___> }";
+                for (var indx=0; indx<lsEntities.length; indx++){
+                    var EntityURI =lsEntities[indx];
+                    var sparql_CountEntities_Impl =sparql_CountEntities.replace(new RegExp("___", "g"), EntityURI) + '\n';
+                    for (var i = 0; i < endp.length; i++) {
+                        var endpoint = endp[i];
+                        var sparql_ = 'select * { service <'+endpoint.endpoint+'> { '+sparql_CountEntities_Impl+' } }';
+                        var r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
+                        var Obj = JSON.parse(r).results.bindings;
+                        var Count=0;
+                        if (Obj!= null && Obj.length!=0 && Obj[0].C!=undefined && Obj[0].C.value !=undefined ){
+                            Count=Number(Obj[0].C.value);
+                            __mongo_stats.push({cod: 1, EP:endpoint.endpoint, E:EntityURI, C:Count});
+                        }
+                        
+                    }
+                    
+                }
+                var data=__mongo_stats;
+                //Procesamiento 1
+                var hmstr = {};
+                for (var i = 0; i < data.length; i++) {
+                    if (hmstr[data[i].E + ''] != undefined) {
+                        hmstr[data[i].E + ''] += data[i].C;
+                    } else {
+                        hmstr[data[i].E + ''] = data[i].C;
                     }
                 }
-                sparql_ += '}';
-                //Preprocesamiento  
-                var r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
-                var Obj = JSON.parse(r).results.bindings;
-                var Stats1 = [];
-                for (var i = 0; i < endp.length; i++) {
-                    var ls = Obj.filter(function (a) {
-                        return a.EP.value == endp[i].name;
-                    });
-                    var result1 = {};
-                    var result = {};
-                    result1 = merge_(ls[0], ls[1]);
-                    result = merge_(result1, ls[2]);
-                    Stats1.push(result);
-                }
-                //Statsc.insert({cod: 1, val: Stats1});
-                __mongo_stats.push({cod: 1, val: Stats1});
-                var Stats__ = Stats1;
-                //console.log(Stats1);
-                //Numero recursos totales
+                var str = [];
+                for (var key in hmstr) {
+                    if (hmstr.hasOwnProperty(key)) {
+                        var lbl = key.split("").reverse().join("").split(/\/|#/)[0].split("").reverse().join("");
+                        var lsMC = [];
+                        for (var indtem = 0; indtem < ConfigInfo.length; indtem++) {
+                            lsMC = lsMC.concat(ConfigInfo[indtem].ConfEntity);
+                        }
+                        lsMC = lsMC.filter(function (a) {
+                            return a.URI == key;
+                        });
 
+                        if (lsMC.length != 0) {
+                            lbl = lsMC[0].name;
+                        }
+                        str.push({value: hmstr[key], label: lbl});
+                    }
+                }
+                
+                Statsc.insert({cod:1, data:str});
+                
+                
+                hmstr = {};
+                for (var i = 0; i < data.length; i++) {
+                    if (hmstr[data[i].EP + ''] != undefined) {
+                        hmstr[data[i].EP + ''] += data[i].C;
+                    } else {
+                        hmstr[data[i].EP + ''] = data[i].C;
+                    }
+                }
+                str=[];
+                for (var key in hmstr) {
+                    if (hmstr.hasOwnProperty(key)) {
+                        var lbl = key.split("").reverse().join("").split(/\/|#/)[0].split("").reverse().join("");
+                        var lsMC = endp;
+                        lsMC = lsMC.filter(function (a) {
+                            return a.endpoint == key;
+                        });
+
+                        if (lsMC.length != 0) {
+                            lbl = lsMC[0].name;
+                        }
+
+                        str.push({value: hmstr[key], label: lbl});
+                    }
+                }
+                
+                Statsc.insert({cod:2, data:str});
+                
+                
+                
+                
+                __mongo_stats=[];
                 //Palabras clave
-                var topK = '20';
+                var topK = '15';
                 sparql_ = "select * {service <==>{ select  ?D (count(*) AS ?cou) ('__' AS ?EP) where { { [] <http://purl.org/saws/ontology#refersTo> ?d . BIND (lcase(?d) AS ?D) }union{ [] <http://purl.org/dc/terms/subject> ?d . filter (isLiteral (?d)) . BIND (lcase(?d) AS ?D) }union{  [] <http://vivoweb.org/ontology/core#freetextKeyword> ?d . BIND (lcase(?d) AS ?D) } } group by ?D order by desc(?cou) limit " + topK + ' }} ';
-                var lsKW = [];
                 for (var i = 0; i < endp.length; i++) {
                     var endpoint = endp[i];
                     var r = Meteor.call('doQueryCacheStats', {sparql: sparql_.replace(new RegExp("__", "g"), endpoint.name).replace(new RegExp("==", "g"), endpoint.endpoint)}).resultSet.value;
                     var Obj1 = JSON.parse(r).results.bindings;
                     var stopWords = ['cuenca-ecuador', 'ecuador', 'cuenca', 'azuay', 'tesis', 'quito', 'quito-ecuador', 'guayaquil'];
-                    Obj1_ = Obj1.filter(function (a) {
-                        return stopWords.indexOf(a.D.value.trim()) == -1;
-                    });
-                    lsKW.push({EP: endpoint.name, Data: Obj1_});
-                }
-                //Statsc.insert();
-                __mongo_stats.push({cod: 2, val: lsKW});
-                //Palabras clave
-                //Por tipo de documento
+                    var Obj1_ = Obj1.filter(function (a) {
+                        
+                        if (a!= null && a.D!=undefined && a.D.value !=undefined && a.cou!=undefined && a.cou.value !=undefined){
+                            return stopWords.indexOf(a.D.value.trim()) == -1;
+                        }else{
+                            return false;
 
-                var sparql_td = "select ?t ?l ?y (count (*) as ?c) ('__' AS ?EP) { ?d a <http://purl.org/ontology/bibo/Document> . ?d a ?t . ?d <http://purl.org/dc/terms/language> ?l. ?d <http://purl.org/dc/terms/issued> ?y2. bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?y ). } group by ?t ?l ?y";
-                sparql_ = 'select * {\n';
-                for (var i = 0; i < endp.length; i++) {
-                    var endpoint = endp[i];
-                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
-                    sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
-                    sparql_ += '}}' + '\n';
-                    if (i != endp.length - 1) {
-                        sparql_ += 'union' + '\n';
-                    }
-                }
-                sparql_ += '}';
-                r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
-                //console.log(sparql_);
-                Obj = JSON.parse(r).results.bindings;
-                Stats1 = [];
-                for (var i = 0; i < endp.length; i++) {
-                    var ls = Obj.filter(function (a) {
-                        return a.EP.value == endp[i].name;
-                    });
-                    Stats1.push({EP: endp[i].name, val: ls});
-                }
-                //Statsc.insert();
-                __mongo_stats.push({cod: 3, val: Stats1});
-        //Por tipo de documento
-        //
-        //Autores por tipo de contribucion
-                //sparql_td = "select ?p (count (*) as ?c) ('__' AS ?EP) {  select distinct ?a ?p {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a ?p ?v.    ?v a <http://purl.org/ontology/bibo/Document>  } } group by ?p ";
-                sparql_td = "select ?p ?c ('__' AS ?EP) { {select (count(*) as ?c) (IRI('http://rdaregistry.info/Elements/a/P50161') as ?p) {  select distinct ?a {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a <http://rdaregistry.info/Elements/a/P50161> [].  } }} union { select (count(*) as ?c) (IRI('http://rdaregistry.info/Elements/a/P50195') as ?p) {  select distinct ?a {   ?a a <http://xmlns.com/foaf/0.1/Person> .   ?a <http://rdaregistry.info/Elements/a/P50195> [].  } }} }";
-                sparql_ = 'select * {\n';
-                for (var i = 0; i < endp.length; i++) {
-                    var endpoint = endp[i];
-                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
-                    sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
-                    sparql_ += '}}' + '\n';
-                    if (i != endp.length - 1) {
-                        sparql_ += 'union' + '\n';
-                    }
-                }
-                sparql_ += '}';
-                r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
-                //console.log(sparql_);
-                Obj = JSON.parse(r).results.bindings;
-                Stats1 = [];
-                for (var i = 0; i < endp.length; i++) {
-                    var ls = Obj.filter(function (a) {
-                        return a.EP.value == endp[i].name;
-                    });
-                    var TotDoc = Stats__.filter(function (a) {
-                        return a.EP.value == endp[i].name;
-                    }) [0];
-                    Stats1.push({EP: endp[i].name, val: {total: Number(TotDoc.P.value), val: ls}});
-                }
-                //Statsc.insert();
-                __mongo_stats.push({cod: 4, val: Stats1});
-        //Autores por tipo de contribucion
-        //Top Autores
-                var topKA = 20;
-                sparql_td = "select ?a (max (?n) as ?name) (max (?coun) as ?counter) ('__' AS ?EP) {   ?a <http://xmlns.com/foaf/0.1/name> ?n.   {      select ?a (count(*) as ?coun)      {         { ?a <http://rdaregistry.info/Elements/a/P50195> [] }union{ ?a <http://rdaregistry.info/Elements/a/P50161> []}     } group by (?a) order by desc (?coun) limit " + topKA + "    } } group by (?a) order by desc(?co)";
-                sparql_ = 'select * {\n';
-                for (var i = 0; i < endp.length; i++) {
-                    var endpoint = endp[i];
-                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
-                    sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
-                    sparql_ += '}}' + '\n';
-                    if (i != endp.length - 1) {
-                        sparql_ += 'union' + '\n';
-                    }
-                }
-                sparql_ += '} order by desc (?coun)';
-                r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
-                Obj = JSON.parse(r).results.bindings;
-                Stats1 = Obj;
-                //Statsc.insert();
-                __mongo_stats.push({cod: 5, val: Stats1});
-        //Top Autores
-
-
-        //Colecciones
-                var topKC = 20000;
-                sparql_td = "select ?c (max(?n) as ?name) (count(*) as ?counter) ('__' AS ?EP) {    ?c a <http://purl.org/ontology/bibo/Collection>.    ?c <http://purl.org/dc/terms/description> ?n.   ?d <http://purl.org/dc/terms/isPartOf> ?c. } group by ?c order by desc (?co) limit " + topKC;
-                sparql_ = 'select * {\n';
-                for (var i = 0; i < endp.length; i++) {
-                    var endpoint = endp[i];
-                    sparql_ += '{service <' + endpoint.endpoint + '> {' + '\n';
-                    sparql_ += sparql_td.replace(new RegExp("__", "g"), endpoint.name) + '\n';
-                    sparql_ += '}}' + '\n';
-                    if (i != endp.length - 1) {
-                        sparql_ += 'union' + '\n';
-                    }
-                }
-                sparql_ += '}  order by desc (?counter)';
-                r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
-                Obj = JSON.parse(r).results.bindings;
-                var StopWords2 = ['Tesis de Grado - ', 'Tesis en ', 'Carrera de ', 'Facultad de ', 'Tesis - Carrera de ', 'Tesis - ', 'Tesis de ', 'Instituto de ', 'Facultad ', 'Licenciatura en ', 'Tesis ', 'Escuela de ', 'Exámenes - '];
-                for (var i = 0; i < Obj.length; i++) {
-                    for (var j = 0; j < StopWords2.length; j++) {
-                        if (!Obj[i].name) {
-                            Obj[i].name = {value: "No collections"};
-                            Obj[i].counter.value = 1;
                         }
-                        Obj[i].name.value = Obj[i].name.value.replace(new RegExp(StopWords2[j], "g"), '');
+                    });
+                    var Obj1__ = Obj1_.map(function (a) { return {EP: endpoint.name , k:a.D.value, c: Number(a.cou.value)};});
+                     __mongo_stats=__mongo_stats.concat(Obj1__);
+                }
+                
+                Statsc.insert({cod:3, data:__mongo_stats});
+                
+                
+                
+               __mongo_stats=[];
+                
+                
+                var statsConfig = [];
+                    for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                        var lsEntities=ConfigInfo[qm].ConfStat;
+                        if ( lsEntities != undefined && lsEntities != null){
+                            for (var qqm=0; qqm < lsEntities.length ;qqm++){
+                                statsConfig.push(lsEntities[qqm]);
+                            }
+                        }
+                }
+                //Estadisticas configuradas
+                for (var i=0; i<statsConfig.length; i++){
+                    
+                    var OneStat= statsConfig[i];
+                    
+                    //Deteccion de casos
+                    var cas3 =0;
+                    var datatype =OneStat.dataformat;
+                    var cas=false;
+                    
+                    if (OneStat.descriptiveprop !=='---'){
+                        if (OneStat.Relprop.length>1 || OneStat.Relprop.length==1 && OneStat.Relprop[0] != OneStat.descriptiveprop ){
+                            cas3=0;
+                        }
+                        if (OneStat.Relprop.length==1 && OneStat.Relprop[0] == OneStat.descriptiveprop ){
+                            cas3=1;
+                        }
+                    }else{
+                        if (OneStat.Relprop.length==1 ){
+                            OneStat.descriptiveprop=OneStat.Relprop[0];
+                            cas3=1;
+                            cas=true;
+                        }
+                        if (OneStat.Relprop.length>1 ){
+                            cas3=2;
+                        }
                     }
-                    //Obj[i].name.value = Obj[i].name.value.toLowerCase();
+                    
+                    
+                    
+                     var auxSets=[];
+                    
+                    var cstat=OneStat;
+                    var sparql ='';
+                    switch (cas3){
+                        case 0:{
+                            //propiedad descriptiva y analizadas diferentes
+                            sparql ='select ?o (max(?l) as ?ll ) (count(?v) as ?c ) { '
+                            + ' ?o a <'+cstat.URI+'> . '
+                            + ' ?o <'+cstat.descriptiveprop+'> ?l . ';
+                            for (var j=0; j<cstat.Relprop.length; j++) {
+                                
+                                if (cstat.Relprop.length> 1){
+                                    sparql += ' { ';
+                                }
+                                sparql += ' { '
+                                + '	?o <'+cstat.Relprop[j]+'> ?v . '
+                                + ' }union{ '
+                                + '	?v <'+cstat.Relprop[j]+'> ?o . '
+                                + ' } ';
+                                if (cstat.Relprop.length> 1){
+                                    sparql += ' } ';
+                                }
+                                if (cstat.Relprop.length> 1 && j!=cstat.Relprop.length-1 ){
+                                    sparql += ' union ';
+                                }
+                                
+                                
+                            }
+                            sparql += ' } group by ?o order by desc(?c) ';
+                            if (OneStat.typegraph=='Etiq'){
+                                sparql += ' limit 15 ';
+                            }
+                            
+
+                        }break;
+                        case 1:{
+                            //misma propiedad descriptiva y analizada
+                            sparql ='select ?l (count(*) as ?c) { '
+                            +' ?o a <'+cstat.URI+'> . ';
+                    
+                            if (cstat.dataformat=='Date'){
+                                ///
+                                sparql +=' ?o <'+cstat.descriptiveprop+'> ?y2 . ';
+                                    
+                                sparql +="bind( strbefore( ?y2, '-' ) as ?y3 ).  bind( strafter( ?y2, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?y2,if(str(?y3)='',?y4,?y3)) as ?l ).";
+                                
+                            }else{
+                                sparql +=' ?o <'+cstat.descriptiveprop+'> ?l . ';
+                            }
+                            if (cas){
+                                sparql +=" filter (str(?l) != '"+cstat.URI+"') . ";
+                            }
+                            sparql +=" filter (str(?l) != '') . ";
+                            sparql +=' } group by ?l order by desc(?c) ';
+                            
+                            if (OneStat.typegraph=='Etiq'){
+                                sparql += ' limit 15 ';
+                            }
+                            
+                        }break;
+                        case 2:{
+                            //sin propiedad descriptiva , varias analizadas
+                            var subsets=getSubsets(cstat.Relprop);
+                            subsets = subsets.filter(function (a) { return a.length!=0;  });
+                            auxSets=subsets;
+                            sparql = 'select * { ';
+                            for (var j=0; j<subsets.length; j++){
+                                var subset =subsets[j];
+                                
+                                if (subsets.length> 1){
+                                    sparql += ' { ';
+                                }
+                                sparql += 'select (count (distinct ?o ) as ?c'+j+' ) { ';
+                                sparql += ' ?o a <'+cstat.URI+'> . ';
+                                
+                                sparql += ' { ';
+                                for (var k=0; k<subset.length; k++){
+                                    sparql += ' ?o <'+subset[k]+'> ?v'+k+' . ';    
+                                }
+                                sparql += ' } union { ';
+                                for (var k=0; k<subset.length; k++){
+                                    sparql += ' ?v'+k+' <'+subset[k]+'> ?o . ';    
+                                }
+                                sparql += ' } ';
+                                sparql += ' } ';
+                                if (subsets.length> 1){
+                                    sparql += ' } ';
+                                }
+                                if (subsets.length> 1 && j!=subsets.length-1 ){
+                                    sparql += ' union ';
+                                }
+                            }
+                            sparql += ' } ';
+                                
+                        }break;
+                    }
+                    //console.log(sparql);
+                    
+                    var lsKW = [];
+                    for (var ii = 0; ii < endp.length; ii++) {
+                        var lsKW2 = [];
+                        var endpoint = endp[ii];
+                        
+                        var sparql_ = 'select * { service <'+endpoint.endpoint+'> { '+sparql+' } }';
+                        
+                        //console.log(sparql_);
+                        var r = Meteor.call('doQueryCacheStats', {sparql: sparql_}).resultSet.value;
+                        var Obj = JSON.parse(r).results.bindings;
+                        
+                        var result={};
+                        for (var kk = 0; kk<Obj.length; kk++){
+                            try{
+                                switch (cas3){
+                                    case 0:{
+                                            result = { nameLabel: Obj[kk].ll.value, value:Number(Obj[kk].c.value), label: Obj[kk].o.value};
+                                    }break;
+                                    case 1:{
+                                            if (cas){
+                                                result = { label: Obj[kk].l.value.split("").reverse().join("").split(/\/|#/)[0].split("").reverse().join(""), value:Number(Obj[kk].c.value)};
+                                            }else{
+                                                result = { label: Obj[kk].l.value, value:Number(Obj[kk].c.value)};
+                                            }
+                                    }break;
+                                    case 2:{
+                                            var SetC=auxSets[kk];
+                                            var str='';
+                                            for (var te=0; te<SetC.length; te++){
+                                                str += (str!=''? ' & ':'') + SetC[te].split("").reverse().join("").split(/\/|#/)[0].split("").reverse().join("");
+                                            }
+
+                                            var Coun=Number(Obj[kk]['c'+kk].value);
+                                            result = { label: str, value:Coun, uri:SetC};
+
+                                    }break;
+                                }
+                                result['EP']=endpoint.endpoint;
+                                result['cod']= i+10;
+                                
+                                lsKW2.push(result);
+                                //console.log('lof¿g'+Obj[kk]);
+                            }catch(err){
+                                console.log('updateStats+ERR:'+err+Obj[kk]);
+                            }
+                        }
+                        if (OneStat.typegraph=='Pie'){
+                            var lsKW2_= [];
+                            for (var te=0; te<lsKW2.length; te++){
+                                if (lsKW2_.length < 11){
+                                    lsKW2_.push(lsKW2[te]);
+                                }else{
+                                    lsKW2_[lsKW2_.length-1].label ='Otros';
+                                    lsKW2_[lsKW2_.length-1].value +=lsKW2[te].value;
+                                }
+                            }
+                            lsKW2=lsKW2_;
+                        }
+                        
+                        
+                        
+                        lsKW=lsKW.concat(lsKW2);
+                        
+                        
+                    }
+                    if (cas3==2){
+                            //Analisis de sub conjuntos
+                            var result ={};
+                            var results =[];
+                            for (var te=0; te<lsKW.length; te++){
+                                var contTot=lsKW[te].value;
+                                var Subset=lsKW[te].uri;
+                                var realtot = exclusiveSubset(lsKW[te].EP,contTot, Subset, lsKW);
+                                result = { cod:lsKW[te].cod ,EP: lsKW[te].EP, label: lsKW[te].label, value:realtot};
+                                results.push(result);
+                                
+                            }
+                            lsKW=results;
+                    }
+                    
+                    __mongo_stats= __mongo_stats.concat(lsKW);
+
+                    
                 }
-
-                /*
-                 var result = [];
-                 Obj.reduce(function (res, value) {
-                 if (!res[value.name.value]) {
-                 res[value.name.value] = {
-                 counter: 0,
-                 name: value.name.value,
-                 c: value.c.value,
-                 EP: value.EP.value
-                 };
-                 result.push(res[value.name.value])
-                 }
-                 res[value.name.value].qty += Number(value.counter.value);
-                 return res;
-                 }, {});
-                 */
-                Stats1 = Obj;
-                __mongo_stats.push({cod: 6, val: Stats1});
-        //Colecciones
-
-
-
-                Statsc.remove({});
-                for (var i = 0; i < __mongo_stats.length; i++) {
-                    Statsc.insert(__mongo_stats[i]);
-                }
-
+                Statsc.batchInsert(__mongo_stats);
 
 
             },
@@ -2621,13 +2820,13 @@ Api.addRoute('sparql', {authRequired: false}, {
                 if (valAccess(this.userId, 2)) {
                 console.log ("Borrando");
                 console.log (valuri +" " +graphendp);
-                 var confexist = Configuration.findOne({ 'Endpoint': graphendp , 'ConfStat.URI' : valuri });
+                 var confexist = Configuration.findOne({ 'Endpoint': graphendp , 'ConfStat.name' : valuri });
                  var entities = confexist.ConfStat;
                  console.log (entities);
-                 entities = _.reject(entities, function(el) { return el.URI === valuri ; });
+                 entities = _.reject(entities, function(el) { return el.name === valuri ; });
                  //return Configuration.remove ({ "Endpoint" :  graphendp , "ConfEnt.URI" : valuri });
                 console.log (entities);
-                 Configuration.update({'Endpoint': graphendp , 'ConfStat.URI' : valuri } , {$set: { 'ConfStat' : entities } });
+                 Configuration.update({'Endpoint': graphendp , 'ConfStat.name' : valuri } , {$set: { 'ConfStat' : entities } });
                 } else {
                     return  "Sin permisos";
                  }

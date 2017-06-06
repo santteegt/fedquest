@@ -47,6 +47,10 @@ if (Meteor.isClient) {
     window.d3 = require("d3");
     window.d3pie = require("d3pie");
     Session.set('auxAct', 0);
+
+    Session.set('auxActV2', 0);
+
+
     SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
         return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
     };
@@ -121,7 +125,45 @@ if (Meteor.isClient) {
     });
 
 
+    this.App.loadPag = (function ( ) {
+        var ConfigInfo = Configuration.find().fetch();
+        var statsConfig = [];
+        for (var qm = 0; qm < ConfigInfo.length; qm++) {
+            var lsEntities = ConfigInfo[qm].ConfStat;
+            if (lsEntities != undefined && lsEntities != null) {
+                for (var qqm = 0; qqm < lsEntities.length; qqm++) {
+                    statsConfig.push(lsEntities[qqm]);
+                }
+            }
+        }
+        var lsmen = ['p_1'];
+        for (var i = 0; i < statsConfig.length; i++) {
+            var j = i + 2;
+            lsmen.push('p_' + j);
 
+        }
+
+        if (lsmen.length > 1) {
+            try {
+                $('#fullpage').fullpage({
+                    sectionsColor: ['#1bbc9b', '#4BBFC3', '#7BAABE', 'whitesmoke', '#ccddff', '#ccddff'],
+                    anchors: lsmen,
+                    menu: '#navigation'
+                });
+            } catch (e) {
+                console.log(e);
+            }
+            //load
+
+
+
+            ///
+        }
+
+
+
+    }
+    );
     var Qmode = 0;
     var pa = -1;
     this.App.SearchRun = (function (num, qm) {
@@ -189,28 +231,438 @@ if (Meteor.isClient) {
         }
     });
 
-    Template.stats.helpers({
-        g1: function () {
-            var str = {};
-            var data = Statsc.find({cod: 1}).fetch();
-            if (Statsc && data && data[0] && data[0].val) {
-
-                data = data[0];
-                data = data.val;
-                var C = 0;
-                var D = 0;
-                var P = 0;
-                for (var i = 0; i < data.length; i++) {
-                    C += Number(data[i].C.value);
-                    D += Number(data[i].D.value);
-                    P += Number(data[i].P.value);
+    Template.menuStats.helpers({
+        MenuStats: function () {
+            var ConfigInfo = Configuration.find().fetch();
+            var statsConfig = [];
+            for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                var lsEntities = ConfigInfo[qm].ConfStat;
+                if (lsEntities != undefined && lsEntities != null) {
+                    for (var qqm = 0; qqm < lsEntities.length; qqm++) {
+                        statsConfig.push(lsEntities[qqm]);
+                    }
                 }
-                str = [{value: C, label: lang.lang("Collections")}, {value: D, label: lang.lang("Documents")}, {value: P, label: lang.lang("Persons")}];
+            }
+            var lsmen = [{lbl: lang.lang("Global"), num: '1'}];
+            for (var i = 0; i < statsConfig.length; i++) {
+                var j = i + 2;
+                lsmen.push({lbl: statsConfig[i].name, num: j + ''});
+            }
+            return lsmen;
+        }
+
+    });
+
+
+
+
+
+    Template.stats.helpers({
+
+        DataStats: function () {
+            try {
+                Session.get('auxActV2');
+
+
+                var ConfigInfo = Configuration.find().fetch();
+                var statsConfig = [];
+                for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                    var lsEntities = ConfigInfo[qm].ConfStat;
+                    if (lsEntities != undefined && lsEntities != null) {
+                        for (var qqm = 0; qqm < lsEntities.length; qqm++) {
+                            statsConfig.push(lsEntities[qqm]);
+                        }
+                    }
+                }
+
+                for (var i = 0; i < statsConfig.length; i++) {
+
+                    var lbl = statsConfig[i].URI.split("").reverse().join("").split(/\/|#/)[0].split("").reverse().join("");
+                    var lsMC = [];
+                    for (var indtem = 0; indtem < ConfigInfo.length; indtem++) {
+                        lsMC = lsMC.concat(ConfigInfo[indtem].ConfEntity);
+                    }
+                    lsMC = lsMC.filter(function (a) {
+                        return a.URI == statsConfig[i].URI;
+                    });
+
+                    if (lsMC.length != 0) {
+                        lbl = lsMC[0].name;
+                    }
+
+                    var k = i + 1;
+                    var e = document.getElementById("repositories_" + k);
+                    var repo = (e) ? e.options[e.selectedIndex].value : undefined;
+
+                    var data = [];
+                    if (repo != "all") {
+                        data = Statsc.find({cod: i + 10, EP: repo}).fetch();
+                    } else {
+                        data = Statsc.find({cod: i + 10}).fetch();
+                    }
+                    var hmstr = {};
+                    for (var ix = 0; ix < data.length; ix++) {
+                        if (hmstr[data[ix].label + ''] != undefined) {
+                            hmstr[data[ix].label + ''] += data[ix].value;
+                        } else {
+                            hmstr[data[ix].label + ''] = data[ix].value;
+                        }
+                    }
+                    var str = [];
+                    for (var key in hmstr) {
+                        if (hmstr.hasOwnProperty(key)) {
+                            var lblx = key;
+
+                            var test = data.filter(function (a) {
+                                return a.label == lblx && a.nameLabel != undefined;
+                            });
+
+                            if (test.length > 0) {
+
+                                str.push({label: test[0].nameLabel, value: hmstr[key], uri: lblx});
+                            } else {
+
+                                str.push({value: hmstr[key], label: lblx});
+                            }
+                        }
+                    }
+
+
+
+
+                    console.log(statsConfig[i]);
+                    switch (statsConfig[i].typegraph) {
+                        case "Pie":
+                            {
+                                var lsKW2_ = [];
+
+                                str=str.sort(function (a, b) {
+                                    return -a.value + b.value;
+                                });
+
+                                for (var te = 0; te < str.length; te++) {
+                                    if (lsKW2_.length < 11) {
+                                        lsKW2_.push(str[te]);
+                                    } else {
+                                        lsKW2_[lsKW2_.length - 1].label = 'Otros';
+                                        lsKW2_[lsKW2_.length - 1].value += str[te].value;
+                                    }
+                                }
+                                str = lsKW2_;
+
+
+                                try {
+                                    $('#Chart' + k).empty();
+                                    var pie = new d3pie("Chart" + k, {
+                                        "header": {
+                                            "title": {
+                                                "text": lbl,
+                                                "fontSize": 22,
+                                                "font": "verdana"
+                                            },
+                                            "subtitle": {
+                                                "text": statsConfig[i].name,
+                                                "color": "#999999",
+                                                "fontSize": 10,
+                                                "font": "verdana"
+                                            },
+                                            "titleSubtitlePadding": 12
+                                        },
+                                        "footer": {
+                                            "color": "#999999",
+                                            "fontSize": 11,
+                                            "font": "open sans",
+                                            "location": "bottom-center"
+                                        },
+                                        "size": {
+                                            "canvasHeight": 300,
+                                            "canvasWidth": $('#Chart' + k).width(),
+                                            "pieOuterRadius": "80%"
+                                        },
+                                        "data": {
+                                            "sortOrder": "random",
+                                            "content": str
+                                        },
+                                        "labels": {
+                                            "outer": {
+                                                "pieDistance": 5
+                                            },
+                                            "inner": {
+                                                "hideWhenLessThanPercentage": 3
+                                            },
+                                            "mainLabel": {
+                                                "font": "verdana"
+                                            },
+                                            "percentage": {
+                                                "color": "#000000",
+                                                "font": "verdana",
+                                                "decimalPlaces": 0
+                                            },
+                                            "value": {
+                                                "color": "#e1e1e1",
+                                                "font": "verdana"
+                                            },
+                                            "lines": {
+                                                "enabled": true,
+                                                "style": "straight"
+                                            },
+                                            "truncation": {
+                                                "enabled": true
+                                            }
+                                        },
+                                        "effects": {
+                                            "pullOutSegmentOnClick": {
+                                                "effect": "linear",
+                                                "speed": 400,
+                                                "size": 8
+                                            }
+                                        },
+                                        "tooltips": {
+                                            "enabled": true,
+                                            "type": "placeholder",
+                                            "string": "{label}: {value}, {percentage}%"
+                                        }
+                                    });
+                                } catch (az) {
+                                    //console.log(az);
+                                }
+
+
+
+                            }
+                            break;
+                        case "Hist":
+                            {
+
+                                $('#HChart' + k).empty();
+                                var data = str;
+                                // Get the data
+
+                                data.forEach(function (d) {
+                                    d.label = Number(d.label);
+                                    d.value = Number(d.value);
+                                });
+                                data = data.filter(function (d) {
+                                    return d.label > 1850;
+                                });
+                                var vmin = d3.min(data, function (d) {
+                                    return d.label;
+                                });
+                                var since = (vmin < 1850) ? 1850 : vmin;
+
+                                //console.log(data);
+                                // Set the dimensions of the canvas / graph
+                                var margin = {top: 30, right: 20, bottom: 30, left: 50},
+                                        width = $('#HChart' + k).width() - margin.left - margin.right,
+                                        height = 300 - margin.top - margin.bottom;
+// Parse the date / time
+                                var parseDate = d3.time.format("%Y").parse;
+                                var formatTime = d3.time.format("%Y %B");
+
+// Set the ranges
+                                var x = d3.scale.linear().range([0, width]);
+                                var y = d3.scale.log().base(10).range([height, 0]);
+
+// Define the axes
+
+                                var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹",
+                                        formatPower = function (d) {
+                                            return (d + "").split("").map(function (c) {
+                                                return superscript[c];
+                                            }).join("");
+                                        };
+
+
+                                var xAxis = d3.svg.axis().scale(x)
+                                        .orient("bottom").ticks(7);
+
+                                var yAxis = d3.svg.axis().scale(y)
+                                        .orient("left").tickFormat(function (d) {
+                                    return (d == 1 || d == 10 || d == 100 || d == 1000 || d == 10000 || d == 100000) ? d : '';
+                                }).ticks(5);
+
+// Define the line
+                                var valueline = d3.svg.line()
+                                        .x(function (d) {
+                                            return x(d.label);
+                                        })
+                                        .y(function (d) {
+                                            return y(d.value);
+                                        });
+
+// Define the div for the tooltip
+                                var div = d3.select("body").append("div")
+                                        .attr("class", "tooltip")
+                                        .style("opacity", 0);
+
+// Adds the svg canvas
+                                var svg = d3.select("#HChart" + k)
+                                        .append("svg")
+                                        .attr("width", width + margin.left + margin.right)
+                                        .attr("height", height + margin.top + margin.bottom)
+                                        .append("g")
+                                        .attr("transform",
+                                                "translate(" + margin.left + "," + margin.top + ")");
+
+
+                                var mmax = d3.max(data, function (d) {
+                                    return d.label;
+                                });
+
+                                var __d = new Date();
+                                var __n = __d.getFullYear();
+
+                                mmax = (mmax > __n) ? __n + 1 : mmax;
+                                // Scale the range of the data
+                                x.domain([since, mmax]);
+                                /* x.domain([since, d3.max(data, function (d) {
+                                 return d.label;
+                                 })]);*/
+                                y.domain([1, d3.max(data, function (d) {
+                                        return d.value;
+                                    })]);
+
+                                // Add the valueline path.
+                                // svg.append("path")
+                                //       .attr("class", "line")
+                                //     .attr("d", valueline(data));
+
+                                // Add the scatterplot
+                                svg.selectAll("dot")
+                                        .data(data)
+                                        .enter().append("circle")
+                                        .attr("r", 2)
+                                        .attr("cx", function (d) {
+                                            return x(d.label);
+                                        })
+                                        .attr("cy", function (d) {
+                                            return y(d.value);
+                                        })
+                                        .on("mouseover", function (d) {
+                                            div.transition()
+                                                    .duration(200)
+                                                    .style("opacity", .9);
+                                            div.html(d.label + "<br/>" + "(" + d.value + ")")
+                                                    .style("left", (d3.event.pageX) + "px")
+                                                    .style("top", (d3.event.pageY - 28) + "px");
+                                        })
+                                        .on("mouseout", function (d) {
+                                            div.transition()
+                                                    .duration(500)
+                                                    .style("opacity", 0);
+                                        });
+
+                                // Add the X Axis
+                                svg.append("g")
+                                        .attr("class", "x axis")
+                                        .attr("transform", "translate(0," + height + ")")
+                                        .call(xAxis);
+
+                                // Add the Y Axis
+                                svg.append("g")
+                                        .attr("class", "y axis")
+                                        .call(yAxis);
+
+                            }
+                            break;
+                        case "Etiq":
+                            {
+                                var frequency_list = [];
+                                var max = 0;
+                                for (var ix = 0; ix < str.length; ix++) {
+                                    frequency_list.push({"text": str[ix].label, "size": Number(str[ix].value), "uri": str[ix].uri});
+                                    if (max < Number(str[ix].value)) {
+                                        max = Number(str[ix].value);
+                                    }
+                                }
+                                frequency_list = _.sample(frequency_list, 25);
+
+                                for (var q = 0; q < frequency_list.length; q++) {
+                                    frequency_list[q].size = (frequency_list[q].size / max) * 10 + 10;
+                                }
+                                if ($('#lstags' + k).length == 0 || $('#myCanvas' + k).length == 0 || $('#TChart' + k).length == 0) {
+                                    return str;
+                                }
+
+                                $('#lstags' + k).empty();
+                                var ul = document.getElementById("lstags" + k);
+
+                                for (var ix = 0; ix < frequency_list.length; ix++) {
+                                    var li = document.createElement("li");
+                                    var a = document.createElement("a");
+                                    a.setAttribute("href", frequency_list[ix].uri);
+                                    a.setAttribute("target", '_blank');
+                                    var txt = document.createTextNode(frequency_list[ix].text);
+                                    a.appendChild(txt);
+                                    a.setAttribute("data-weight", "" + frequency_list[ix].size);
+                                    li.appendChild(a);
+                                    ul.appendChild(li);
+                                }
+                                TagCanvas.Start('myCanvas' + k, 'tags' + k, {
+                                    textColour: '#000000',
+                                    outlineColour: '#ff00ff',
+                                    reverse: true,
+                                    depth: 1.0,
+                                    weight: true,
+                                    weightFrom: 'data-weight',
+                                    initial: [0.0, -0.05],
+                                    maxSpeed: 0.05,
+                                    shadow: '#ccf',
+                                    shadowBlur: 3
+                                });
+
+
+                            }
+                            break;
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        }, Stats: function () {
+            var ConfigInfo = Configuration.find().fetch();
+            var statsConfig = [];
+            for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                var lsEntities = ConfigInfo[qm].ConfStat;
+                if (lsEntities != undefined && lsEntities != null) {
+                    for (var qqm = 0; qqm < lsEntities.length; qqm++) {
+                        statsConfig.push(lsEntities[qqm]);
+                    }
+                }
+            }
+            var lsmen = [];
+            for (var i = 0; i < statsConfig.length; i++) {
+                var j = i + 2;
+                var k = i + 1;
+                statsConfig[i]['num'] = '' + k;
+                statsConfig[i]['pie'] = statsConfig[i].typegraph == 'Pie';
+                statsConfig[i]['etiq'] = statsConfig[i].typegraph == 'Etiq';
+                statsConfig[i]['hist'] = statsConfig[i].typegraph == 'Hist';
+
+
+
+                if (i == statsConfig.length - 1) {
+                    statsConfig[i]['last'] = true;
+                } else {
+                    statsConfig[i]['last'] = false;
+                }
+
+                lsmen.push(statsConfig[i]);
+            }
+            return lsmen;
+
+        },
+        g1: function () {
+            var str = [];
+            var data = Statsc.find({cod: 1}).fetch();
+            if (Statsc && data && data[0]) {
+                str = data[0].data;
             } else {
                 str = [{value: 100, label: "Something"}];
             }
-            $('#ResourcesChart').empty();
+
             try {
+                $('#ResourcesChart').empty();
                 // if ($('#ResourcesChart').length == 0) {
                 //     return str;
                 //  }
@@ -290,17 +742,17 @@ if (Meteor.isClient) {
                             switch (a.index) {
                                 case 0:
                                     {
-                                        window.open("/stats#p_4", "_self");
+                                        //window.open("/stats#p_4", "_self");
                                     }
                                     break;
                                 case 1:
                                     {
-                                        window.open("/stats#p_2", "_self");
+                                        //window.open("/stats#p_2", "_self");
                                     }
                                     break;
                                 case 2:
                                     {
-                                        window.open("/stats#p_3", "_self");
+                                        //window.open("/stats#p_3", "_self");
                                     }
                                     break;
 
@@ -309,28 +761,15 @@ if (Meteor.isClient) {
                     }
                 });
             } catch (az) {
-                //console.log(az);
+
             }
             return str;
         },
         g2: function () {
             var str = {};
-            var data = Statsc.find({cod: 1}).fetch();
-            if (Statsc && data && data[0] && data[0].val) {
-                data = data[0];
-                data = data.val;
-                var C = 0;
-                var D = 0;
-                var P = 0;
-                str = [];
-                for (var i = 0; i < data.length; i++) {
-                    C = Number(data[i].C.value);
-                    D = Number(data[i].D.value);
-                    P = Number(data[i].P.value);
-                    var T = C + D + P;
-                    str.push({value: T, label: "" + data[i].EP.value});
-                }
-                //str = [{y:C,indexLabel:"Collections"},{y:D,indexLabel:"Documents"},{y:P,indexLabel:"Persons"}];
+            var data = Statsc.find({cod: 2}).fetch();
+            if (Statsc && data && data[0]) {
+                str = data[0].data;
             } else {
                 str = [{value: 100, label: "Something"}];
             }
@@ -418,31 +857,29 @@ if (Meteor.isClient) {
             return str;
         },
         g3: function () {
-            var data = Statsc.find({cod: 2}).fetch();
+            var data = Statsc.find({cod: 3}).fetch();
             var frequency_list = [];
 
             if (data && data[0]) {
-                data = data[0].val;
+                data = data[0].data;
                 var max = 0;
                 for (var q = 0; q < data.length; q++) {
-                    var words1 = data[q].Data;
-                    for (var w = 0; w < words1.length; w++) {
-                        //console.log(words1[w].D.value.trim());
-                        var ex = frequency_list.filter(function (a) {
-                            return a.text.trim() === words1[w].D.value.trim();
-                        });
-                        if (ex.length == 0) {
-                            frequency_list.push({text: words1[w].D.value + '', size: Number(words1[w].cou.value) + 0});
-                            if (Number(words1[w].cou.value) > max) {
-                                max = Number(words1[w].cou.value);
-                            }
-                        } else {
-                            ex[0].size += Number(words1[w].cou.value);
-                            if (ex[0].size > max) {
-                                max = ex[0].size;
-                            }
+                    var word = data[q].k;
+                    var ex = frequency_list.filter(function (a) {
+                        return a.text.trim() === word.trim();
+                    });
+                    if (ex.length == 0) {
+                        frequency_list.push({text: word + '', size: Number(data[q].c) + 0});
+                        if (Number(data[q].c) > max) {
+                            max = Number(data[q].c);
+                        }
+                    } else {
+                        ex[0].size += Number(data[q].c);
+                        if (ex[0].size > max) {
+                            max = ex[0].size;
                         }
                     }
+
                 }
                 frequency_list = _.sample(frequency_list, 25);
 
@@ -497,7 +934,8 @@ if (Meteor.isClient) {
 
 
 
-        },
+        }
+        ,
         g4: function () {
             Session.get('auxAct');
             var e = document.getElementById("groupby_doc");
@@ -563,6 +1001,7 @@ if (Meteor.isClient) {
             $('#DocumentsChart').empty();
             try {
                 if (strUser == 'year') {
+                    $('#DocumentsChart').empty();
                     var data = str;
 
                     // Get the data
@@ -1208,14 +1647,14 @@ if (Meteor.isClient) {
             //if (endp !== undefined  && endp != null){
             if (!_.isUndefined(endp) && endp != "---" && (!_.isUndefined(confent))) {
                 console.log(endp);
-             //   console.log(Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity);
-            // var confent = Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity;
-                   if (!_.isUndefined(confent.ConfEntity )) {
-                     return confent.ConfEntity ;
-                   } else {
-                     return [];
-                   }
-                
+                //   console.log(Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity);
+                // var confent = Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity;
+                if (!_.isUndefined(confent.ConfEntity)) {
+                    return confent.ConfEntity;
+                } else {
+                    return [];
+                }
+
 
             } else
             {
@@ -1263,15 +1702,15 @@ if (Meteor.isClient) {
             var endp = Session.get('Graph');
             var config = Configuration.find({"Endpoint": endp}).fetch()[0];
 
-            if ( (!_.isUndefined(endp)) && endp != null && endp != "---" && (!_.isUndefined(config)) ) {
+            if ((!_.isUndefined(endp)) && endp != null && endp != "---" && (!_.isUndefined(config))) {
                 console.log(endp);
-                
-                if  (!_.isUndefined(config.ConfStat)) {
 
-                return config.ConfStat;
-            } else {
-                return [];
-            }
+                if (!_.isUndefined(config.ConfStat)) {
+
+                    return config.ConfStat;
+                } else {
+                    return [];
+                }
             } else
             {
                 return [];
@@ -1298,8 +1737,8 @@ if (Meteor.isClient) {
                                 label: lang.lang("graph_type")
                             }
                             , {
-                             //   key: 'URI',
-                               key: 'name',
+                                //   key: 'URI',
+                                key: 'name',
                                 label: lang.lang("delete"),
                                 fn: function (value, object) {
                                     return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigStatbutton' onClick='deleteConfigStat(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
@@ -1447,28 +1886,28 @@ if (Meteor.isClient) {
 
             var valores = [];
             var graph = Session.get('Graph');
-             var conf =  Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0];
+            var conf = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0];
             // var act = Session.get ('updatetables');
             // console.log("Graficar lista 1");
             // console.log(type);
             // console.log (graph); 
-            if (graph !== undefined && graph !== null && graph != "---"  ) {
+            if (graph !== undefined && graph !== null && graph != "---") {
                 valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
                 var valorselect = [];
-                if (! _.isUndefined(conf)) {
+                if (!_.isUndefined(conf)) {
 
-                if (type == "distriList") {
+                    if (type == "distriList") {
 
-                    valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].VisGraph;
+                        valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].VisGraph;
 
-                } else {
+                    } else {
 
-                    valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].EntSearch;
-                    var selected = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].Source;
-                    console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-                    console.log(selected);
-                    $('#FontProp').val(selected);
-                } 
+                        valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].EntSearch;
+                        var selected = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].Source;
+                        console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                        console.log(selected);
+                        $('#FontProp').val(selected);
+                    }
                 } else {
                     valorselect = [];
                 }
@@ -1479,10 +1918,10 @@ if (Meteor.isClient) {
                 // if (   typeof valoreselect === 'undefined'  ) 
                 //  {   
                 var filtrado = _.filter(valores, function (element) {
-                    if (element != null ) {
-                    return  !(_.contains(valorselect, element.fullName));
+                    if (element != null) {
+                        return  !(_.contains(valorselect, element.fullName));
                     } else {
-                       return false;  
+                        return false;
                     }
                 });
                 valores = filtrado;
@@ -1514,37 +1953,37 @@ if (Meteor.isClient) {
 
 
             var graph = Session.get('Graph');
-            var conf =  Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0];
+            var conf = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0];
             //var act = Session.get ('updatetables');
             //console.log("Graficar lista2");
             //console.log(type);
 
-            if (graph !== undefined && graph !== null && graph != "---"  ){
+            if (graph !== undefined && graph !== null && graph != "---") {
                 valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
                 var valorselect = [];
-                if (! _.isUndefined(conf)) {
+                if (!_.isUndefined(conf)) {
 
-                if (type == "distriList") {
+                    if (type == "distriList") {
 
-                    valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].VisGraph;
+                        valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].VisGraph;
 
-                } else {
+                    } else {
 
-                    valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].EntSearch;
-                } 
-                } 
-                   
+                        valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].EntSearch;
+                    }
+                }
+
                 console.log("Valores registrados");
                 console.log(valorselect);
                 //  console.log (_.pluck(valores, 'name'));
                 // if (  typeof valoreselect == 'undefined' ) 
                 //  {   
                 var filtrado = _.filter(valores, function (element) {
-                    if (element != null ) {
-                    return  _.contains(valorselect, element.fullName);
+                    if (element != null) {
+                        return  _.contains(valorselect, element.fullName);
                     } else {
                         return false;
-                    } 
+                    }
                 });
                 console.log("Filtrado");
                 console.log(filtrado);
@@ -1554,7 +1993,7 @@ if (Meteor.isClient) {
 
             } else {
                 //valores = Properties.find().fetch();
-               // valores = [{name: "", fullName: ""}];
+                // valores = [{name: "", fullName: ""}];
                 // valores = [];
                 return valores;
             }
@@ -3175,11 +3614,11 @@ if (Meteor.isClient) {
             "Obj_Name": "Name",
             "queries": "Queries",
             "confpanel": "Configuration",
-            "Etiq":"Labels",
-            "Number":"Number",
-            "String":"String" , 
-            "Data_type": "Data type" , 
-            "Chart_type" : "Chart type"
+            "Etiq": "Labels",
+            "Number": "Number",
+            "String": "String",
+            "Data_type": "Data type",
+            "Chart_type": "Chart type"
 
         };
 
@@ -3388,12 +3827,12 @@ if (Meteor.isClient) {
             "Prop_des": "Propiedad Descriptiva",
             "Obj_Name": "Nombre",
             "queries": "Consultas",
-            "confpanel": "Configuración" ,
-            "Etiq":"Etiquetas" ,
-            "Number":"Número",
-            "String":"Texto" ,
-            "Data_type": "Tipo de Campo" ,
-            "Chart_type" : "Tipo de Gráfico"
+            "confpanel": "Configuración",
+            "Etiq": "Etiquetas",
+            "Number": "Número",
+            "String": "Texto",
+            "Data_type": "Tipo de Campo",
+            "Chart_type": "Tipo de Gráfico"
         };
 
 

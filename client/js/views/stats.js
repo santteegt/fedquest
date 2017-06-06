@@ -24,6 +24,13 @@ this.StatsView = Backbone.View.extend({
         return this;
     },
     setEvents: function (divNode) {
+
+
+
+
+
     }
 });
+
+
 
