@@ -518,6 +518,7 @@ var num_auto=0;
                         var URI = URIEndpoint.uri;
                         var Endpoint = URIEndpoint.endpoint;
                         var QueryEndpoint = EndpointList.filter(function (a){ return a.name == Endpoint;  })[0];
+                        //var EndpointColor = QueryEndpoint.colorid;
                         //var ListDescriptiveProperty = ConfigInfo.filter(function (a) {return a.Endpoint== QueryEndpoint.endpoint; } );
                         var ListDescriptiveProperty =_.pluck(ConfigInfo, 'ConfEntity');
                         var ListAux=[];
@@ -1519,20 +1520,46 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                         var cacheo = false;
                         if (0 == k.length) {
                             cacheo = true;
-                            l = Meteor.call("runQuery", i.endpoint, i.graphURI, a.sparql, undefined, g);
-                            //console.log(l.content);
+                            l = Meteor.call("runQuerySimple",  a.sparql);
                             var m = JSON.parse(l.content);
                             if (c) {
-                                var n = Math.max.apply(Math, m.results.bindings.map(function (a) {
-                                    return a.Score.value;
-                                }));
-                                var o = Math.min.apply(Math, m.results.bindings.map(function (a) {
-                                    return a.Score.value;
-                                }));
+                                var n = 0; //Math.max.apply(Math, m.results.bindings.map(function (a) {
+                                    //return a.Score.value;
+                                //}));
+                                for (var indxmax= 0; indxmax< m.results.bindings.length; indxmax++){
+                                    if (m.results.bindings[indxmax] != undefined && m.results.bindings[indxmax].Score!= undefined && m.results.bindings[indxmax].Score.value != undefined){
+                                        n=Number(m.results.bindings[indxmax].Score.value);
+                                        break;
+                                    }
+                                }
+                                var o = 0;
+                                for (var indxmax= m.results.bindings.length-1; indxmax>=0; indxmax--){
+                                    if (m.results.bindings[indxmax] != undefined && m.results.bindings[indxmax].Score!= undefined && m.results.bindings[indxmax].Score.value != undefined){
+                                        o=Number(m.results.bindings[indxmax].Score.value);
+                                        break;
+                                    }
+                                }
+                               
+                                //Math.min.apply(Math, m.results.bindings.map(function (a) {
+                                  //  return a.Score.value;
+                               // }));
+                               
                                 var p = .5 * (n - o);
-                                m.results.bindings = m.results.bindings.filter(function (a) {
-                                    return a.Score.value >= n - p;
-                                });
+                                var lsmax =[];
+                                for (var indxmax= 0; indxmax< m.results.bindings.length; indxmax++){
+                                    if (m.results.bindings[indxmax] != undefined && m.results.bindings[indxmax].Score!= undefined && m.results.bindings[indxmax].Score.value != undefined){
+                                        if (m.results.bindings[indxmax].Score.value >= n - p){
+                                            lsmax.push(m.results.bindings[indxmax]);
+                                        }else{
+                                            break;
+                                        }
+                                    }
+                                }
+                                m.results.bindings=lsmax;
+                                
+                                //m.results.bindings = m.results.bindings.filter(function (a) {
+                                //    return a.Score.value >= n - p;
+                                //});
                             }
                             var q = m.results.bindings.length;
                             var r = {};
@@ -1875,17 +1902,20 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                         'timeout': timeout
                                     }
                         });
-            },runQuerySimple: function (endpointURI, query) {
+            },runQuerySimple: function (query) {
                 
                 //console.log(endpointURI);
                 //console.log(query); 
-                return HTTP.post(endpointURI,
+                var dataServ = HTTP.post('http://201.159.222.25:8891/sld/sparql',
                         {
                             'params':
                                     {
                                         'query': query
                                     }
                         });
+                delete dataServ.data;
+                delete dataServ.headers;
+                return dataServ;
             },
             runQueryDescr: function (endpointURI, defaultGraph, query, format, timeout) {
                 format = _.isUndefined(format) ? 'application/rdf+json' : format;
@@ -2835,6 +2865,7 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
             MapLocations : function  ( HashIdMap ) {
                 HashIdMap = Number(HashIdMap);
                 var r = Cache.find({GeoQueryHash: HashIdMap}).fetch();
+                var EndpointList = Endpoints.find().fetch();
                 var Response = {};
                 if (r.length > 0) {
                     var GeoJSON = [];
@@ -2843,7 +2874,10 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                     //var cont = 0;
                     for (var ind = 0; ind < r.length; ind++) {
                         if (!isNaN(r[ind].Long) && !isNaN(r[ind].Lat) && r[ind].Long != 0 && r[ind].Lat != 0) {
-                            var Obj = {type: "Feature", geometry: {type: "Point", coordinates: [r[ind].Long, r[ind].Lat]}, properties: {Repository: r[ind].Endpoint, Name: r[ind].Name, URI: r[ind].URI, Document: r[ind].Title, DocumentURI: r[ind].URI2}};
+                            
+                            var QueryEndpoint = EndpointList.filter(function (a){ return a.name == r[ind].Endpoint;  })[0];
+                            
+                            var Obj = {type: "Feature", geometry: {type: "Point", coordinates: [r[ind].Long, r[ind].Lat]}, properties: {Repository: r[ind].Endpoint, ColorRepo: QueryEndpoint.colorid, Name: r[ind].Name, URI: r[ind].URI, Document: r[ind].Title, DocumentURI: r[ind].URI2}};
                             GeoJSON.push(Obj);
                             //avgLong += 1 / r[ind].Long;
                             //avgLat += 1 / r[ind].Lat;
