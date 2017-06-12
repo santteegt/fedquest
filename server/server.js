@@ -573,7 +573,7 @@ var num_auto=0;
                                 var LocationLong=Number(lsp[indxp].long.value);
                                 var LocationLat=Number(lsp[indxp].lat.value);
                                 var GeoPoint = {GeoQueryHash:GeoResult.geohash, Name:LocationName, URI:LocationURI, Long:LocationLong, Lat:LocationLat, Title:DocumentName, URI2:URI, Endpoint:Endpoint, LongR:0, LatR:0};
-                                Cache.insert(GeoPoint);   
+                                Cache.insert(GeoPoint, function (err, res){ });   
                             }
                         }catch (ddd){
                             console.log(ddd.stack);
@@ -1212,7 +1212,7 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
 
                     
                 }
-                Statsc.batchInsert(__mongo_stats);
+                Statsc.batchInsert(__mongo_stats, function (err, res){ });
 
 
             },
@@ -1391,16 +1391,17 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                 var k = null;
                                     k = Cache.find({$and: all}, {sort: {nresult: 1, firstResult: -1}}).fetch();
 
-                                var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
+                                //var k2 = Cache.find({key: j, original: true}, {limit: 1, skip: 0}).fetch();
                                 var y = {};
                                 var z = {};
-                                if (k2.length > 0) {
-                                    y = k2[0].value;
-                                    z = JSON.parse(y.content);
-                                    if (z.results) {
-                                        z.results.bindings = [];
-                                    }
-                                }
+                                z = {results:{bindings:[]}};
+//                                if (k2.length > 0) {
+//                                    y = k2[0].value;
+//                                    z = JSON.parse(y.content);
+//                                    if (z.results) {
+//                                        z.results.bindings = [];
+//                                    }
+//                                }
 
                                 var r = {};
                                 var s = 0;
@@ -1450,7 +1451,7 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                     }
                                     //
                                     var A = k[t].value;
-                                    var B = JSON.parse(A.content);
+                                    var B = A; //JSON.parse(A.content);
                                     var v = k[t].nresult;
                                     if (r["_" + v] != undefined) {
                                     } else {
@@ -1458,13 +1459,13 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                         s += 1;
                                     }
                                     if (r["_" + v] >= e && r["_" + v] < e + f) {
-                                        if (B.results) {
-                                            if (B.results.bindings.length > 0) {
-                                                z.results.bindings.push(B.results.bindings[0]);
-                                            }
-                                        } else {
+//                                        if (B.results) {
+//                                            if (B.results.bindings.length > 0) {
+//                                                z.results.bindings.push(B.results.bindings[0]);
+//                                            }
+//                                        } else {
                                             z.results.bindings.push(B);
-                                        }
+                                        //}
                                     }
                                 }
                                 FacetedResum_Years.sort(function (a, b) {
@@ -1521,7 +1522,7 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                         if (0 == k.length) {
                             cacheo = true;
                             l = Meteor.call("runQuerySimple",  a.sparql);
-                            var m = JSON.parse(l.content);
+                            var m = l.data;
                             if (c) {
                                 var n = 0; //Math.max.apply(Math, m.results.bindings.map(function (a) {
                                     //return a.Score.value;
@@ -1565,7 +1566,7 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                             var r = {};
                             var r_Sub = {};
                             var s = 0;
-                            var timi = 0.0;
+                            var FirstR = true;
                             var bulk = [];
                             for (var t = 0; t < q; t++) {
                                 var un = false;
@@ -1579,7 +1580,7 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                     r["" + v] = s;
                                     s += 1;
                                 }
-                                var back = l.content;
+                                //var back = l.content;
                                 var JSONOut2 = {};
                                 var orgi = false;
                                 var fType = null;
@@ -1599,27 +1600,31 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                 if (m.results.bindings[t].Year != undefined) {
                                     fYear = m.results.bindings[t].Year.value;
                                 }
-                                if (t == 0) {
-                                    var u = JSON.parse(l.content);
-                                    u.results.bindings = [m.results.bindings[t]];
-                                    JSONOut2 = l;
-                                    JSONOut2.content = JSON.stringify(u);
+                                if (FirstR) {
+                                    FirstR=false;
+                                    //var u = JSON.parse(l.content);
+                                    //u.results.bindings = [m.results.bindings[t]];
+                                    //JSONOut2 = l;
+                                    //JSONOut2.content = JSON.stringify(u);
+                                    //JSONOut2={results:{bindings:[m.results.bindings[t]]}};
+                                    
                                     orgi = true;
-                                } else {
+                                }// else {
                                     var u = m.results.bindings[t];
-                                    JSONOut2 = l;
-                                    JSONOut2.content = JSON.stringify(u);
-                                    orgi = false;
-                                    if (JSONOut2.headers) {
-                                        delete JSONOut2.headers;
-                                    }
-                                    if (JSONOut2.statusCode) {
-                                        delete JSONOut2.statusCode;
-                                    }
-                                }
+                                    JSONOut2=u;
+                                    //JSONOut2 = l;
+                                    //JSONOut2.content = JSON.stringify(u);
+                                    //orgi = false;
+                                    //if (JSONOut2.headers) {
+                                    //    delete JSONOut2.headers;
+                                    //}
+                                    //if (JSONOut2.statusCode) {
+                                    //    delete JSONOut2.statusCode;
+                                    //}
+                                ///}
                                 bulk.push({
                                     key: j,
-                                    value: JSON.parse(JSON.stringify(JSONOut2)),
+                                    value: JSONOut2,//JSON.parse(JSON.stringify(JSONOut2)),
                                     ttl_date: new Date(),
                                     nresult: r["" + v],
                                     uri: v,
@@ -1629,10 +1634,16 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                     original: orgi
                                 });
                               
-                                l.content = back;
+                                //l.content = back;
+                                if (bulk.length>1000){
+                                    Cache.batchInsert(bulk, function (err, res){ });
+                                    bulk = [];
+                                }
+                                
                             }
                             if (bulk.length>0){
-                                Cache.batchInsert(bulk);
+                                Cache.batchInsert(bulk, function (err, res){ } );
+                                bulk = [];
                             }
                             
                             //TickTock(true);
@@ -1640,7 +1651,7 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                             r = {};
                             r_Sub = {};
                             m = {};
-                            bulk = [];
+                            
                                 k = Cache.find({
                                     key: j,
                                     nresult: {
@@ -1652,12 +1663,12 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                         nresult: +1
                                     }
                                 }).fetch();
-                            if (0 == q) {
-                                k = [{
-                                        key: j,
-                                        value: l
-                                    }];
-                            }
+//                            if (0 == q) {
+//                                k = [{
+//                                        key: j,
+//                                        value: l
+//                                    }];
+//                            }
                         } else {
                         }
 
@@ -1750,28 +1761,30 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                         var z = {};
                         var facetedTotals = {};
                         if (k2.length > 0) {
-                            y = k2[0].value;
+                            //y = k2[0].value;
                             facetedTotals = k2[0].facetedTotals;
-                            z = JSON.parse(y.content);
-                            if (z.results) {
-                                z.results.bindings = [];
-                            } else {
-                                console.log(y.content);
-                            }
-                        } else {
-                            y = k[0].value;
-                            z = JSON.parse(y.content);
+                            //z = {results:{bindings:[]}};//JSON.parse(y.content);
+//                            if (z.results) {
+//                                z.results.bindings = [];
+//                            } else {
+//                                console.log(y.content);
+//                            }
                         }
+                        z = {results:{bindings:[]}};
+                        //// else {
+                            //y = k[0].value;
+                            //z = JSON.parse(y.content);
+                        //}
                         for (var t = 0; t < k.length; t++) {
                             var A = k[t].value;
-                            var B = JSON.parse(A.content);
-                            if (B.results) {
-                                if (B.results.bindings.length > 0) {
-                                    z.results.bindings.push(B.results.bindings[0]);
-                                }
-                            } else {
+                            var B = A;//JSON.parse(A.content);
+                            //if (B.results) {
+                             //   if (B.results.bindings.length > 0) {
+                              //      z.results.bindings.push(B.results.bindings[0]);
+                               // }
+                           // } else {
                                 z.results.bindings.push(B);
-                            }
+                           // }
                         }
                         y.content = JSON.stringify(z);
                         h.resultSet = y;
@@ -1913,7 +1926,8 @@ function exclusiveSubset(EP, contTot, Subset, lsKW){
                                         'query': query
                                     }
                         });
-                delete dataServ.data;
+                //delete dataServ.data;
+                delete dataServ.content;
                 delete dataServ.headers;
                 return dataServ;
             },
