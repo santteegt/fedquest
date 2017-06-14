@@ -494,6 +494,7 @@ this.SearchView = Backbone.View.extend({
             }
             var ResultLimitSubQ = (AppFilt) ? '15' : '1000';
             var SubQN = 0;
+            var SubQN3 = 0;
             var sources = [];
             for (var oneQuery = 0; oneQuery < FromList.length; oneQuery++) {
                 var EndpointLocal = false;//FromList[oneQuery].attributes['data-base'] ? FromList[oneQuery].attributes['data-base'].value : false;
@@ -503,6 +504,17 @@ this.SearchView = Backbone.View.extend({
                 var Endpoint__ = ConfigInfo.filter(function (a) {
                     return a.Endpoint == Service;
                 });
+
+                SubQN++;
+                if (SubQN == 1) {
+                    Query += '{\n';
+                } else {
+                    Query += 'union {\n';
+                }
+                if (!EndpointLocal) {
+                    Query += 'service <' + Service + '> {\n';
+                }
+                var SubQN2 = 0;
 
                 for (var oneRes = 0; oneRes < ResqLis.length; oneRes++) {
                     var Class__ = [];
@@ -517,15 +529,14 @@ this.SearchView = Backbone.View.extend({
                     }
 
                     for (var oneProp = 0; oneProp < ResqLis[oneRes].indexProperties.length; oneProp++) {
-                        SubQN++;
-                        if (SubQN == 1) {
+                        SubQN2++;
+                        SubQN3++;
+                        if (SubQN2 == 1) {
                             Query += '{\n';
                         } else {
                             Query += 'union {\n';
                         }
-                        if (!EndpointLocal) {
-                            Query += 'service <' + Service + '> {\n';
-                        }
+
                         var Class_ = ResqLis[oneRes].resourceClass;
                         var Property_ = ResqLis[oneRes].indexProperties[oneProp];
                         var PropertyName_ = ResqLis[oneRes].indexPropertiesName[oneProp];
@@ -548,12 +559,15 @@ this.SearchView = Backbone.View.extend({
                         Query += "optional { ?EntityURI a ?Type1 . filter (str(?Type1) != 'http://xmlns.com/foaf/0.1/Agent' &&  str(?Type1) != 'http://purl.org/ontology/bibo/Document') .   } \n"
                         Query += "optional { {?EntityURI a <http://purl.org/ontology/bibo/Article> .  bind(1 as ?Score4  ). } union { ?EntityURI a <http://purl.org/net/nknouf/ns/bibtex#Mastersthesis> .  bind(1 as ?Score4  ). }  } \n"
                         Query += '} group by ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score1  \n';
-                        if (!EndpointLocal) {
-                            Query += '}\n';
-                        }
+
                         Query += '}\n';
                     }
                 }
+                if (!EndpointLocal) {
+                    Query += '}\n';
+                }
+                Query += '}\n';
+
                 var source = {};
                 source.Name = ServiceName;
                 source.Endpoint = Service;
@@ -570,7 +584,7 @@ this.SearchView = Backbone.View.extend({
 
 
 
-            if (SubQN == 0) {
+            if (SubQN3 == 0) {
                 Query += ' ?EntityURI <none> ?Score . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
             } else {
                 Query += ' . filter(str(?EntityURI)!=\'\') . }  order by DESC(?Score)  \n  ' + ResultLimit;
