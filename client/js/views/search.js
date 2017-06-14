@@ -541,7 +541,7 @@ this.SearchView = Backbone.View.extend({
                         var Property_ = ResqLis[oneRes].indexProperties[oneProp];
                         var PropertyName_ = ResqLis[oneRes].indexPropertiesName[oneProp];
                         var Label_ = ResqLis[oneRes].labelProperty;
-                        Query += 'select   ?Score1 ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue  (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type)  ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,' + ty + ',1)) as ?Score ) \n'; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
+                        Query += 'select * { select   ?Score1 ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue  (max(?Year1)as ?Year) (max(?Lang1) as ?Lang) (max(?Type1) as ?Type)  ((?Score1*if(count(?Score2)>0,2,1)*if(count(?Score3)>0,2,1)*if(count(?Score4)>0,' + ty + ',1)) as ?Score ) \n'; //(group_concat(?Sub1; separator = "#|#") as ?Sub)
                         Query += '{\n';
 
                         Query += 'bind (\'' + ServiceName + '\' AS ?Endpoint) .\n';
@@ -560,7 +560,7 @@ this.SearchView = Backbone.View.extend({
                         Query += "optional { {?EntityURI a <http://purl.org/ontology/bibo/Article> .  bind(1 as ?Score4  ). } union { ?EntityURI a <http://purl.org/net/nknouf/ns/bibtex#Mastersthesis> .  bind(1 as ?Score4  ). }  } \n"
                         Query += '} group by ?Endpoint ?EntityURI ?EntityClass ?EntityLabel ?Property ?PropertyLabel ?PropertyValue ?Score1  \n';
 
-                        Query += '}\n';
+                        Query += '}}\n';
                     }
                 }
                 if (!EndpointLocal) {
