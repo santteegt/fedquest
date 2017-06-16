@@ -30,6 +30,22 @@ this.MapView = Backbone.View.extend({
     },
     setEvents: function (divNode) {
         var IdMap = Session.get('idMap');
+
+
+        function tempAlert(msg, duration)
+        {
+            var el = document.createElement("div");
+            el.setAttribute("style", "position:absolute;top:40%;left:20%;background-color:white;");
+            el.innerHTML = msg;
+            setTimeout(function () {
+                el.parentNode.removeChild(el);
+                window.location.reload(false); 
+            }, duration);
+            document.body.appendChild(el);
+        }
+
+        var dataEndpoints = Endpoints.find().fetch();
+
         function string_to_int(clave_string)
         {
             var clave_num = 0;
@@ -75,7 +91,8 @@ this.MapView = Backbone.View.extend({
 
                 if (resultR.status != 0) {
                     if (resultR.status == 1) {
-                        alert('Processing data ... please wait ....');
+                      //  alert('Processing data ... please wait ....');
+                        tempAlert("Processing data ... please wait ....",5000);
                     } else {
                         alert('No results for this query');
                     }
@@ -84,22 +101,22 @@ this.MapView = Backbone.View.extend({
                     var result = resultR.data;
                     console.log(resultR);
                     //1.752793, -92.195912
-                    
+
                     //-5.267715, -75.499910
                     var southWest = L.latLng(-5.377720, -92.095912);
                     var northEast = L.latLng(1.542780, -75.199910);
-                    
+
                     //var southWest = L.latLng(40.712, -74.227);
                     //var northEast = L.latLng(40.774, -74.125);
-                    
-                    
+
+
                     map = new L.Map('areagrafo',
                             {
                                 center: [-1.80, -81.50],
                                 zoom: 7,
                                 minZoom: 7,
 
-                                maxBounds: L.latLngBounds(southWest,northEast )
+                                maxBounds: L.latLngBounds(southWest, northEast)
                             }
                     );
                     L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
@@ -127,11 +144,11 @@ this.MapView = Backbone.View.extend({
                                     },
                                     pointToLayer: function (feature, latlng)
                                     {
-                                        var endp = Endpoints.find().fetch().filter(function (a) {
-                                            return a.name == feature.properties.Repository.toString();
-                                        })[0];
+//                                        var endp = dataEndpoints.filter(function (a) {
+//                                            return a.name == feature.properties.Repository.toString();
+//                                        })[0];
 
-                                        var icon = "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='512' height='512'> <path stroke='#000' stroke-width='2' fill='" + endp.colorid + "' opacity='0.5' d='" + mis_svg[string_to_int("DefaultD")] + "'/></svg>";
+                                        var icon = "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='512' height='512'> <path stroke='#000' stroke-width='2' fill='" + feature.properties.ColorRepo.toString() + "' opacity='0.5' d='" + mis_svg[string_to_int("DefaultD")] + "'/></svg>";
                                         var svgURL = "data:image/svg+xml;base64," + btoa(icon);
 
                                         var mySVGIcon = L.icon({iconUrl: svgURL, iconSize: [35, 35]});
