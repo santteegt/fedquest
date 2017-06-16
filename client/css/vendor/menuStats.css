@@ -48,6 +48,7 @@
 
 #ContainerCC {
 	background-image: url('http://stats.xonotic.org/static/css/img/web_background_2.jpg');
+        min-height:775px;
 }
 
 #ContainerCC_PER {
