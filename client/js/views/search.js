@@ -200,12 +200,17 @@ this.SearchView = Backbone.View.extend({
     //////////////////////////
     render: function () {
         Blaze.render(Template.search, $('#sparql-content')[0]);
+      // Blaze.render(Template.search, $('div.main-ops')[0]);
         this.setEvents($('#sparql-content'));
 
 
         console.log('render search');
         //  console.log (Session.get ('welcome'));
         console.log("fin");
+     //    Blaze.render(Template.Stat1 , $('#statdialogcomponent')[0]);
+      //   Blaze.render(Template.Stat2 , $('#statdialogcomponent')[0]);
+
+    
         //Session.get('v1');
 
 
@@ -226,7 +231,7 @@ this.SearchView = Backbone.View.extend({
 
         var term = Session.get('s1');
         var type = Session.get('s2');
-        var base = Session.get('s3')
+        var base = Session.get('s3');
         /*
          * 
          * 
@@ -248,6 +253,23 @@ this.SearchView = Backbone.View.extend({
         // var FromList = get_checkList_values("repositoriesList");
         //console.log($('input[data-name='+base+']'));
         //console.log (FromList);
+
+    Tracker.autorun(function () {
+       console.log("There is " + Session.get("URIstat"));
+
+    Tracker.afterFlush(function () {
+    // Since this is inside afterFlush, it only runs after every autorun affected
+    // by the most recent update has finished rerunning. So the overdraft protection
+    // code below will run before this check happens.
+     sgvizler.containerDrawAll();
+
+    console.log ("ACTUALIZADO FLUSH");
+     });
+    });
+               
+
+
+       
 
         function get_radio_value(RadioName) {
             var inputs = document.getElementsByName(RadioName);
@@ -698,6 +720,12 @@ linkg = function (e) {
     interestitem(obj.attributes['data-uri'].value);
 };
 
+  updatestat = function () {
+            console.log ("actualizar stats");
+            sgvizler.containerDrawAll();
+
+        };
+
 function Query(endpoint, graph, query) {
     var aux = undefined;
     Meteor.call('runQuery', endpoint, graph, query, function (error, result) {
@@ -1028,7 +1056,36 @@ download = function (URI) {
     $("#mydwmodal").attr("URI", URI);
     interestitem(URI);
 
+}
 
+
+statsdisplay = function (URI , type, Origin) {
+    Session.set ("URIstat", URI);
+    $("#mymodalstat").attr("URI", URI);
+    $("#mymodalstat").attr("type", type);
+    $("#mymodalstat").attr("Origin", Origin);
+   // Blaze.render(Template.Stat1 , $('#sparql-content')[0]);
+   // Blaze.render(Template.Stat2 , $('#sparql-content')[0]);
+       //Blaze.render(Template.Stat1 , $('#statdialogcomponent')[0]);                     {{else}}  <a> NO DISPONIBLES </a>
+     //  Blaze.render(Template.Stat2 , $('#statdialogcomponent')[0]);
+              sgvizler
+             .prefix("bibo", "http://purl.org/ontology/bibo/")
+             .defaultEndpointURL("http://190.15.141.102:8891/myservice/sparql")
+        //   .defaultEndpointURL("http://sws.ifi.uio.no/sparql/npd")
+             .defaultQuery("SELECT * { ?a ?b ?c, ?d, ?e } LIMIT 7")
+             .defaultChartFunction("sgvizler.visualization.Table")
+             .defaultChartWidth(1000)
+             .defaultChartHeight(1000);
+            
+    //    var count = template.count.get();
+     //   template.count.set(count + 1);
+
+    // sgvizler.containerDrawAll();
+    $("#mymodalstat").modal();
+
+   // $("#mymodalstat").attr("URI", URI);
+   // interestitem(URI);
+    
 }
 
 downloadaction = function (e) {
@@ -1117,6 +1174,10 @@ rdflink = function (URI) {
     window.open(URI);
     interestitem(URI);
 }
+
+ comparetype = function ( type1 , type2 ) {
+  return type1 == type2; 
+ }
 
 function fuente(uri, base) {
 
@@ -1212,6 +1273,7 @@ desplegar2 = function (e) {
 //alert ("Desplegar");
 }
 
+
 Template.search.events({
     'click .opciones-cc'(e) {
         console.log("Evento");
@@ -1220,9 +1282,11 @@ Template.search.events({
         if ($("input:radio[id='" + button + "']").prop("checked")) {
             $("input:radio[id='" + button + "']").prop("checked", false);
             $(".recurso").text(lang.lang("resources-search"));
+            
         } else {
             $("input:radio[id='" + button + "']").prop("checked", true);
             $(".recurso").text(lang.lang("search-option") + button);
+            Session.set ('actualtype',$('input:radio[name=opciones]:checked').val());
         }
     }
 
@@ -1241,3 +1305,89 @@ Template.search.rendered = function () {
     $("input:radio[value='" + Session.get('s2') + "']").prop("checked", true);
     console.log($("input:radio[value='" + Session.get('s2') + "']"));
 }
+
+
+
+
+Template.Stat1.rendered = function () {
+    console.log ("Rendered Stats");
+    sgvizler.containerDrawAll();
+
+   /*  Tracker.autorun(function () {
+    console.log("There is " + Session.get("URIstat"));
+
+  Tracker.afterFlush(function () {
+    // Since this is inside afterFlush, it only runs after every autorun affected
+    // by the most recent update has finished rerunning. So the overdraft protection
+    // code below will run before this check happens.
+    
+    console.log ("ACTUALIZADO FLUSH");
+  });
+});*/
+
+
+    //var template = this;
+   // template.subscribe(Session.get ("URIstat") , () => {
+    // Wait for the data to load using the callback
+
+  /*  Tracker.autorun (() => { 
+     //  if (Session.get('URIstat')) {
+     
+    Tracker.afterFlush(() => {
+      // Use Tracker.afterFlush to wait for the UI to re-render
+      // then use highlight.js to highlight a code snippet
+      //highlightBlock(template.find('.code'));
+     console.log ("CAMBIOS STATS");
+  
+
+    });
+    //}
+    });*/
+
+
+//});
+}
+
+
+
+
+/*
+Template.Stat1.events ({
+ ''
+}); 
+*/
+Template.Stat2.rendered = function () {
+    console.log ("Rendered Stats");
+    sgvizler.containerDrawAll();
+
+}
+
+Template.Stat3.rendered = function () {
+    console.log ("Rendered Stats");
+    sgvizler.containerDrawAll();
+}
+
+Template.search.rendered = function () {
+     /*'on .nav-tabs a'  (event)  {
+        console.log (event);
+        console.log (event.text);
+        console.log ('The new tab is about to be shown.');
+     }*/
+    $('.nav-tabs a').on('show.bs.tab', function(event){
+       // alert('The new tab is about to be shown.');
+       var tab = event.target.href;
+        var tabselect = tab.split("#")[1];                
+        if ( tabselect == "download" ) {
+          console.log (tabselect);
+           $('#dwnbuton').css( "visibility", "visible" ); 
+        } else {
+           $('#dwnbuton').css( "visibility", "hidden" ); 
+          console.log ("Ocultar"); 
+        }
+    });
+
+  /* $('.nav-tabs a').on('show.bs.tab', function(event){
+        console.log ('The new tab is about to be shown.'); console.log (event.target.href);
+    });
+*/
+};

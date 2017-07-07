@@ -47,12 +47,15 @@ button:active{
 	-webkit-background-size: cover;
 	background-size: cover;
 	min-height: 800px;
+	height:100%;
  }
 .lavel-up-color-overlay{
 	background: rgba(0, 0, 0, 0.55);
 	padding-top: 70px;
 	background-image: url('/images/pattern.png');
 	min-height: 800px;
+	height:100%;
+
 }
 @media (min-width: 991px) {
 	.lu-title{
@@ -464,6 +467,10 @@ margin-top: 10px;
 }
 .HelpTitle2 {
     margin-top: 50px;
+}
+
+#maincentral {
+	height: 55%;
 }
 /*
 #login-buttons .login-link-and-dropdown-list {

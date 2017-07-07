@@ -8,18 +8,19 @@
         //  });
     </script>
 
-    <div id="fullpage">
+    <div id="Todo" class="col-md-10">
 
+  <div class="col-md-2" >
+   {{> menuStats}}
+  </div>
 
-
-
-
+   <div class="col-md-10" id="fullpage" >
         <div class="section " id="section0">
 
             <div id="ContainerCC" style="display: flex; align-items: center;  justify-content: center; height: 100%; width: 100%;">
                 <div id="ResourcesChart" class="statDiv" style="float: left; height: 300px; width: 25%; background-color: white;"></div>
                 <div id="RepositoriesChart" class="statDiv" style="float: left; height: 300px; width: 25%; background-color: white;"></div>
-                <div id="SubjectsChart" class="statDiv" style="float: left; height: 300px; width: 25%;">
+                <div id="SubjectsChart" class="statDiv" style="float: left; height: 300px; width: 30%;">
                     <div style="float: left; height: 10px; width: 100%;"></div>
                     <p style="font-size: 22px; font-family: verdana;margin-top=32;" fill="#333333" text-anchor="middle"   class="p3_title" id="p3_title">{{lang "top-topics"}}</p>
 
@@ -38,7 +39,7 @@
         <div class="section" id="section{{num}}">
             <div id="ContainerCC" style="display: flex; align-items: center;  justify-content: center; height: 100%; width: 100%;">
                 {{#if pie }}
-                <div id="Chart_Ctrl{{num}}" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
+                <div id="Chart_Ctrl{{num}}" class="statDiv" style="float: left; height: 300px; width: 15%; background-color: white;">
                     <label >{{ lang "Repository"}}:</label>
                     <select id ="repositories_{{num}}" onchange="Session.set('auxActV2', Session.get('auxActV2') + 1)">
                         <option value="all">{{lang "All"}}</option>
@@ -51,7 +52,7 @@
                 <div id="Chart{{num}}" class="statDiv" style="float: left; height: 300px; width: 50%; background-color: white;"></div>
                 {{/if}}
                 {{#if etiq }}
-                <div id="TChart_Ctrl{{num}}" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
+                <div id="TChart_Ctrl{{num}}" class="statDiv" style="float: left; height: 300px; width: 15%; background-color: white;">
                     <label >{{ lang "Repository"}}:</label>
                     <select id ="repositories_{{num}}" onchange="Session.set('auxActV2', Session.get('auxActV2') + 1)">
                         <option value="all">{{lang "All"}}</option>
@@ -61,7 +62,7 @@
                     </select>
 
                 </div>
-                <div id="TChart{{num}}" class="statDiv" style="float: left; height: 300px; width: 25%;  background-color: white;">
+                <div id="TChart{{num}}" class="statDiv" style="float: left; height: 300px; width: 30%;  background-color: white;">
                     <div style="float: left; height: 10px; width: 100%;"></div>
                     <p style="font-size: 22px; font-family: verdana;margin-top=32;" fill="#333333" text-anchor="middle"   class="p3_title" id="p3_title">{{name}}</p>
                     <canvas width="300px" height="250px" id="myCanvas{{num}}">
@@ -78,7 +79,7 @@
 
 
                 {{#if hist }}
-                <div id="HChart_Ctrl{{num}}" class="statDiv" style="float: left; height: 300px; width: 10%; background-color: white;">
+                <div id="HChart_Ctrl{{num}}" class="statDiv" style="float: left; height: 300px; width: 15%; background-color: white;">
                     <label >{{ lang "Repository"}}:</label>
                     <select id ="repositories_{{num}}" onchange="Session.set('auxActV2', Session.get('auxActV2') + 1)">
                         <option value="all">{{lang "All"}}</option>
@@ -183,7 +184,7 @@
 
 
     </div>
-    {{> menuStats}}
+    </div>
 
 
 

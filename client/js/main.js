@@ -2915,9 +2915,37 @@ if (Meteor.isClient) {
                 return "glyphicon glyphicon-chevron-down";
             }
 
-        },
-        suggestedQueries: function () {
+         },   comparetype : function ( type1 , type2 ) {
+             return type1 == type2; 
+         } ,
+         graphstats: function () {
+            var objectstat = {} ;
+             objectstat.URI =  Session.get("URIstat");
+             //objectstat.URI = $("#mymodalstat").attr("URI"); 
+             objectstat.type =    $("#mymodalstat").attr("type");
+             
 
+             var Ori = $("#mymodalstat").attr("Origin");
+             objectstat.Origin = Endpoints.find({name: Ori}).fetch()[0].endpoint;
+             console.log ("GRAFICANDO ESTADISTICAS------------------------------------------------");
+             console.log (objectstat.URI);
+             console.log (objectstat.Origin);
+             console.log (objectstat.type);
+             
+              /*if ( objectstat.type == "http://purl.org/ontology/bibo/Document") {
+                objectstat.template = "a";       
+              } else if ( objectstat.type == "http://xmlns.com/foaf/0.1/Person" ) {
+                objectstat.template = "Stat2";
+              }*/
+             /* } else if () {
+
+              } */
+
+            return objectstat;   
+
+             } ,
+        suggestedQueries: function () {
+            Session.get ('actualtype');
             var ConfigInfo = Configuration.find().fetch();
 
             var t__ = "T";

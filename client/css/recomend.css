@@ -19,7 +19,7 @@
 	-moz-transition: background-color 350ms;
     transition: background-color 350ms;
 
-    margin-top: 150px;
+    /*margin-top: 150px;*/
     opacity: 0.5;
 
 }

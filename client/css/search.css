@@ -196,11 +196,12 @@ ul#Sugerencias  li{
 }
 
 
-.qricon {
+#qricon {
     /*left: 40%;
     position: relative; */
     right: 50%;
     position: relative;
+    cursor: pointer;
 
 }
 
@@ -232,6 +233,13 @@ ul#Sugerencias  li{
 }
 
 #dwnload
+{
+    cursor: pointer;
+    left: 40%;
+    position: relative;
+}
+
+#statsbutton
 {
     cursor: pointer;
     left: 40%;
@@ -291,7 +299,7 @@ border-radius: 5px;
 }
 
 #expandgeo {
-    left: 25%;
+    left: 75%;
     top: 2px;
     cursor: pointer;
 }
@@ -299,4 +307,17 @@ border-radius: 5px;
 
 #endpointselect {
     margin-left: 2%;
+}
+
+#graphstat {
+   width: 700px;    
+}
+
+#dwnbutonmeta
+{
+   visibility: hidden; 
+}
+
+#dwnbuton {
+ visibility: hidden; 
 }

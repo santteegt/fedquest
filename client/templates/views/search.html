@@ -248,8 +248,9 @@
                             <div class="fuente-area col-md-14 text-center"> 
                                 <span class="glyphicon {{Icon}}"></span>
                                 {{Origin}}
-                                <a href="#" title="QR Code" class="qricon" datauri ="{{URI}}"  onclick="qrmodalshow('{{URI}}','{{Origin}}','{{Icon}}');"   ><img src="/images/qr.png" width=14px ></a> 
-                                <span id="dwnload" class="glyphicon glyphicon-save" onclick="download('{{URI}}')"> </span>
+                                <!-- <a href="#" title="Download" class="qricon" datauri ="{{URI}}"  onclick="qrmodalshow('{{URI}}','{{Origin}}','{{Icon}}');"   ><img src="/images/qr.png" width=14px ></a> -->
+                                <span  id="qricon" title="Download" datauri ="{{URI}}"  class="qricon glyphicon glyphicon-save" onclick="qrmodalshow('{{URI}}','{{Origin}}','{{Icon}}');" > </span>
+                               <!-- <span id="dwnload" class="glyphicon glyphicon-save" onclick="download('{{URI}}')"> </span>  Esto cambie --><span id="statsbutton" class="glyphicon  glyphicon-stats" onclick="statsdisplay('{{URI}}','{{Type}}','{{Origin}}')"> </span>
                                 <!--<a href="#" class="qricon" onclick="alert ('hola');"  >o</a>  -->
                                 <!-- <button type="button"  class="qricon" data-toggle="modal"  onclick="qrmodalshow(event);" data-target="#myqrmodal"> </button>-->
                             </div>
@@ -314,12 +315,13 @@
             <div class="modal-content ">
                 <div class="modal-header modal-show">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title"> Código QR </h4>
+                    <h4 class="modal-title"> Exportar Metadata </h4>
                 </div>
                 <div class="modal-body text-center">
                     <ul class="nav navqr nav-tabs">
                         <li class="active"><a data-toggle="tab" href="#qrarea1"> RDF </a></li>
                         <li class="optionalqr"><a data-toggle="tab" href="#qrarea2"> FUENTE </a></li>
+                        <li class="optionalqr2"><a data-toggle="tab" href="#download"> DESCARGAR </a></li>
 
                     </ul>
                     <div class="tab-content">
@@ -329,12 +331,30 @@
                         <div id="qrarea2" class="tab-pane fade">
 
                         </div>
+                        <div id="download" class="tab-pane fade">
+                  
+                         <div class="modal-body text-center">
+                        <div class="form-group dwnoptions">
+                        <label for="formatdwn" class="control-label col-sm-3"> Formato:</label>
+                        <div class=" col-xs-5 col-sm-5 selectContainer">
+                            <select class="form-control" id="format">
+                                <option value= 0 > XML </option>
+                                <option value= 1 > Text</option>
+                                <option value= 2 > JSON </option>
+                                <option value= 3 > RDF/XML</option>
+                            </select>
+                        </div>
+                        </div>
+                        </div>
+                        </div>
                     </div>
                     <!-- <div  class="qrarea" > -->
                 </div>
 
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="dwnbuton" onclick= "downloadaction()"> Descargar </button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+
                 </div>
             </div>
         </div>
@@ -345,7 +365,7 @@
 
     <div class="modal   fade" id="mydwmodal" role="dialog">
         <div class="modal-dialog modal-sm">
-            <div class="modal-content ">
+            <div class="modal-content">
                 <div class="modal-header modal-show">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title"> Descargar </h4>
@@ -364,15 +384,49 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" id="dwnbuton" onclick= "downloadaction()"> Descargar </button>
+                    <!-- <button type="button" class="btn btn-default" id="dwnbuton" onclick= "downloadaction()"> Descargar </button> -->
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
     </div>
 
+        <div class="modal   fade" id="mymodalstat" role="dialog">
+        <div class="modal-dialog modal-sm" id="graphstat">
+            <div class="modal-content">
+                <div class="modal-header modal-show">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title"> Estadísticas </h4>
+                </div>
+                <div class="modal-body text-center" id="statdialogcomponent">
+                 {{#with graphstats }}
+                   {{#if  comparetype  type "http://purl.org/ontology/bibo/Document" }}
+                  {{> Stat1  URIParam= URI  Ori= Origin }} 
+                   {{else}}
+                    {{#if  comparetype  type "http://xmlns.com/foaf/0.1/Person" }}
+                  {{> Stat2  URIParam= URI  Ori= Origin }} 
+                   {{else}}
+                    {{#if  comparetype  type "http://purl.org/ontology/bibo/Collection" }}
+                     {{> Stat3  URIParam= URI  Ori= Origin }} 
+                     {{else}}
+                      <a> NO DISPONIBLE </a>
+                   {{/if}}
+                   {{/if}}
+                   {{/if}} 
 
-    <!--	<div class="footer" >
+                {{/with}}
+                </div>
+                <div class="modal-footer">
+                  <!--  <button type="button" class="btn btn-default" id="dwnbuton" onclick= "downloadaction()"> Descargar </button> -->
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+   
+    <!--	<div class="footer" >   <http://190.15.141.66:8899/ucuenca/recurso/19878>   <http://purl.org/dc/terms/creator>    ?c 
+                                    <http://190.15.141.66:8899/ucuenca/recurso/19878>
                                    <div class="row">
                                            <div class="col-xs-12">
                                            
@@ -384,3 +438,197 @@
            </div>  -->
 
 </template>
+
+
+<template name = "Stat1" >                   
+                           <div id="myExample"
+                  data-sgvizler-endpoint= "{{Ori}}"         
+                  data-sgvizler-query="
+               PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>           
+               SELECT ?name (count(?doc) AS ?noOfInstances)                  
+               WHERE {
+               {
+                <{{URIParam}}>   <http://purl.org/dc/terms/creator>    ?c  
+               } UNION {
+                <{{URIParam}}>  <http://purl.org/dc/terms/contributor> ?c
+               }
+              ?c <http://xmlns.com/foaf/0.1/name> ?name .
+              {
+              ?c <http://rdaregistry.info/Elements/a/P50195> ?doc.
+              } UNION { 
+              ?c  <http://rdaregistry.info/Elements/a/P50161> ?doc} 
+                 }  
+              GROUP BY ?name
+              ORDER BY DESC  (?noOfInstances) 
+              Limit 10"
+              data-sgvizler-chart="google.visualization.BarChart"
+              data-sgvizler-loglevel="5" 
+              data-sgvizler-chart-options="is3D=true|title= Número de obras por autor|chartArea.left=200"
+              style="width:600px; height:200px;" onclick="updatestat(event)" ></div>
+   </template>
+
+   <template name = "Stat2" >
+                <ul class="nav navqr nav-tabs">
+                   <li class="optionalstat2"><a data-toggle="tab" href="#statarea3"> Temas </a></li>
+                   <li class="optionalstat"><a data-toggle="tab" href="#statarea2"> Mapa </a></li>
+                   <li class="active"><a data-toggle="tab" href="#statarea1"> Tiempo </a></li>
+
+                </ul>
+                 <div class="tab-content">
+                        <div id="statarea1" class="tab-pane fade in active">
+                           <div id="myExample2"
+                  data-sgvizler-endpoint= "{{Ori}}"         
+                  data-sgvizler-query="
+                         PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+             SELECT ?Year  (count(?doc) AS ?noOfInstances)
+             WHERE
+             { 
+             {
+                ?doc a <http://purl.org/ontology/bibo/Document> .
+                ?doc    <http://purl.org/dc/terms/issued> ?date .
+                ?doc   <http://purl.org/dc/terms/contributor>|<http://purl.org/dc/terms/creator> <{{URIParam}}>  .
+                bind( strbefore( ?date, '-' ) as ?y3 ).  bind( strafter( ?date, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?date,if(str(?y3)='',?y4,?y3)) as ?cYear ).  
+                BIND (CONCAT (?cYear , '-01-01') as ?tyear) .
+                BIND ( xsd:date (?tyear) as ?Year ) .
+                }union{
+                {select ?Year {
+                    ?aww ?bww ?cww .
+                    bind (xsd:date ('2017-01-01') as ?Year) .
+                } limit 1 }
+             }
+       
+             } 
+            GROUP BY ?Year 
+            ORDER BY ?Year"
+              data-sgvizler-chart="google.visualization.ColumnChart"
+              data-sgvizler-loglevel="5" 
+              data-sgvizler-chart-options="is3D=true|title=Aportes en el tiempo|hAxis.gridlines.count=-1"
+              style="width:600px; height:200px;" onclick="updatestat(event)" > </div> </div>
+              <div id="statarea2" class="tab-pane fade">
+                <div id="myExampleMap"
+                data-sgvizler-endpoint= "{{Ori}}" 
+                data-sgvizler-query="
+                PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+                SELECT      ?lat ?long (count(?Document_UCUENCA ) AS ?Resources) 
+                WHERE { 
+                {
+                ?Document_UCUENCA   <http://purl.org/dc/terms/creator> <{{URIParam}}> .
+                } UNION {
+                ?Document_UCUENCA   <http://purl.org/dc/terms/contributor> <{{URIParam}}> .
+                }
+                ?Document_UCUENCA a <http://purl.org/ontology/bibo/Document> .
+                ?Document_UCUENCA <http://purl.org/dc/terms/title> ?title_UCUENCA .
+                ?Document_UCUENCA <http://dbpedia.org/ontology/linkedTo> ?linkedTo_UCUENCA .
+                ?linkedTo_UCUENCA <http://www.w3.org/2000/01/rdf-schema#label> ?label_UCUENCA .
+                ?linkedTo_UCUENCA <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat_UCUENCA .
+                ?linkedTo_UCUENCA <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?long_UCUENCA .
+                FILTER ( ?label_UCUENCA !=  'Ecuador' ) .
+                BIND (xsd:float (?lat_UCUENCA) as ?lat ) .
+                BIND (xsd:float (?long_UCUENCA ) as ?long ) .
+                }   
+                GROUP BY  ?linkedTo_UCUENCA  ?lat ?long
+                ORDER BY ?linkedTo_UCUENCA 
+                limit 100
+                " 
+                data-sgvizler-chart="google.visualization.GeoChart" 
+                data-sgvizler-chart-options="region=EC|title= Areas de interes" 
+                data-sgvizler-loglevel="2" 
+                style="width:600px; height:200px;" onclick="updatestat(event)" > </div> </div>
+
+                <div id="statarea3" class="tab-pane fade">
+                 <div id="myExampleSub"
+                data-sgvizler-endpoint= "{{Ori}}" 
+                data-sgvizler-query="
+                 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>           
+                SELECT ?s (count(?doc) AS ?noOfInstances)                  
+                WHERE{ 
+                
+                ?doc   <http://purl.org/dc/terms/creator>|<http://purl.org/dc/terms/contributor> <{{URIParam}}> . 
+                ?doc a <http://purl.org/ontology/bibo/Document> .
+                ?doc <http://purl.org/dc/terms/subject> ?s . 
+                FILTER NOT EXISTS {
+                ?m  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat .
+                 ?m     <http://purl.org/saws/ontology#refersTo> ?p .  
+                FILTER REGEX (?p , ?s, 'i')
+                 }
+     
+                 } 
+                GROUP BY ?s
+                ORDER BY DESC  (?noOfInstances) 
+                Limit 10"
+            data-sgvizler-chart="google.visualization.BarChart"
+            data-sgvizler-loglevel="5" 
+            data-sgvizler-chart-options="is3D=true|title= Temáticas principales|chartArea.left=150" 
+            style="width:600px; height:200px;" onclick="updatestat(event)" > </div> </div>
+               </div>
+        
+   </template>
+
+ <template name = "Stat3" >
+     <ul class="nav navqr nav-tabs">
+                        <li class="active"><a data-toggle="tab" href="#statarea1"> Contribuidores </a></li>
+                        <li class="optionalstat"><a data-toggle="tab" href="#statarea2"> Documentos </a></li>
+
+                    </ul>
+                    <div class="tab-content">
+                        <div id="statarea1" class="tab-pane fade in active">
+                     <div id="myExample3"
+                           data-sgvizler-endpoint= "{{Ori}}"         
+                  data-sgvizler-query="
+                  PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>           
+                SELECT ?name (count(?doc) AS ?noOfInstances)                  
+                WHERE{ 
+                ?doc   <http://purl.org/dc/terms/isPartOf> <{{URIParam}}>. 
+                ?doc a <http://purl.org/ontology/bibo/Document> . 
+                {
+                ?doc   <http://purl.org/dc/terms/creator>    ?c 
+                    } UNION {
+                ?doc   <http://purl.org/dc/terms/contributor> ?c
+                 }
+                    ?c <http://xmlns.com/foaf/0.1/name> ?name
+                }    GROUP BY ?name
+                ORDER BY DESC  (?noOfInstances) 
+                Limit 10"
+       data-sgvizler-chart="google.visualization.BarChart"
+       data-sgvizler-loglevel="5" 
+       data-sgvizler-chart-options="is3D=true|title= Autores con mayor aporte|chartArea.left=200"
+              style="width:600px; height:200px;" onclick="updatestat(event)" ></div>
+                        </div>
+                        <div id="statarea2" class="tab-pane fade">
+                <div id="myExample4"
+                             data-sgvizler-endpoint= "{{Ori}}"  
+                 data-sgvizler-query="
+                 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+                         
+                 SELECT  ?Year (count(?doc) AS ?noOfInstances)                  
+                 WHERE{ 
+                 {
+                 ?doc a <http://purl.org/ontology/bibo/Document> .
+                 ?doc    <http://purl.org/dc/terms/issued> ?date .
+                 ?doc   <http://purl.org/dc/terms/isPartOf> 
+                 <{{URIParam}}>
+                 bind( strbefore( ?date, '-' ) as ?y3 ).  bind( strafter( ?date, ' ' ) as ?y4 ). bind( if (str(?y3)='' && str(?y4)='',?date,if(str(?y3)='',?y4,?y3)) as ?year ) .
+                  BIND (CONCAT (?year,'-01-01')  as ?nyear ) .
+                  BIND  (xsd:date (?nyear)  as ?Year) .
+                     }union{
+                      {select ?Year {
+                    ?aww ?bww ?cww .
+                    bind (xsd:date ('2017-01-01') as ?Year) .
+                   } limit 1 }
+                 }
+                
+                } 
+                GROUP BY ?Year
+                ORDER BY ?Year"
+       data-sgvizler-chart="google.visualization.LineChart"
+       data-sgvizler-loglevel="2" 
+       data-sgvizler-chart-options="is3D=true|title= Número de obras en el tiempo|chartArea.bottom=50|hAxis.gridlines.count=-1"
+              style="width:600px; height:200px;" onclick="updatestat(event)" ></div>
+
+                        </div>
+                    </div>
+
+                           
+   </template>
+
+<!---hAxis.gridlines.count=2|hAxis.format=yyyy BIND  (xsd:date (?nyear)  as ?Year) .  BIND (CONCAT (?year,'-01-01')  as ?nyear ) .-->
