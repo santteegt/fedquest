@@ -1,680 +1,3993 @@
+
+/* this.Images = new Meteor.Files({
+ debug: true,
+ collectionName: 'Images',
+ allowClientCode: false, // Disallow remove files from Client
+ storagePath:  'prueba/images' ,
+ onBeforeUpload: function (file) {
+ // Allow upload files under 10MB, and only in png/jpg/jpeg formats
+ if (file.size <= 1024*1024*10 && /png|jpg|jpeg/i.test(file.extension)) {
+ return true;
+ } else {
+ return 'Please upload image, with size equal or less than 10MB';
+ }
+ }
+ });
+ */
+
+
 if (Meteor.isClient) {
 
-  SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function(toElement) {
-    return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
-  };
-
-  //Suscribe to Collections
-  Tracker.autorun(function () {
-    Meteor.subscribe("allproperties");
-    Meteor.subscribe("endpoints");
-    Meteor.subscribe("queries");
-    Meteor.subscribe("prefixes");
-  });
-  
-  this.App = {};
-  this.Graphs = new Meteor.Collection("graphs");
-  this.Properties = new Meteor.Collection("properties");
-  this.Prefixes = new Meteor.Collection("prefixes");
-  this.Endpoints = new Meteor.Collection("endpoints");
-  this.Queries = new Meteor.Collection("queries");
-  this.App.resultCollection = new Meteor.Collection(null);
-  this.App.resultCollection2 = new Meteor.Collection(null);
+    Session.set('AuxCargS', 0);
 
 
-  this.App.FindRepository=(function (uri) {
-
-    var answer={};
-    var q = 'ask { <'+uri+'> ?a ?b }';
-    var ep = Endpoints.find({status: 'A'}).fetch();
-    for (var m=0; m<ep.length; m++){
-      var r = Query(ep[m].endpoint, ep[m].graphURI,q);
-      if(r){
-       var exists=JSON.parse(r.content).boolean;
-       if(exists){
-        answer = ep[m];
-        break;
-      }else{
-      }
+    var _logout = Meteor.logout;
+    Meteor.logout = function customLogout() {
+        // Do your thing here
+        // window.open('/',"_self" );
+        // alert ("Salio");
+        _logout.apply(Meteor, arguments);
+        window.open('/', "_self");
     }
-  }
-  return answer; 
-});
+
+    /* Accounts.onLogin  = function customhello () {
+     alert ("Hola");
+     }*/
+    /*
+     Meteor.login = function customLogin() {
+     // Do your thing here
+     // window.open('/',"_self" );
+     alert ("Salio");
+     // _logout.apply(Meteor, arguments);
+     //window.open('/',"_self" );
+     }*/
+
+
+
+    window.d3 = require("d3");
+    window.d3pie = require("d3pie");
+    Session.set('auxAct', 0);
+
+    Session.set('auxActV2', 0);
+
+
+    SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
+        return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
+    };
+    //Suscribe to Collections
+    Tracker.autorun(function () {
+        Meteor.subscribe("statsc");
+        Meteor.subscribe("allproperties");
+        Meteor.subscribe("allentities");
+        Meteor.subscribe("endpoints");
+        Meteor.subscribe("queries");
+        Meteor.subscribe("prefixes");
+        Meteor.subscribe("profile");
+        Meteor.subscribe("searchs");
+        Meteor.subscribe("favresources");
+        Meteor.subscribe("recomendation");
+        const Conf = Meteor.subscribe("configuration");
+        // var  Subs = Meteor.subscribe ("configuration");
+        Meteor.subscribe('files.images.all');
+        Meteor.subscribe('files.cFiles.all');
+        //Meteor.subscribe("recomendation");
+        // Meteor.subscribe("cache");
+        const val = Conf.ready();
+        Session.set('Conf', val);
+        //   Session.set ('Sub', Subs );
+
+    });
+
+    this.App = {};
+    this.Statsc = new Meteor.Collection("statsc");
+    this.Graphs = new Meteor.Collection("graphs");
+    this.Properties = new Meteor.Collection("properties");
+    this.Entities = new Meteor.Collection("entities");
+    this.Prefixes = new Meteor.Collection("prefixes");
+    this.Endpoints = new Meteor.Collection("endpoints");
+    this.Queries = new Meteor.Collection("queries");
+    this.Profile = new Meteor.Collection("profile");
+    this.Searchs = new Meteor.Collection("searchs");
+    this.Recomendation = new Meteor.Collection("recomendation");
+    this.Favresources = new Meteor.Collection("favresources");
+    this.Configuration = new Meteor.Collection("configuration");
+    this.Images = new FilesCollection({collectionName: 'Images'});
+    this.cFiles = new FilesCollection({collectionName: 'cFiles'});
+    // this.Images = new Meteor.Collection ("Images");
 
 
 
 
-  // Muestra consultas - JS
-  Template.samples.helpers({
-    queriesAvailable: function(){
-      return Queries.find().fetch();
-    },
 
-    settings: function () {
-      return {
-         //   rowsPerPage: 10,
-         rowsPerPage: 10,
-         showFilter: true,
-            //showNavigation: 'auto',
-            //showColumnToggles: true,
-            fields: 
-            [
-            {
-              key: 'title',
-              label: 'Title',
-              fn: function (title, object) {
-                var html = '<a href="/dashboard/' + object._id + '">' + title + '</a>';
-                return new Spacebars.SafeString(html);
-              }
-            },
-            { key: 'description', label: 'Description' }
-            ]
-          };
+
+    this.App.resultCollection = new Meteor.Collection(null);
+    this.App.resultCollectionSL = new Meteor.Collection(null);
+    this.App.resultCollection2 = new Meteor.Collection(null);
+    this.App.resultCollection3 = new Meteor.Collection(null);
+
+    this.App.FindRepository = (function (uri) {
+
+        var answer = {};
+        var q = 'ask { <' + uri + '> ?a ?b }';
+        var ep = Endpoints.find({status: 'A'}).fetch();
+        for (var m = 0; m < ep.length; m++) {
+            var r = Query(ep[m].endpoint, ep[m].graphURI, q);
+            if (r) {
+                var exists = JSON.parse(r.content).boolean;
+                if (exists) {
+                    answer = ep[m];
+                    break;
+                } else {
+                }
+            }
         }
+        return answer;
+    });
+
+
+    this.App.loadPag = (function ( ) {
+        var ConfigInfo = Configuration.find().fetch();
+        var statsConfig = [];
+        for (var qm = 0; qm < ConfigInfo.length; qm++) {
+            var lsEntities = ConfigInfo[qm].ConfStat;
+            if (lsEntities != undefined && lsEntities != null) {
+                for (var qqm = 0; qqm < lsEntities.length; qqm++) {
+                    statsConfig.push(lsEntities[qqm]);
+                }
+            }
+        }
+        var lsmen = ['p_1'];
+        for (var i = 0; i < statsConfig.length; i++) {
+            var j = i + 2;
+            lsmen.push('p_' + j);
+
+        }
+
+        if (lsmen.length > 1) {
+            try {
+                $('#fullpage').fullpage({
+                    sectionsColor: ['#1bbc9b', '#4BBFC3', '#7BAABE', 'whitesmoke', '#ccddff', '#ccddff'],
+                    anchors: lsmen,
+                    menu: '#navigation'
+                });
+            } catch (e) {
+                console.log(e);
+            }
+            //load
+
+
+
+            ///
+        }
+
+
+
+    }
+    );
+    var Qmode = 0;
+    var pa = -1;
+    this.App.SearchRun = (function (num, qm) {
+        var jsonRequest = Session.get("jsonRequest");
+        var offset = num * 10;
+        jsonRequest['offset'] = offset;
+        //alert('i');
+        waitingDialog.show();
+        Meteor.call('doQueryCache', jsonRequest, function (error, result) {
+
+
+
+            if (result.statusCode != 200) {
+                console.log(result.stack);
+                $('#modalLog .console-log').html(result.stack ? (result.stack.replace(/[<]/g, '&#60;').replace(/[\n\r]/g, '<br/>')) : '');
+                //$('#sparqlEditor button#consoleError').show();
+                var message = result.msg + (result.stack ? (': ' + result.stack.substring(0, 30) + '...') : '');
+                $('.top-right').notify({
+                    message: {text: message},
+                    type: 'danger'
+                }).show();
+            } else {
+                if (result.resultSet) {
+                    Session.set("LinkGeo", result.GeoHash);
+                    if (qm > 0) {
+                        pa = -1;
+                        Session.set("NResult", result.resultCount);
+                        if (qm != 3) {
+                            //$("#fac").empty();;
+
+
+                            Session.set("BResult", true);
+                            Session.set("facetedTotals", null);
+                            Session.set("facetedTotalsN", null);
+
+                            Qmode = qm;
+
+                            Meteor.call('findbase', function (errorddd, resultdd) {
+                                Session.set("BResult", result.resultCount > 0);
+                                Session.set("facetedTotals", result.facetedTotals);
+
+                            });
+
+
+                        } else {
+                            Session.set("facetedTotalsN", result.facetedTotalsN);
+                            Meteor.call('findbase', function (errorddd, resultdd) {
+                                facetedRange();
+                            });
+                        }
+                    }
+                    App.resultCollection2.remove({});
+                    App.resultCollection2.insert(result.resultSet);
+                }
+            }
+            //alert('f');
+            waitingDialog.hide();
+
+        });
+        return "";
+    });
+    Template.graph.helpers({
+        Config: function () {
+            return Configuration.find().fetch().length > 0;
+        }
+    });
+
+    Template.menuStats.helpers({
+        MenuStats: function () {
+            var ConfigInfo = Configuration.find().fetch();
+            var statsConfig = [];
+            for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                var lsEntities = ConfigInfo[qm].ConfStat;
+                if (lsEntities != undefined && lsEntities != null) {
+                    for (var qqm = 0; qqm < lsEntities.length; qqm++) {
+                        statsConfig.push(lsEntities[qqm]);
+                    }
+                }
+            }
+            var lsmen = [{lbl: lang.lang("Global"), num: '1'}];
+            for (var i = 0; i < statsConfig.length; i++) {
+                var j = i + 2;
+                lsmen.push({lbl: statsConfig[i].name, num: j + ''});
+            }
+            return lsmen;
+        }
+
+    });
+
+
+
+
+
+    Template.stats.helpers({
+
+        DataStats: function () {
+            try {
+                Session.get('auxActV2');
+
+
+                var ConfigInfo = Configuration.find().fetch();
+                var statsConfig = [];
+                for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                    var lsEntities = ConfigInfo[qm].ConfStat;
+                    if (lsEntities != undefined && lsEntities != null) {
+                        for (var qqm = 0; qqm < lsEntities.length; qqm++) {
+                            statsConfig.push(lsEntities[qqm]);
+                        }
+                    }
+                }
+
+                for (var i = 0; i < statsConfig.length; i++) {
+
+                    var lbl = statsConfig[i].URI.split("").reverse().join("").split(/\/|#/)[0].split("").reverse().join("");
+                    var lsMC = [];
+                    for (var indtem = 0; indtem < ConfigInfo.length; indtem++) {
+                        lsMC = lsMC.concat(ConfigInfo[indtem].ConfEntity);
+                    }
+                    lsMC = lsMC.filter(function (a) {
+                        return a.URI == statsConfig[i].URI;
+                    });
+
+                    if (lsMC.length != 0) {
+                        lbl = lsMC[0].name;
+                    }
+
+                    var k = i + 1;
+                    var e = document.getElementById("repositories_" + k);
+                    var repo = (e) ? e.options[e.selectedIndex].value : undefined;
+
+                    var data = [];
+                    if (repo != "all") {
+                        data = Statsc.find({cod: i + 10, EP: repo}).fetch();
+                    } else {
+                        data = Statsc.find({cod: i + 10}).fetch();
+                    }
+                    var hmstr = {};
+                    for (var ix = 0; ix < data.length; ix++) {
+                        if (hmstr[data[ix].label + ''] != undefined) {
+                            hmstr[data[ix].label + ''] += data[ix].value;
+                        } else {
+                            hmstr[data[ix].label + ''] = data[ix].value;
+                        }
+                    }
+                    var str = [];
+                    for (var key in hmstr) {
+                        if (hmstr.hasOwnProperty(key)) {
+                            var lblx = key;
+
+                            var test = data.filter(function (a) {
+                                return a.label == lblx && a.nameLabel != undefined;
+                            });
+
+                            if (test.length > 0) {
+
+                                str.push({label: test[0].nameLabel, value: hmstr[key], uri: lblx});
+                            } else {
+
+                                str.push({value: hmstr[key], label: lblx});
+                            }
+                        }
+                    }
+
+
+
+
+                    console.log(statsConfig[i]);
+                    switch (statsConfig[i].typegraph) {
+                        case "Pie":
+                            {
+                                var lsKW2_ = [];
+
+                                str=str.sort(function (a, b) {
+                                    return -a.value + b.value;
+                                });
+
+                                for (var te = 0; te < str.length; te++) {
+                                    if (lsKW2_.length < 11) {
+                                        lsKW2_.push(str[te]);
+                                    } else {
+                                        lsKW2_[lsKW2_.length - 1].label = 'Otros';
+                                        lsKW2_[lsKW2_.length - 1].value += str[te].value;
+                                    }
+                                }
+                                str = lsKW2_;
+
+
+                                try {
+                                    $('#Chart' + k).empty();
+                                    var pie = new d3pie("Chart" + k, {
+                                        "header": {
+                                            "title": {
+                                                "text": lbl,
+                                                "fontSize": 22,
+                                                "font": "verdana"
+                                            },
+                                            "subtitle": {
+                                                "text": statsConfig[i].name,
+                                                "color": "#999999",
+                                                "fontSize": 10,
+                                                "font": "verdana"
+                                            },
+                                            "titleSubtitlePadding": 12
+                                        },
+                                        "footer": {
+                                            "color": "#999999",
+                                            "fontSize": 11,
+                                            "font": "open sans",
+                                            "location": "bottom-center"
+                                        },
+                                        "size": {
+                                            "canvasHeight": 300,
+                                            "canvasWidth": $('#Chart' + k).width(),
+                                            "pieOuterRadius": "80%"
+                                        },
+                                        "data": {
+                                            "sortOrder": "random",
+                                            "content": str
+                                        },
+                                        "labels": {
+                                            "outer": {
+                                                "pieDistance": 5
+                                            },
+                                            "inner": {
+                                                "hideWhenLessThanPercentage": 3
+                                            },
+                                            "mainLabel": {
+                                                "font": "verdana"
+                                            },
+                                            "percentage": {
+                                                "color": "#000000",
+                                                "font": "verdana",
+                                                "decimalPlaces": 0
+                                            },
+                                            "value": {
+                                                "color": "#e1e1e1",
+                                                "font": "verdana"
+                                            },
+                                            "lines": {
+                                                "enabled": true,
+                                                "style": "straight"
+                                            },
+                                            "truncation": {
+                                                "enabled": true
+                                            }
+                                        },
+                                        "effects": {
+                                            "pullOutSegmentOnClick": {
+                                                "effect": "linear",
+                                                "speed": 400,
+                                                "size": 8
+                                            }
+                                        },
+                                        "tooltips": {
+                                            "enabled": true,
+                                            "type": "placeholder",
+                                            "string": "{label}: {value}, {percentage}%"
+                                        }
+                                    });
+                                } catch (az) {
+                                    //console.log(az);
+                                }
+
+
+
+                            }
+                            break;
+                        case "Hist":
+                            {
+
+                                $('#HChart' + k).empty();
+                                var data = str;
+                                // Get the data
+
+                                data.forEach(function (d) {
+                                    d.label = Number(d.label);
+                                    d.value = Number(d.value);
+                                });
+                                data = data.filter(function (d) {
+                                    return d.label > 1850;
+                                });
+                                var vmin = d3.min(data, function (d) {
+                                    return d.label;
+                                });
+                                var since = (vmin < 1850) ? 1850 : vmin;
+
+                                //console.log(data);
+                                // Set the dimensions of the canvas / graph
+                                var margin = {top: 30, right: 20, bottom: 30, left: 50},
+                                        width = $('#HChart' + k).width() - margin.left - margin.right,
+                                        height = 300 - margin.top - margin.bottom;
+// Parse the date / time
+                                var parseDate = d3.time.format("%Y").parse;
+                                var formatTime = d3.time.format("%Y %B");
+
+// Set the ranges
+                                var x = d3.scale.linear().range([0, width]);
+                                var y = d3.scale.log().base(10).range([height, 0]);
+
+// Define the axes
+
+                                var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹",
+                                        formatPower = function (d) {
+                                            return (d + "").split("").map(function (c) {
+                                                return superscript[c];
+                                            }).join("");
+                                        };
+
+
+                                var xAxis = d3.svg.axis().scale(x)
+                                        .orient("bottom").ticks(7);
+
+                                var yAxis = d3.svg.axis().scale(y)
+                                        .orient("left").tickFormat(function (d) {
+                                    return (d == 1 || d == 10 || d == 100 || d == 1000 || d == 10000 || d == 100000) ? d : '';
+                                }).ticks(5);
+
+// Define the line
+                                var valueline = d3.svg.line()
+                                        .x(function (d) {
+                                            return x(d.label);
+                                        })
+                                        .y(function (d) {
+                                            return y(d.value);
+                                        });
+
+// Define the div for the tooltip
+                                var div = d3.select("body").append("div")
+                                        .attr("class", "tooltip")
+                                        .style("opacity", 0);
+
+// Adds the svg canvas
+                                var svg = d3.select("#HChart" + k)
+                                        .append("svg")
+                                        .attr("width", width + margin.left + margin.right)
+                                        .attr("height", height + margin.top + margin.bottom)
+                                        .append("g")
+                                        .attr("transform",
+                                                "translate(" + margin.left + "," + margin.top + ")");
+
+
+                                var mmax = d3.max(data, function (d) {
+                                    return d.label;
+                                });
+
+                                var __d = new Date();
+                                var __n = __d.getFullYear();
+
+                                mmax = (mmax > __n) ? __n + 1 : mmax;
+                                // Scale the range of the data
+                                x.domain([since, mmax]);
+                                /* x.domain([since, d3.max(data, function (d) {
+                                 return d.label;
+                                 })]);*/
+                                y.domain([1, d3.max(data, function (d) {
+                                        return d.value;
+                                    })]);
+
+                                // Add the valueline path.
+                                // svg.append("path")
+                                //       .attr("class", "line")
+                                //     .attr("d", valueline(data));
+
+                                // Add the scatterplot
+                                svg.selectAll("dot")
+                                        .data(data)
+                                        .enter().append("circle")
+                                        .attr("r", 2)
+                                        .attr("cx", function (d) {
+                                            return x(d.label);
+                                        })
+                                        .attr("cy", function (d) {
+                                            return y(d.value);
+                                        })
+                                        .on("mouseover", function (d) {
+                                            div.transition()
+                                                    .duration(200)
+                                                    .style("opacity", .9);
+                                            div.html(d.label + "<br/>" + "(" + d.value + ")")
+                                                    .style("left", (d3.event.pageX) + "px")
+                                                    .style("top", (d3.event.pageY - 28) + "px");
+                                        })
+                                        .on("mouseout", function (d) {
+                                            div.transition()
+                                                    .duration(500)
+                                                    .style("opacity", 0);
+                                        });
+
+                                // Add the X Axis
+                                svg.append("g")
+                                        .attr("class", "x axis")
+                                        .attr("transform", "translate(0," + height + ")")
+                                        .call(xAxis);
+
+                                // Add the Y Axis
+                                svg.append("g")
+                                        .attr("class", "y axis")
+                                        .call(yAxis);
+
+                            }
+                            break;
+                        case "Etiq":
+                            {
+                                var frequency_list = [];
+                                var max = 0;
+                                for (var ix = 0; ix < str.length; ix++) {
+                                    frequency_list.push({"text": str[ix].label, "size": Number(str[ix].value), "uri": str[ix].uri});
+                                    if (max < Number(str[ix].value)) {
+                                        max = Number(str[ix].value);
+                                    }
+                                }
+                                frequency_list = _.sample(frequency_list, 25);
+
+                                for (var q = 0; q < frequency_list.length; q++) {
+                                    frequency_list[q].size = (frequency_list[q].size / max) * 10 + 10;
+                                }
+                                if ($('#lstags' + k).length == 0 || $('#myCanvas' + k).length == 0 || $('#TChart' + k).length == 0) {
+                                    return str;
+                                }
+
+                                $('#lstags' + k).empty();
+                                var ul = document.getElementById("lstags" + k);
+
+                                for (var ix = 0; ix < frequency_list.length; ix++) {
+                                    var li = document.createElement("li");
+                                    var a = document.createElement("a");
+                                    a.setAttribute("href", frequency_list[ix].uri);
+                                    a.setAttribute("target", '_blank');
+                                    var txt = document.createTextNode(frequency_list[ix].text);
+                                    a.appendChild(txt);
+                                    a.setAttribute("data-weight", "" + frequency_list[ix].size);
+                                    li.appendChild(a);
+                                    ul.appendChild(li);
+                                }
+                                TagCanvas.Start('myCanvas' + k, 'tags' + k, {
+                                    textColour: '#000000',
+                                    outlineColour: '#ff00ff',
+                                    reverse: true,
+                                    depth: 1.0,
+                                    weight: true,
+                                    weightFrom: 'data-weight',
+                                    initial: [0.0, -0.05],
+                                    maxSpeed: 0.05,
+                                    shadow: '#ccf',
+                                    shadowBlur: 3
+                                });
+
+
+                            }
+                            break;
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        }, Stats: function () {
+            var ConfigInfo = Configuration.find().fetch();
+            var statsConfig = [];
+            for (var qm = 0; qm < ConfigInfo.length; qm++) {
+                var lsEntities = ConfigInfo[qm].ConfStat;
+                if (lsEntities != undefined && lsEntities != null) {
+                    for (var qqm = 0; qqm < lsEntities.length; qqm++) {
+                        statsConfig.push(lsEntities[qqm]);
+                    }
+                }
+            }
+            var lsmen = [];
+            for (var i = 0; i < statsConfig.length; i++) {
+                var j = i + 2;
+                var k = i + 1;
+                statsConfig[i]['num'] = '' + k;
+                statsConfig[i]['pie'] = statsConfig[i].typegraph == 'Pie';
+                statsConfig[i]['etiq'] = statsConfig[i].typegraph == 'Etiq';
+                statsConfig[i]['hist'] = statsConfig[i].typegraph == 'Hist';
+
+
+
+                if (i == statsConfig.length - 1) {
+                    statsConfig[i]['last'] = true;
+                } else {
+                    statsConfig[i]['last'] = false;
+                }
+
+                lsmen.push(statsConfig[i]);
+            }
+            return lsmen;
+
+        },
+        g1: function () {
+            var str = [];
+            var data = Statsc.find({cod: 1}).fetch();
+            if (Statsc && data && data[0]) {
+                str = data[0].data;
+            } else {
+                str = [{value: 100, label: "Something"}];
+            }
+
+            try {
+                $('#ResourcesChart').empty();
+                // if ($('#ResourcesChart').length == 0) {
+                //     return str;
+                //  }
+
+                //ResourcesChart
+                var pie = new d3pie("ResourcesChart", {
+                    "header": {
+                        "title": {
+                            "text": lang.lang("title-g1"),
+                            "fontSize": 22,
+                            "font": "verdana"
+                        },
+                        "subtitle": {
+                            "text": lang.lang("sub-title-g1"),
+                            "color": "#999999",
+                            "fontSize": 10,
+                            "font": "verdana"
+                        },
+                        "titleSubtitlePadding": 12
+                    },
+                    "footer": {
+                        "color": "#999999",
+                        "fontSize": 11,
+                        "font": "open sans",
+                        "location": "bottom-center"
+                    },
+                    "size": {
+                        "canvasHeight": 300,
+                        "canvasWidth": $('#ResourcesChart').width(),
+                        "pieOuterRadius": "80%"
+                    },
+                    "data": {
+                        "sortOrder": "label-asc",
+                        "content": str
+                    },
+                    "labels": {
+                        "outer": {
+                            "pieDistance": 5
+                        },
+                        "inner": {
+                            "hideWhenLessThanPercentage": 3
+                        },
+                        "mainLabel": {
+                            "font": "verdana"
+                        },
+                        "percentage": {
+                            "color": "#000000",
+                            "font": "verdana",
+                            "decimalPlaces": 0
+                        },
+                        "value": {
+                            "color": "#e1e1e1",
+                            "font": "verdana"
+                        },
+                        "lines": {
+                            "enabled": true,
+                            "style": "straight"
+                        },
+                        "truncation": {
+                            "enabled": true
+                        }
+                    },
+                    "effects": {
+                        "pullOutSegmentOnClick": {
+                            "effect": "linear",
+                            "speed": 400,
+                            "size": 8
+                        }
+                    },
+                    "tooltips": {
+                        "enabled": true,
+                        "type": "placeholder",
+                        "string": "{label}: {value}, {percentage}%"
+                    },
+                    "callbacks": {
+                        onClickSegment: function (a) {
+                            switch (a.index) {
+                                case 0:
+                                    {
+                                        //window.open("/stats#p_4", "_self");
+                                    }
+                                    break;
+                                case 1:
+                                    {
+                                        //window.open("/stats#p_2", "_self");
+                                    }
+                                    break;
+                                case 2:
+                                    {
+                                        //window.open("/stats#p_3", "_self");
+                                    }
+                                    break;
+
+                            }
+                        }
+                    }
+                });
+            } catch (az) {
+
+            }
+            return str;
+        },
+        g2: function () {
+            var str = {};
+            var data = Statsc.find({cod: 2}).fetch();
+            if (Statsc && data && data[0]) {
+                str = data[0].data;
+            } else {
+                str = [{value: 100, label: "Something"}];
+            }
+            $('#RepositoriesChart').empty();
+            try {
+                if ($('#RepositoriesChart').length == 0) {
+                    return str;
+                }
+
+                var pie = new d3pie("RepositoriesChart", {
+                    "header": {
+                        "title": {
+                            "text": lang.lang("title-g2"),
+                            "fontSize": 22,
+                            "font": "verdana"
+                        },
+                        "subtitle": {
+                            "text": lang.lang("sub-title-g2"),
+                            "color": "#999999",
+                            "fontSize": 10,
+                            "font": "verdana"
+                        },
+                        "titleSubtitlePadding": 12
+                    },
+                    "footer": {
+                        "color": "#999999",
+                        "fontSize": 11,
+                        "font": "open sans",
+                        "location": "bottom-center"
+                    },
+                    "size": {
+                        "canvasHeight": 300,
+                        "canvasWidth": $('#RepositoriesChart').width(),
+                        "pieOuterRadius": "80%"
+                    },
+                    "data": {
+                        "sortOrder": "random",
+                        "content": str
+                    },
+                    "labels": {
+                        "outer": {
+                            "pieDistance": 5
+                        },
+                        "inner": {
+                            "hideWhenLessThanPercentage": 3
+                        },
+                        "mainLabel": {
+                            "font": "verdana"
+                        },
+                        "percentage": {
+                            "color": "#000000",
+                            "font": "verdana",
+                            "decimalPlaces": 0
+                        },
+                        "value": {
+                            "color": "#e1e1e1",
+                            "font": "verdana"
+                        },
+                        "lines": {
+                            "enabled": true,
+                            "style": "straight"
+                        },
+                        "truncation": {
+                            "enabled": true
+                        }
+                    },
+                    "effects": {
+                        "pullOutSegmentOnClick": {
+                            "effect": "linear",
+                            "speed": 400,
+                            "size": 8
+                        }
+                    },
+                    "tooltips": {
+                        "enabled": true,
+                        "type": "placeholder",
+                        "string": "{label}: {value}, {percentage}%"
+                    }
+                });
+
+
+
+            } catch (az) {
+            }
+            return str;
+        },
+        g3: function () {
+            var data = Statsc.find({cod: 3}).fetch();
+            var frequency_list = [];
+
+            if (data && data[0]) {
+                data = data[0].data;
+                var max = 0;
+                for (var q = 0; q < data.length; q++) {
+                    var word = data[q].k;
+                    var ex = frequency_list.filter(function (a) {
+                        return a.text.trim() === word.trim();
+                    });
+                    if (ex.length == 0) {
+                        frequency_list.push({text: word + '', size: Number(data[q].c) + 0});
+                        if (Number(data[q].c) > max) {
+                            max = Number(data[q].c);
+                        }
+                    } else {
+                        ex[0].size += Number(data[q].c);
+                        if (ex[0].size > max) {
+                            max = ex[0].size;
+                        }
+                    }
+
+                }
+                frequency_list = _.sample(frequency_list, 25);
+
+
+                for (var q = 0; q < frequency_list.length; q++) {
+                    frequency_list[q].size = (frequency_list[q].size / max) * 15 + 10;
+                }
+            } else {
+                frequency_list = [{"text": "study", "size": 40}, {"text": "motion", "size": 15}];
+            }
+
+
+
+            try {
+                if ($('#lstags').length == 0 || $('#myCanvas').length == 0 || $('#SubjectsChart').length == 0) {
+                    return str;
+                }
+
+                $('#lstags').empty();
+                var ul = document.getElementById("lstags");
+
+                for (var i = 0; i < frequency_list.length; i++) {
+                    var li = document.createElement("li");
+                    var a = document.createElement("a");
+                    var txt = document.createTextNode(frequency_list[i].text);
+                    a.appendChild(txt);
+                    a.setAttribute("data-weight", "" + frequency_list[i].size);
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+                TagCanvas.Start('myCanvas', 'tags', {
+                    textColour: '#000000',
+                    outlineColour: '#ff00ff',
+                    reverse: true,
+                    depth: 1.0,
+                    weight: true,
+                    weightFrom: 'data-weight',
+                    initial: [0.0, -0.05],
+                    maxSpeed: 0.05,
+                    shadow: '#ccf',
+                    shadowBlur: 3
+                });
+            } catch (e) {
+                // something went wrong, hide the canvas container
+                //document.getElementById('SubjectsChart').style.display = 'none';
+            }
+
+
+
+
+            return frequency_list;
+
+
+
+        }
+        ,
+        g4: function () {
+            Session.get('auxAct');
+            var e = document.getElementById("groupby_doc");
+            var strUser = (e) ? e.options[e.selectedIndex].value : undefined;
+            e = document.getElementById("repositories_doc");
+            var strUser2 = (e) ? e.options[e.selectedIndex].value : undefined;
+            var str = {};
+            var data = Statsc.find({cod: 3}).fetch();
+            if (strUser && strUser2 && Statsc && data && data[0] && data[0].val) {
+                data = data[0];
+                data = data.val;
+                if (strUser2 != 'All') {
+                    data = data.filter(function (a) {
+                        return a.EP == strUser2;
+                    });
+                }
+                var lsc = {};
+                var res = 0;
+                for (var i = 0; i < data.length; i++) {
+                    var v = 't';
+                    var g = undefined;
+                    switch (strUser) {
+                        case 'type':
+                            v = 't';
+                            g = 'Document';
+                            break;
+                        case 'language':
+                            v = 'l';
+                            break;
+                        case 'year':
+                            v = 'y';
+                            break;
+                    }
+                    var st = data[i].val;
+                    for (var j = 0; j < st.length; j++) {
+                        var clas = st[j][v + ''].value;
+                        clas = clas.substr(clas.lastIndexOf('/') + 1);
+                        clas = clas.substr(clas.lastIndexOf('#') + 1);
+                        var cou = Number(st[j].c.value);
+                        if (lsc[clas + '']) {
+                            lsc[clas + ''] = lsc[clas + ''] + cou;
+                        } else {
+                            lsc[clas + ''] = cou;
+                        }
+                        if (g && clas != g) {
+                            res += cou;
+                        }
+                    }
+                }
+                if (g) {
+                    lsc[g + ''] -= res;
+                }
+                str = [];
+                for (var propertyName in lsc) {
+                    str.push({value: lsc[propertyName + ''], label: propertyName + ""});
+                }
+                str.sort(function (a, b) {
+                    return (a.label > b.label) ? 1 : 0;
+                });
+            } else {
+                str = [{value: 100, label: "Something"}];
+            }
+            $('#DocumentsChart').empty();
+            try {
+                if (strUser == 'year') {
+                    $('#DocumentsChart').empty();
+                    var data = str;
+
+                    // Get the data
+
+                    data.forEach(function (d) {
+                        d.label = Number(d.label);
+                        d.value = Number(d.value);
+                    });
+                    data = data.filter(function (d) {
+                        return d.label > 1850;
+                    });
+                    var vmin = d3.min(data, function (d) {
+                        return d.label;
+                    });
+                    var since = (vmin < 1850) ? 1850 : vmin;
+
+                    //console.log(data);
+                    // Set the dimensions of the canvas / graph
+                    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+                            width = $('#DocumentsChart').width() - margin.left - margin.right,
+                            height = 300 - margin.top - margin.bottom;
+// Parse the date / time
+                    var parseDate = d3.time.format("%Y").parse;
+                    var formatTime = d3.time.format("%Y %B");
+
+// Set the ranges
+                    var x = d3.scale.linear().range([0, width]);
+                    var y = d3.scale.log().base(10).range([height, 0]);
+
+// Define the axes
+
+                    var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹",
+                            formatPower = function (d) {
+                                return (d + "").split("").map(function (c) {
+                                    return superscript[c];
+                                }).join("");
+                            };
+
+
+                    var xAxis = d3.svg.axis().scale(x)
+                            .orient("bottom").ticks(7);
+
+                    var yAxis = d3.svg.axis().scale(y)
+                            .orient("left").tickFormat(function (d) {
+                        return (d == 1 || d == 10 || d == 100 || d == 1000 || d == 10000 || d == 100000) ? d : '';
+                    }).ticks(5);
+
+// Define the line
+                    var valueline = d3.svg.line()
+                            .x(function (d) {
+                                return x(d.label);
+                            })
+                            .y(function (d) {
+                                return y(d.value);
+                            });
+
+// Define the div for the tooltip
+                    var div = d3.select("body").append("div")
+                            .attr("class", "tooltip")
+                            .style("opacity", 0);
+
+// Adds the svg canvas
+                    var svg = d3.select("#DocumentsChart")
+                            .append("svg")
+                            .attr("width", width + margin.left + margin.right)
+                            .attr("height", height + margin.top + margin.bottom)
+                            .append("g")
+                            .attr("transform",
+                                    "translate(" + margin.left + "," + margin.top + ")");
+
+
+                    var mmax = d3.max(data, function (d) {
+                        return d.label;
+                    });
+
+                    var __d = new Date();
+                    var __n = __d.getFullYear();
+
+                    mmax = (mmax > __n) ? __n + 1 : mmax;
+                    // Scale the range of the data
+                    x.domain([since, mmax]);
+                    /* x.domain([since, d3.max(data, function (d) {
+                     return d.label;
+                     })]);*/
+                    y.domain([1, d3.max(data, function (d) {
+                            return d.value;
+                        })]);
+
+                    // Add the valueline path.
+                    // svg.append("path")
+                    //       .attr("class", "line")
+                    //     .attr("d", valueline(data));
+
+                    // Add the scatterplot
+                    svg.selectAll("dot")
+                            .data(data)
+                            .enter().append("circle")
+                            .attr("r", 2)
+                            .attr("cx", function (d) {
+                                return x(d.label);
+                            })
+                            .attr("cy", function (d) {
+                                return y(d.value);
+                            })
+                            .on("mouseover", function (d) {
+                                div.transition()
+                                        .duration(200)
+                                        .style("opacity", .9);
+                                div.html(d.label + "<br/>" + "(" + d.value + ")")
+                                        .style("left", (d3.event.pageX) + "px")
+                                        .style("top", (d3.event.pageY - 28) + "px");
+                            })
+                            .on("mouseout", function (d) {
+                                div.transition()
+                                        .duration(500)
+                                        .style("opacity", 0);
+                            });
+
+                    // Add the X Axis
+                    svg.append("g")
+                            .attr("class", "x axis")
+                            .attr("transform", "translate(0," + height + ")")
+                            .call(xAxis);
+
+                    // Add the Y Axis
+                    svg.append("g")
+                            .attr("class", "y axis")
+                            .call(yAxis);
+
+                } else
+                {
+                    if (strUser == 'language' || strUser == 'type') {
+
+                        var max = 3;
+                        if (strUser == 'type') {
+                            max = 5;
+                        }
+
+
+                        str.sort(function (a, b) {
+                            return (a.value > b.value) ? -1 : ((b.value > a.value) ? 1 : 0);
+                        });
+
+
+                        var str2 = [];
+                        for (var i = 0; i < str.length; i++) {
+                            if (i <= max) {
+                                str2.push(str[i]);
+                            } else {
+                                str2[max].label = 'Others';
+                                str2[max].value += str[i].value;
+                            }
+
+                        }
+                        str = str2;
+                    }
+
+                    var pie2 = new d3pie("DocumentsChart", {
+                        "header": {
+                            "title": {
+                                "text": lang.lang("Documents"),
+                                "fontSize": 22,
+                                "font": "verdana"
+                            },
+                            "subtitle": {
+                                "text": "",
+                                "color": "#999999",
+                                "fontSize": 10,
+                                "font": "verdana"
+                            },
+                            "titleSubtitlePadding": 12
+                        },
+                        "footer": {
+                            "color": "#999999",
+                            "fontSize": 11,
+                            "font": "open sans",
+                            "location": "bottom-center"
+                        },
+                        "size": {
+                            "canvasHeight": 300,
+                            "canvasWidth": $('#DocumentsChart').width(),
+                            "pieOuterRadius": "80%"
+                        },
+                        "data": {
+                            "sortOrder": "random",
+                            "content": str
+                        },
+                        "labels": {
+                            "outer": {
+                                "pieDistance": 5
+                            },
+                            "inner": {
+                                "hideWhenLessThanPercentage": 3
+                            },
+                            "mainLabel": {
+                                "font": "verdana"
+                            },
+                            "percentage": {
+                                "color": "#000000",
+                                "font": "verdana",
+                                "decimalPlaces": 0
+                            },
+                            "value": {
+                                "color": "#e1e1e1",
+                                "font": "verdana"
+                            },
+                            "lines": {
+                                "enabled": true,
+                                "style": "straight"
+                            },
+                            "truncation": {
+                                "enabled": true
+                            }
+                        },
+                        "effects": {
+                            "pullOutSegmentOnClick": {
+                                "effect": "linear",
+                                "speed": 400,
+                                "size": 8
+                            }
+                        },
+                        "tooltips": {
+                            "enabled": true,
+                            "type": "placeholder",
+                            "string": "{label}: {value}, {percentage}%"
+                        },
+                        callbacks: {
+                            onMouseoverSegment: function (info) {
+                                //console.log("mouseover:", info);
+                            },
+                            onMouseoutSegment: function (info) {
+                                // console.log("mouseout:", info);
+                            }
+                        }
+                    });
+                }
+            } catch (az)
+            {
+                //console.log(az);
+            }
+            return str;
+        },
+        g5: function () {
+            Session.get('auxAct');
+            var e = document.getElementById("repositories_per");
+            var strUser2 = (e) ? e.options[e.selectedIndex].value : undefined;
+            var str = {};
+            var frequency_list = [];
+            var data = Statsc.find({cod: 4}).fetch();
+            var data2 = Statsc.find({cod: 5}).fetch();
+
+            if (strUser2 && Statsc && data && data[0] && data[0].val && data2 && data2[0] && data2[0].val) {
+                data = data[0];
+                data = data.val;
+                //Top A
+                data2 = data2[0];
+                data2 = data2.val;
+                //Top A
+                if (strUser2 != 'All') {
+                    data = data.filter(function (a) {
+                        return a.EP == strUser2;
+                    });
+                    //TopA
+                    data2 = data2.filter(function (a) {
+                        return a.EP.value == strUser2;
+                    });
+                    //TopA
+                }
+                var lsc = {};
+                var res = 0;
+                var resTot = 0;
+                for (var i = 0; i < data.length; i++) {
+                    var st = data[i].val.val;
+                    var tot = data[i].val.total;
+                    resTot += tot;
+
+                    for (var j = 0; j < st.length; j++) {
+                        var clas = st[j].p.value;
+                        clas = clas.substr(clas.lastIndexOf('/') + 1);
+                        clas = clas.substr(clas.lastIndexOf('#') + 1);
+
+                        switch (clas) {
+                            case 'P50195':
+                                clas = 'Authors';
+                                break;
+                            case 'P50161':
+                                clas = 'Editors';
+                                break;
+                        }
+
+                        var cou = Number(st[j].c.value);
+                        if (lsc[clas + '']) {
+                            lsc[clas + ''] = lsc[clas + ''] + cou;
+                        } else {
+                            lsc[clas + ''] = cou;
+                        }
+                        res += cou;
+                    }
+                }
+                var inter = res - resTot;
+                str = [];
+                var inters = '';
+                for (var propertyName in lsc) {
+                    str.push({value: lsc[propertyName + ''] - inter, label: propertyName + ""});
+                    inters = inters + propertyName + ' & ';
+                }
+                inters = inters.substring(0, inters.length - 3);
+                if (inter > 0) {
+                    str.push({value: inter, label: inters + ""});
+                }
+                //TopA
+                frequency_list = [];
+                var max = 0;
+                for (var i = 0; i < data2.length; i++) {
+                    frequency_list.push({"text": data2[i].name.value, "size": Number(data2[i].counter.value), "uri": data2[i].a.value});
+                    if (max < Number(data2[i].counter.value)) {
+                        max = Number(data2[i].counter.value);
+                    }
+                }
+                frequency_list = _.sample(frequency_list, 25);
+
+                for (var q = 0; q < frequency_list.length; q++) {
+                    frequency_list[q].size = (frequency_list[q].size / max) * 10 + 10;
+                }
+
+
+
+                //TopA
+            } else {
+                str = [{value: 100, label: "Something"}];
+                frequency_list = [{"text": "study", "size": 40}, {"text": "motion", "size": 15}];
+            }
+            $('#PersonsChart').empty();
+            try {
+                var pie2 = new d3pie("PersonsChart", {
+                    "header": {
+                        "title": {
+                            "text": lang.lang("Persons"),
+                            "fontSize": 22,
+                            "font": "verdana"
+                        },
+                        "subtitle": {
+                            "text": "",
+                            "color": "#999999",
+                            "fontSize": 10,
+                            "font": "verdana"
+                        },
+                        "titleSubtitlePadding": 12
+                    },
+                    "footer": {
+                        "color": "#999999",
+                        "fontSize": 11,
+                        "font": "open sans",
+                        "location": "bottom-center"
+                    },
+                    "size": {
+                        "canvasHeight": 300,
+                        "canvasWidth": $('#PersonsChart').width(),
+                        "pieOuterRadius": "80%"
+                    },
+                    "data": {
+                        "sortOrder": "random",
+                        "content": str
+                    },
+                    "labels": {
+                        "outer": {
+                            "pieDistance": 5
+                        },
+                        "inner": {
+                            "hideWhenLessThanPercentage": 3
+                        },
+                        "mainLabel": {
+                            "font": "verdana"
+                        },
+                        "percentage": {
+                            "color": "#000000",
+                            "font": "verdana",
+                            "decimalPlaces": 0
+                        },
+                        "value": {
+                            "color": "#e1e1e1",
+                            "font": "verdana"
+                        },
+                        "lines": {
+                            "enabled": true,
+                            "style": "straight"
+                        },
+                        "truncation": {
+                            "enabled": true
+                        }
+                    },
+                    "effects": {
+                        "pullOutSegmentOnClick": {
+                            "effect": "linear",
+                            "speed": 400,
+                            "size": 8
+                        }
+                    },
+                    "tooltips": {
+                        "enabled": true,
+                        "type": "placeholder",
+                        "string": "{label}: {value}, {percentage}%"
+                    },
+                    callbacks: {
+                        onMouseoverSegment: function (info) {
+                            //console.log("mouseover:", info);
+                        },
+                        onMouseoutSegment: function (info) {
+                            // console.log("mouseout:", info);
+                        }
+                    }
+                });
+
+
+                if ($('#lstags2').length == 0 || $('#myCanvas2').length == 0 || $('#TPersonsChart').length == 0) {
+                    return str;
+                }
+
+                $('#lstags2').empty();
+                var ul = document.getElementById("lstags2");
+
+                for (var i = 0; i < frequency_list.length; i++) {
+                    var li = document.createElement("li");
+                    var a = document.createElement("a");
+                    a.setAttribute("href", frequency_list[i].uri);
+                    a.setAttribute("target", '_blank');
+                    var txt = document.createTextNode(frequency_list[i].text);
+                    a.appendChild(txt);
+                    a.setAttribute("data-weight", "" + frequency_list[i].size);
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+                TagCanvas.Start('myCanvas2', 'tags2', {
+                    textColour: '#000000',
+                    outlineColour: '#ff00ff',
+                    reverse: true,
+                    depth: 1.0,
+                    weight: true,
+                    weightFrom: 'data-weight',
+                    initial: [0.0, -0.05],
+                    maxSpeed: 0.05,
+                    shadow: '#ccf',
+                    shadowBlur: 3
+                });
+            } catch (az) {
+                //console.log(az);
+            }
+            return str;
+
+        },
+        g6: function () {
+            Session.get('auxAct');
+            var e = document.getElementById("repositories_col");
+            var strUser2 = (e) ? e.options[e.selectedIndex].value : undefined;
+            var str = [];
+            var data = Statsc.find({cod: 6}).fetch();
+            if (strUser2 && Statsc && data && data[0] && data[0].val) {
+                data = data[0];
+                data = data.val;
+                if (strUser2 != 'All') {
+                    data = data.filter(function (a) {
+                        return a.EP.value == strUser2;
+                    });
+                }
+                var max = 10;
+                for (var i = 0; i < data.length; i++) {
+                    if (i <= max) {
+                        str.push({value: Number(data[i].counter.value), label: data[i].name.value});
+                    } else {
+                        str[max].label = 'Others';
+                        str[max].value += Number(data[i].counter.value);
+                    }
+                }
+            } else {
+                str = [{value: 100, label: "Something"}];
+            }
+            $('#CollectionsChart').empty();
+            try {
+
+                var pie = new d3pie("CollectionsChart", {
+                    "header": {
+                        "title": {
+                            "text": lang.lang("Collections"),
+                            "fontSize": 22,
+                            "font": "verdana"
+                        },
+                        "subtitle": {
+                            "text": lang.lang("top-collections"),
+                            "color": "#999999",
+                            "fontSize": 10,
+                            "font": "verdana"
+                        },
+                        "titleSubtitlePadding": 12
+                    },
+                    "footer": {
+                        "color": "#999999",
+                        "fontSize": 11,
+                        "font": "open sans",
+                        "location": "bottom-center"
+                    },
+                    "size": {
+                        "canvasHeight": 300,
+                        "canvasWidth": $('#CollectionsChart').width(),
+                        "pieOuterRadius": "80%"
+                    },
+                    "data": {
+                        "sortOrder": "random",
+                        "content": str
+                    },
+                    "labels": {
+                        "outer": {
+                            "pieDistance": 5
+                        },
+                        "inner": {
+                            "hideWhenLessThanPercentage": 3
+                        },
+                        "mainLabel": {
+                            "font": "verdana"
+                        },
+                        "percentage": {
+                            "color": "#000000",
+                            "font": "verdana",
+                            "decimalPlaces": 0
+                        },
+                        "value": {
+                            "color": "#e1e1e1",
+                            "font": "verdana"
+                        },
+                        "lines": {
+                            "enabled": true,
+                            "style": "straight"
+                        },
+                        "truncation": {
+                            "enabled": true
+                        }
+                    },
+                    "effects": {
+                        "pullOutSegmentOnClick": {
+                            "effect": "linear",
+                            "speed": 400,
+                            "size": 8
+                        }
+                    },
+                    "tooltips": {
+                        "enabled": true,
+                        "type": "placeholder",
+                        "string": "{label}: {value}, {percentage}%"
+                    }
+                });
+            } catch (az) {
+                //console.log(az);
+            }
+
+
+
+        },
+        endpointsAvailable: function () {
+            return Endpoints.find({status: 'A'}).fetch();
+        }
+    });
+    // Muestra consultas - JS
+    Template.samples.helpers({
+        queriesAvailable: function () {
+            return Queries.find().fetch();
+        },
+        settings: function () {
+            return {
+                //   rowsPerPage: 10,
+                rowsPerPage: 7,
+                showFilter: true,
+                //showNavigation: 'auto',
+                //showColumnToggles: true,
+                fields:
+                        [
+                            {
+                                key: 'title',
+                                label: lang.lang("Title"),
+                                fn: function (title, object) {
+                                    var html = '<a href="/dashboard/' + object._id + '">' + title + '</a>';
+                                    return new Spacebars.SafeString(html);
+                                }
+                            },
+                            {key: 'description', label: lang.lang("Description")}
+                        ]
+            };
+        }
+    });
+
+    /*Template.selectendpoint.helpers({
+     endpointsAvailable: function () {
+     return Endpoints.find({status: 'A'}).fetch();
+     } 
+     });*/
+    /*Template.selectendpoint.onRendered({
+     endpointsAvailable: function () {
+     console.log (Endpoints);
+     return Endpoints.find({status: 'A'}).fetch();
+     }
+     });*/
+    /* Template.confpanel.onCreated(function(){
+     
+     this.subscribe("endpoints");
+     });*/
+
+
+    /*    Template.confpanel.helpers({
+     PropertiesAvailable: function () {
+     var valores = [];
+     var graph = Session.get ('Graph');
+     console.log ("Graficar");
+     if (graph !== undefined){ 
+     valores = Properties.find({'endpoint':graph}).fetch();
+     } else {
+     //valores = Properties.find().fetch();
+     valores = [ {name : ""} ]
+     }
+     console.log (valores.length);
+     
+     return valores;
+     
+     } ,  EntitiesAvailable: function () {
+     var valores = [];
+     var graph = Session.get ('Graph');
+     console.log ("Graficar");
+     if (graph !== undefined){ 
+     valores = Entities.find({'endpoint':graph}).fetch()[0].entities;
+     } else {
+     //valores = Properties.find().fetch();
+     valores = [ {name : ""} ]
+     }
+     console.log (valores.length);
+     
+     return valores;
+     
+     }
+     
+     });*/
+
+    Template.confpanel.helpers({
+        EntitiesLoad: function () {
+            var endp = Session.get('Graph');
+            var confent = Configuration.find({"Endpoint": endp}).fetch()[0];
+            //if (endp !== undefined  && endp != null){
+            if (!_.isUndefined(endp) && endp != "---" && (!_.isUndefined(confent))) {
+                console.log(endp);
+                //   console.log(Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity);
+                // var confent = Configuration.find({"Endpoint": endp}).fetch()[0].ConfEntity;
+                if (!_.isUndefined(confent.ConfEntity)) {
+                    return confent.ConfEntity;
+                } else {
+                    return [];
+                }
+
+
+            } else
+            {
+                return [];
+            }
+        },
+        settingsent: function () {
+            return {
+                rowsPerPage: 5,
+                showFilter: false,
+                fields:
+                        [
+                            {
+                                key: 'name',
+                                label: lang.lang("Obj_Name")
+
+                            }, {
+                                key: 'URI',
+                                label: "URI"
+                            }, {
+                                key: 'descriptiveprop',
+                                label: lang.lang("Prop_des")
+                            }, {
+                                key: 'URI',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigbutton' onClick='deleteConfig(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
+                                }
+                            }
+                            , {
+                                key: 'URI',
+                                label: lang.lang("edit"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigbutton' onClick='editEntity(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-edit'></span></button></td>");
+                                }
+
+                            }
+
+
+
+                        ]
+            };
+        },
+        StatLoad: function () {
+            var endp = Session.get('Graph');
+            var config = Configuration.find({"Endpoint": endp}).fetch()[0];
+
+            if ((!_.isUndefined(endp)) && endp != null && endp != "---" && (!_.isUndefined(config))) {
+                console.log(endp);
+
+                if (!_.isUndefined(config.ConfStat)) {
+
+                    return config.ConfStat;
+                } else {
+                    return [];
+                }
+            } else
+            {
+                return [];
+            }
+
+        }, settingstat: function () {
+            return {
+                rowsPerPage: 5,
+                showFilter: false,
+                fields:
+                        [
+                            {
+                                key: 'name',
+                                label: lang.lang("Obj_Name")
+
+                            }, {
+                                key: 'URI',
+                                label: "URI"
+                            }, {
+                                key: 'Relprop',
+                                label: lang.lang("rel")
+                            }, {
+                                key: 'typegraph',
+                                label: lang.lang("graph_type")
+                            }
+                            , {
+                                //   key: 'URI',
+                                key: 'name',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigStatbutton' onClick='deleteConfigStat(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
+                                }
+                            }
+                            , {
+                                key: 'name',
+                                label: lang.lang("edit"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteConfigStatbutton' onClick='editStat(this)' URIOPT=" + value + "  ><span class='glyphicon glyphicon-edit'></span></button></td>");
+                                }
+
+                            }
+
+
+
+                        ]
+            };
+        }
+
+    });
+
+    Template.selectendpoint.helpers({
+        endpointsAvailable: function () {
+            // console.log ("Mostrando Endpoi");
+            // console.log (Endpoints);
+            return Endpoints.find({status: 'A'}).fetch();
+        }
+    });
+
+
+    Template.completproperty.helpers({
+        PropertiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get('Graph');
+            // console.log("Graficar");
+            if (graph !== undefined) {
+                valores = Properties.find({'endpoint': graph}).fetch();
+            } else {
+                //valores = Properties.find().fetch();
+                valores = [];
+            }
+            console.log(valores.length);
+
+            return valores;
+
+        }
+    });
+
+
+    Template.completentity.helpers({
+        EntitiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get('Graph');
+            //  console.log("Graficar");
+            //  console.log (graph);
+            if (!(_.isUndefined(graph) || graph == null) && graph != "---") {
+                //if (graph !== undefined &&  graph !== null ){ 
+                valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
+            } else {
+                //valores = Properties.find().fetch();
+                //valores = [ {name : ""} ];
+                console.log("No grafica Available");
+            }
+            //console.log (valores.length);
+
+            return valores;
+
+        }
+    });
+
+    Template.completpropertysingle.helpers({
+        PropertiesAvailableSingle: function ( ) {
+            //  console.log ("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+            // console.log (param);
+
+            var valores = [];
+            var graph = Session.get('Graph');
+            // console.log("Graficar");
+            if (graph !== undefined) {
+                valores = Properties.find({'endpoint': graph}).fetch();
+            } else {
+                //valores = Properties.find().fetch();
+                valores = [{name: ""}];
+            }
+            console.log(valores.length);
+
+
+            /*    _.each ( valores , function (e , idx ) { 
+             if (idx == 2 &&  "FontProp" == param ){
+             e.isSelected = "selected";
+             } else {
+             e.isSelected = "false";
+             }
+             });
+             
+             console.log (valores);*/
+
+            return valores;
+
+        }
+    });
+
+
+    Template.indexproperty.helpers({
+        PropertiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get('Graph');
+            //  console.log("Graficar");
+            if (graph !== undefined) {
+                valores = Properties.find({'endpoint': graph}).fetch();
+            } else {
+                //valores = Properties.find().fetch();
+                valores = [{name: ""}];
+            }
+            console.log(valores.length);
+
+            return valores;
+
+        }
+    });
+
+    Template.multiproperty.helpers({
+        PropertiesAvailable: function () {
+            var valores = [];
+            var graph = Session.get('Graph');
+            //  console.log("Graficar");
+            if (graph !== undefined) {
+                valores = Properties.find({'endpoint': graph}).fetch();
+            } else {
+                //valores = Properties.find().fetch();
+                valores = [{name: ""}];
+            }
+            console.log(valores.length);
+
+            return valores;
+
+        }
+    });
+
+
+    Template.graphselectionprop.helpers({
+        EntitiesAvailable: function (type) {
+
+
+            var valores = [];
+            var graph = Session.get('Graph');
+            var conf = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0];
+            // var act = Session.get ('updatetables');
+            // console.log("Graficar lista 1");
+            // console.log(type);
+            // console.log (graph); 
+            if (graph !== undefined && graph !== null && graph != "---") {
+                valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
+                var valorselect = [];
+                if (!_.isUndefined(conf)) {
+
+                    if (type == "distriList") {
+
+                        valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].VisGraph;
+
+                    } else {
+
+                        valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].EntSearch;
+                        var selected = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].Source;
+                        console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                        console.log(selected);
+                        $('#FontProp').val(selected);
+                    }
+                } else {
+                    valorselect = [];
+                }
+
+                console.log("Valores registrados");
+                console.log(valorselect);
+                //  console.log (_.pluck(valores, 'name'));
+                // if (   typeof valoreselect === 'undefined'  ) 
+                //  {   
+                var filtrado = _.filter(valores, function (element) {
+                    if (element != null) {
+                        return  !(_.contains(valorselect, element.fullName));
+                    } else {
+                        return false;
+                    }
+                });
+                valores = filtrado;
+                console.log("Filtrado");
+                console.log(filtrado);
+                //console.log (_.pluck(valores, 'name'));
+                //console.log ("Calcular");
+                //var valorescal = _.difference( _.pluck(valores, 'name') , valorselect );
+                //console.log (valorescal);
+                // }
+
+
+            } else {
+                //valores = Properties.find().fetch();
+
+                //valores = [{name: "", fullName: ""}];
+                valores = [];
+                Session.set('refresh', true);
+            }
+            console.log(valores.length);
+            //Session.set ('updatetables', false);
+
+            return valores;
+
+        },
+
+        EntitiesSelected: function (type) {
+            var valores = [];
+
+
+            var graph = Session.get('Graph');
+            var conf = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0];
+            //var act = Session.get ('updatetables');
+            //console.log("Graficar lista2");
+            //console.log(type);
+
+            if (graph !== undefined && graph !== null && graph != "---") {
+                valores = Entities.find({'endpoint': graph}).fetch()[0].entities;
+                var valorselect = [];
+                if (!_.isUndefined(conf)) {
+
+                    if (type == "distriList") {
+
+                        valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].VisGraph;
+
+                    } else {
+
+                        valorselect = Configuration.find({'Endpoint': graph}, {reactive: false}).fetch()[0].EntSearch;
+                    }
+                }
+
+                console.log("Valores registrados");
+                console.log(valorselect);
+                //  console.log (_.pluck(valores, 'name'));
+                // if (  typeof valoreselect == 'undefined' ) 
+                //  {   
+                var filtrado = _.filter(valores, function (element) {
+                    if (element != null) {
+                        return  _.contains(valorselect, element.fullName);
+                    } else {
+                        return false;
+                    }
+                });
+                console.log("Filtrado");
+                console.log(filtrado);
+                valores = filtrado;
+                //}
+
+
+            } else {
+                //valores = Properties.find().fetch();
+                // valores = [{name: "", fullName: ""}];
+                // valores = [];
+                return valores;
+            }
+            console.log(valores.length);
+            //Session.set ('updatetables', false);
+            return valores;
+
+
+        }
+    });
+
+
+
+
+    /*
+     Template.MultipleSelectAuto.helpers({
+     'myMenuItems': function selectedItems() {
+     var endp = Endpoints.find({status: 'A'}).fetch();
+     var newlist = _.each( endp , function ( endpointp , idx) {
+     return { value : idx , caption : endp.name , selected : "false" }
+     });
+     console.log (newList);
+     
+     
+     return newlist ;  
+     }
+     ,
+     'mySelectedList': function selectedList() {
+     /*let retVal = arr.filter(function aFilter(elem) {return elem.selected;})
+     .map(function aMap(elem) {return elem.value;});
+     return retVal ? retVal : [];*/ /*
+      return   Endpoints.find({status: 'A'}).fetch();
+      },
+      
+      'myConfigOptions': function configOptions() {
+      return {
+      'nonSelectedText': 'Check option',
+      'buttonClass': 'btn btn-primary',
+      'onChange': function onChange(option, checked) {
+      let index = $(option).val();
+      console.log('Changed option ' + index + '. checked: ' + checked);
+      arr.indexOf(index).selected = checked;
+      }
+      };
+      }
       });
+      */
+    // JS
+    Template.favsearch.helpers({
+        histsearch: function () {
+            Meteor.subscribe('favresources', function onReady() {
+                //Session.set('tasksLoaded', true);
+                waitingDialog.hide();
+            });
+            var s = Searchs.find({idUser: Meteor.userId()}).fetch();
+            // waitingDialog.hide ();
+            return s;
+        },
+        settingshist: function () {
+            return {
+                //   rowsPerPage: 10,
+                rowsPerPage: 5,
+                showFilter: false,
+                //showNavigation: 'auto',
+                //showColumnToggles: true,
+                fields:
+                        [
+                            {
+                                key: 'searchword',
+                                label: lang.lang("Search_action"),
+                                headerClass: 'col-md-4',
+                                fn: function (searchword, object) {
+                                    var html = '<a  href="/search/' + searchword + '/' + object.searchfilters + '/UCUE">' + searchword + '</a>';
+                                    return new Spacebars.SafeString(html);
+                                }
+
+                            },
+                            {
+                                key: 'searchfilters',
+                                label: lang.lang("Filters"),
+                            },
+                            {key: 'sources',
+                                label: lang.lang("Sources"),
+                                fn: function (sources, object) {
+                                    var listsources = "";
+                                    _.each(object.sources, function (el, idx) {
+
+                                        listsources = el.Name + ', ' + listsources;
+
+                                    });
+                                    //console.log (object);
+                                    //object.sources 
+                                    // console.log (sources);
+                                    return listsources;
+                                }
+
+                            }, {key: 'timeaction',
+                                label: lang.lang("Date"), headerClass: 'col-md-3',
+                                sortOrder: 0,
+                                sortDirection: 'descending',
+                                sortByValue: true,
+                                fn: function (timeact, object) {
+                                    console.log(object.timeaction);
+                                    var d = new Date(object.timeaction);
+                                    return    d.toLocaleString();
+                                }
+
+                            }, {
+                                key: '_id',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deletehist(this)' Idsearch=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
+                                }
+
+                            }
+                        ]
+            };
+        }
+        ,
+        favres: function () {
+            return   Favresources.find({idUser: Meteor.userId()}).fetch();
+        }, settingsfav: function () {
+            return {
+                rowsPerPage: 5,
+                showFilter: false,
+                //showNavigation: 'auto',
+                //showColumnToggles: true,
+                fields:
+                        [
+                            {key: 'urifav',
+                                label: lang.lang("Resource"),
+                                fn: function (urifav, object) {
+                                    var html = '<a target="_blank" href="' + urifav + '">' + urifav + '</a>';
+                                    return new Spacebars.SafeString(html);
+                                }
+
+
+                            }, {
+                                key: 'labelres',
+                                label: lang.lang("Name"),
+                                headerClass: 'col-md-6'
+
+
+                            },
+                            {
+                                key: 'timeaction',
+                                label: lang.lang("Date"),
+                                sortOrder: 0,
+                                sortDirection: 'descending',
+                                sortByValue: true,
+                                fn: function (timeact, object) {
+                                    console.log(object.timeaction);
+                                    var d = new Date(object.timeaction);
+                                    return    d.toLocaleString();
+                                }
+
+
+
+                            },
+                            {
+                                key: '_id',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deletefav(this)' Idres=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
+                                }
+
+                            }
+
+                        ]
+
+
+            }
+        }
+    });
+
+
+    Template.adminpanel.helpers({
+        usersAvailable: function () {
+
+            return Profile.find().fetch();
+        },
+        settings: function () {
+            return {
+                //   rowsPerPage: 10,
+                rowsPerPage: 10,
+                showFilter: true,
+                //showNavigation: 'auto',
+                //showColumnToggles: true,
+                fields:
+                        [
+                            {
+                                key: 'nameUser',
+                                label: lang.lang("Names")
+                            },
+                            {key: 'accessLevel',
+                                label: lang.lang("User"),
+                                fn: function (value, object) {
+
+                                    var check;
+                                    // alert (countrow);
+                                    if (value == 0)
+                                    {
+                                        check = 'checked';
+                                    } else {
+                                        check = '';
+                                    }
+                                    //$(this).attr('checked','checked');
+                                    // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                                    return new Spacebars.SafeString("<input value=" + 0 + " name=user" + object.idProfile + " " + check + " type='radio' onClick='ChangeAccess(this)' />");
+                                }
+                            },
+                            {key: 'accessLevel',
+                                label: lang.lang("Advanced_User"),
+                                fn: function (value, object) {
+                                    var check;
+
+
+                                    if (value == 1)
+                                    {
+                                        check = 'checked';
+                                    } else {
+                                        check = '';
+                                    }
+                                    //$(this).attr('checked','checked');
+                                    // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                                    //return new Spacebars.SafeString("<input name=user"+object.idProfile+" checked="+check+" type='radio' />"); }
+                                    return new Spacebars.SafeString("<input value=" + 1 + " name=user" + object.idProfile + " " + check + "  type='radio' onClick='ChangeAccess(this)' />");
+                                }
+                            }, {key: 'accessLevel',
+                                label: lang.lang("Admin"),
+                                fn: function (value, object) {
+                                    var check;
+                                    //  alert (object);
+                                    if (value == 2)
+                                    {
+                                        check = 'checked';
+                                    } else {
+                                        check = '';
+                                    }
+                                    //$(this).attr('checked','checked');
+                                    // return new Spacebars.SafeString("<input checked="+check+" type='checkbox' />"); }
+                                    return new Spacebars.SafeString("<input value=" + 2 + " name=user" + object.idProfile + " " + check + " type='radio'  onClick='ChangeAccess(this)' />");
+                                }
+                            },
+                            {key: 'levelAcademic',
+                                label: lang.lang("Occupation"),
+                                fn: function (value, object) {
+                                    var text;
+                                    if (value == 0)
+                                    {
+                                        text = "Estudiante";
+                                    } else if (value == 1) {
+                                        text = "Profesor";
+                                    } else if (value == 2) {
+                                        text = "Investigador";
+                                    } else {
+
+                                        text = "Otros";
+                                    }
+
+                                    return new Spacebars.SafeString("<p>" + text + "</p>");
+                                }
+                            },
+                            {key: 'secMail',
+                                label: lang.lang("Email")
+                            },
+                            {
+                                key: 'idProfile',
+                                label: lang.lang("delete"),
+                                fn: function (value, object) {
+                                    return new Spacebars.SafeString("<td> <button type='button' class='btn btn-default' id='deleteUserbutton' onClick='deleteUser(this)' userId=" + value + "  ><span class='glyphicon glyphicon-remove'></span></button></td>");
+                                }
+
+                            }
+                        ]
+            };
+        }
+    });
 
 
 //JO
 //zero padding function
-function pad(n, width, z) {
-  z = z || '0';
-  n = n + '';
-  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
+    function pad(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }
 //JO*
 
-Template.dashboard.helpers({
-  endpointsAvailable: function(){
-    return Endpoints.find({status: 'A'}).fetch();
-  },
+    Template.profile.helpers({
+        IntAreas: function () {
 
-  listEndpointsAvailable: function(){
-    return Endpoints.find({status: 'A'}, {sort: {base: -1}}).fetch();
-  },
+            var inta = [];
+            for (var i = 0; i < 19; i++) {
+                inta.push({lbl: lang.lang("FoS_" + i), pos: i});
+            }
+            return inta;
+        }
+    });
 
-  resultQuery: function(){
-    var response = App.resultCollection.findOne();
-    var resp = response ? JSON.parse(response.content).results.bindings: [];
-    for (var x=0; x<resp.length ; x++){
-     resp[x].num=x+1;
-   }
-   return resp;
- },
 
- settings: function () {
-  var response = App.resultCollection.findOne();
-  if(response) {
-    var prefixService = Prefixes.find().fetch();
-    var endpoints = Endpoints.find().fetch();
-    var fields=JSON.parse(response.content).head.vars;
-    var dataField=[];
+    Template.dashboard.helpers({
+        endpointsAvailable: function () {
+            return Endpoints.find({status: 'A'}).fetch();
+        },
+        listEndpointsAvailable: function () {
+            return Endpoints.find({status: 'A'}, {sort: {base: -1}}).fetch();
+        },
+        resultQuery: function () {
+            var response = App.resultCollection.findOne();
+            var resp = response ? JSON.parse(response.content).results.bindings : [];
+            for (var x = 0; x < resp.length; x++) {
+                resp[x].num = x + 1;
+            }
+            return resp;
+        },
+        settings: function () {
+            var response = App.resultCollection.findOne();
+            if (response) {
+                var prefixService = Prefixes.find().fetch();
+                var endpoints = Endpoints.find().fetch();
+                var fields = JSON.parse(response.content).head.vars;
+                var dataField = [];
 //JO
 //Adding row number column
-var item={};
-item.key="cont.value";
-item.label="#";
-item.fn= function (data,object) {
-  var html = '<p> '+ pad(object.num,4) + '</p>';
-  return new Spacebars.SafeString(html);
-};
-item.sortOrder=0;
-dataField.push(item);
-//JO*
-_.forEach(fields,function(field){
-  var item={};
-  item.key=field+".value";
-  item.label=field;
-  item.fn= function (data,object) {
-    var typeObject= object[field].type;
-    if(typeObject == 'uri') {
-      var prefix = _.find(prefixService,function(obj){return object[field].value.indexOf(obj.URI) == 0});
-      var showValue;
-                      if(!prefix) { //find endpoint name as prefix
-                        var endpoint = _.find(endpoints,function(obj){return object[field].value.indexOf(obj.graphURI) == 0});
-                        showValue = endpoint ? (endpoint.name + ':' + object[field].value.substring(endpoint.graphURI.length)):object[field].value;
-                      } else {
-                        showValue = prefix.prefix + ':' + object[field].value.substring(prefix.URI.length);
-                      }
-                      //var showValue = prefix ? (prefix.prefix+':'+object.value.substring(prefix.URI.length)):object.value;
-                      var html = '<a href="' + object[field].value + '">' + showValue + '</a>';
-                    }else{
-                      var html = '<p> '+ object[field].value + '</p>';
-                    } 
+                var item = {};
+                item.key = "cont.value";
+                item.label = "#";
+                item.fn = function (data, object) {
+                    var html = '<p> ' + pad(object.num, 4) + '</p>';
                     return new Spacebars.SafeString(html);
-                  };
-                  dataField.push(item);
-                });      
-
-return {
-  rowsPerPage: 5,
-  showFilter: true,
-  showNavigation: 'auto',
-  showColumnToggles: true,
-  fields: dataField,
-};
-}
-}
-});
-
-Template.endpoint.helpers({
-  endpointEntity: function(){
-        //var entities = Properties.find({},{fields: {'subjects': 1, _id: 1}}).fetch();
-        var endpoints = Session.get('endpoints');
-        var response = [];
-        
-        response.status = 'EMPTY';
-        if(endpoints && endpoints.length > 0) {
-          console.log('==Si existen edpoints');
-          response.status = 'OK';
-          endpoints.forEach(function(obj) {
-            console.log(obj.endpoint);
-            console.log(obj);
-            var graph = {};
-            graph.name = obj.name
-            graph.colorid = obj.colorid;
-            graph.endpoint = obj.endpoint;
-            graph.graphURI = obj.graphURI;
-            graph.description = obj.description;
-            var entities = Properties.find( {endpoint: obj.endpoint, 
-             graphURI: obj.graphURI} 
-             ).fetch();
-
-
-            entities = jQuery.grep(entities, function (n) { return n!== undefined; });
-            console.log('Properties');
-            console.log(entities);
-
-
-            var properties = [];
-
-
-
-            properties = entities;
-
-            entities = _.pluck(entities, 'subjects');
-          //   console.log ("Pluck");
-          //   console.log (entities);
-            //console.log('==encontrados: ' + entities.length);
-            var values = [];
-            for(var i=0; i<entities.length; i++) {
-              values = _.union(values, entities[i]);
-               //console.log (entities[i][0]);
-             }
-
-             graph.endpointEntities = _.uniq(values, false, function(obj){return obj.fullName;});
-             graph.endpointProperties = properties;
-         /*      if (graph.endpointProperties [0]  === undefined) 
-            {
-               console.log ('Vacio');
-
-            }else {
-               console.log ('No Vacio');
-               console.log (graph.endpointProperties[0]);
-               console.log (graph.endpointProperties[1]);
-            }
-            */
-            var hash = {};
-
-            for(var  j=0; j<graph.endpointProperties.length; j++) {
-
-             var entidadesrel  =  _.pluck(graph.endpointProperties[j].subjects , "name"); 
-             var entidadestext = "";
-
-             for (var h = 0 ; h < entidadesrel.length ; h++) {
-              entidadestext = entidadesrel[h] ;
-              if (hash.hasOwnProperty(entidadestext)){
-                hash[entidadestext] = hash[entidadestext]+" "+graph.endpointProperties[j].name;
-              } else{
-                hash[entidadestext] = graph.endpointProperties[j].name;
-
-              }
-            }
-             //   console.log ("Rel");
-             //   console.log (entidadesrel); 
-             //  graph.endpointProperties[j].enti = entidadestext ;
-             var name = graph.endpointProperties[j].name;
-             if (name.length > 10 ) {
-               graph.endpointProperties[j].dim = "col-xs-10 col-sm-8 col-md-6";
-             }else { 
-              graph.endpointProperties[j].dim = "col-xs-6 col-sm-4 col-md-3";
-            }
-            if (j % 3  == 0 && j>0 && name.length > 10 ){
-              var aux = graph.endpointProperties[j-1];
-              graph.endpointProperties[j-1] = graph.endpointProperties[j] ;
-              graph.endpointProperties[j] = aux;
-            }
-            console.log ("Prop");
-            console.log (graph.endpointProperties[j]);
-
-          }
-          console.log ("HASH ");
-          console.log (hash);
-
-
-          for( j=0; j<graph.endpointEntities.length; j++) {
-
-              // Ajusta el tamanio div segun el texto
-              var name = graph.endpointEntities[j].name;
-              graph.endpointEntities[j].ent =  hash[name] ; 
-              if (name.length > 10 ) {
-               graph.endpointEntities[j].dim = "col-xs-10 col-sm-8 col-md-6";
-             }else { 
-              graph.endpointEntities[j].dim = "col-xs-6 col-sm-4 col-md-3";
-            }
-               // Para evitar que se coloque en el ultimo lugar de la fila cuando ocupa dos cuadros
-               if (j % 3  == 0 && name.length > 10 ){
-                var aux = graph.endpointEntities[j-1];
-                graph.endpointEntities[j-1] = graph.endpointEntities[j] ;
-                graph.endpointEntities[j] = aux;
-              }
-             //  console.log ("Ent");
-             // console.log (graph.endpointEntities[j]);
-
-           } 
-
-           Session.set(graph.endpoint + '|' + graph.graphURI, {entities: graph.endpointEntities, properties: graph.endpointProperties});
-           response.push(graph);
-            //console.log(graph);
-          });
-
-          /*var entities = Properties.find( {endpoint: {$in :_.pluck(endpoints, 'endpoint')}, 
-                                           graphURI: {$in: _.pluck(endpoints, 'graphURI')}}, 
-                                          {sort: {endpoint: -1, graphURI: -1}}).fetch();
-          entities = _.pluck(entities, 'subjects');
-          var values = [];
-          for(var i=0; i<entities.length; i++) {
-            values = _.union(values, entities[i]);
-          }
-          response.status = 'OK';
-          response.endpointEntities = _.uniq(values, false, function(obj){return obj.fullName;});
-          response.endpointProperties = entities;
-          Session.set('entities', entities);*/
-          //Session.set('graphs', response);
-        }
-        //console.log(response);
-        return response;
-        //return _.uniq(values, false, function(obj){return obj.fullName;});
-      }/*,
-
-      endpointProperty: function(){
-          Session.set('properties', Properties.find().fetch());
-          console.log('#### : ' + Properties.find().fetch().length);
-          return Properties.find();
-        }*/
-      });
-
-Template.hello.greeting = function() {
-  return "Hello from sparqlfedquery";
-}
-
-Template.hello.helpers({
-  counter: function () {
-    return Session.get("counter");
-  }
-});
-//*
-
-
-Session.set('actPage', 1);
-Session.set('auxAct', 1);
-
-//Session.set('guri', '');
-//Session.set('gendp', {});
-
-
-
-
-Template.search.helpers({
-
-
- endpointsAvailable: function(){
-  return Endpoints.find({status: 'A'}).fetch();
-},
-
-resultFullQuery: function(){
-  var pag=Session.get("actPage")-1;
-  var MaxItemPag=10;
-  var response = App.resultCollection2.findOne();
-  var rlist = dataSourceSearch(response);    
-  var page = rlist.slice(pag*MaxItemPag, (pag+1)*MaxItemPag); 
-  return page;
-},
-
-NresultFullQuery: function(){
-	var response = App.resultCollection2.findOne();
-  var rlist = dataSourceSearch(response);    
-  if (rlist && rlist.length>0){
-  return rlist.length +' results';
-}
-else{
-  return 'No results';
-}
-},
-
-suggestedQueries: function(){
-
-  var EntitySearch = get_radio_value("resourceType");
-  var w=[];
-
-  switch(EntitySearch){
-    case 't':
-    w = Queries.find().fetch();
-    break;
-    case 'a':
-    w = loadQueryFirstNode('http://xmlns.com/foaf/0.1/Person');
-    break;
-    case 'd':
-    w = loadQueryFirstNode('http://purl.org/ontology/bibo/Document');
-    break;
-    case 'c':
-    w = loadQueryFirstNode('http://purl.org/ontology/bibo/Collection');
-    break;
-  }
-  
-
-    //loadQueryFirstNode
-
-    var aux= Session.get("auxAct");
-    var TextSearch = $("#textToSearch").val();
-    for (var q=0; q<w.length; q++){
-      if (TextSearch.trim() !=""){
-        w[q].description = w[q].description.replace("?", TextSearch);
-      }
-    }
-    w = w.filter(function (el) {  return el.commend == true;  });
-
-
-    return w;
-  },
-
-
-  paginationSettings: function(){
-    var response = App.resultCollection2.findOne();
-    var rlist = dataSourceSearch(response);       
-    var pagcon = {};
-    pagcon.total=Math.ceil(rlist.length/10);
-    if(rlist.length>0){
-      Session.set('actPage', 1);
-    } 
-    $('#page-selection').bootpag({
-      total: pagcon.total,
-      page:1,
-      maxVisible:10
-    }).on("page", function(event, num){
-      //unhighfn(); 
-      Session.set("auxAct", Session.get("auxAct")+1);
-      Session.set('actPage', num);
-      //highfn();
-  });
-
-    return pagcon;
-  }
-
-
-});
-
-
-function get_radio_value(RadioName) {
-  var inputs = document.getElementsByName(RadioName);
-  for (var i = 0; i < inputs.length; i++) {
-    if (inputs[i].checked) {
-      return inputs[i].value;
-    }
-  }
-};
-
-
-function loadQueryFirstNode (element) {
-  result = {};
-  result.statusCode = 200;
-  result.msg = 'OK';
-  var querylist = [];
-  try{
-
-    var query = Queries.find().fetch();
-    console.log ('Querys server0');
-    for (var i = 0; i < query.length ;i++)
-     {   console.log ('Querys server');
-                             //  console.log (query[i].jsonGraph.cells.0.subject);
-                             var js = JSON.parse(query[i]['jsonGraph']);
- 			    var ClassV = js.cells[0].subject;
-
-try{
-			     var spq =query[i].sparql;
-			     var resp = spq.match(new RegExp("REGEX\\((.*),","g"))[0];
-                  	     var SearchVar = resp.split('(')[1].split(',')[0];			
-			     var MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
-			     //ClassV = js;
-			     ClassV= this.Properties.findOne({name:MainVar}).objectTypes[0].objectEntity.fullName;
-
-
-
-
-}catch (q){
-
-}
-                              // var s  =  js.subject;
-                              console.log (js) ;
-
-				
-
-
-                              if ( ClassV == element && element == 'http://xmlns.com/foaf/0.1/Person' || ClassV == element && element == 'http://purl.org/ontology/bibo/Collection' || element == 'http://purl.org/ontology/bibo/Document' && ClassV != 'http://xmlns.com/foaf/0.1/Person' && ClassV != 'http://purl.org/ontology/bibo/Collection')
-
-                               {   console.log ('Querys server');
-                              // console.log (query[i].jsonGraph.cells[0].subject);
-                              querylist.push (query[i]);
-                            } 
-                          }
-                          return querylist;
-                        }catch(e){
-                          console.log(e);
-                          result.statusCode = 500;
-                          result.msg = e
+                };
+                item.sortOrder = 0;
+                dataField.push(item);
+//JO*
+                _.forEach(fields, function (field) {
+                    var item = {};
+                    item.key = field + ".value";
+                    item.label = field;
+                    item.fn = function (data, object) {
+                        var typeObject = object[field].type;
+                        if (typeObject == 'uri') {
+                            var prefix = _.find(prefixService, function (obj) {
+                                return object[field].value.indexOf(obj.URI) == 0
+                            });
+                            var showValue;
+                            if (!prefix) { //find endpoint name as prefix
+                                var endpoint = _.find(endpoints, function (obj) {
+                                    return object[field].value.indexOf(obj.graphURI) == 0
+                                });
+                                showValue = endpoint ? (endpoint.name + ':' + object[field].value.substring(endpoint.graphURI.length)) : object[field].value;
+                            } else {
+                                showValue = prefix.prefix + ':' + object[field].value.substring(prefix.URI.length);
+                            }
+                            //var showValue = prefix ? (prefix.prefix+':'+object.value.substring(prefix.URI.length)):object.value;
+                            var html = '<a href="' + object[field].value + '">' + showValue + '</a>';
+                        } else {
+                            var html = '<p> ' + object[field].value + '</p>';
                         }
-                        return querylist;
-                      }
+                        return new Spacebars.SafeString(html);
+                    };
+                    dataField.push(item);
+                });
 
-
-
-                      function dataSourceSearch(response){
-
-
-
-  //alert(NumMode);
-  var toShow = [];
-  if (response){
-   var NumMode = Session.get('Qmode');
-   if(NumMode == 2){
-    var SearchVar = Session.get('SearchVar').replace(/\?/g,'');
-    var MainVar = Session.get('MainVar').replace(/\?/g,'');
-    var TypeVar = Session.get('TypeVar').replace(/\?/g,'');
-    var TitleVar= Session.get('TitleVar').replace(/\?/g,'');
-    var SearchVar_ = Session.get('SearchVar').replace(/\?/g,'').split('_')[0];
-  }
-  
-
-  var resp = response ? JSON.parse(response.content).results.bindings: [];
-
-    var NumMode2 = Session.get('Qmode2');
-	if(NumMode == 1 && resp.length > 0 && NumMode2 == 1){
-
-     var MaxV = Math.max.apply(Math,resp.map(function(o){return o.Score.value;}));
-     var MinV = Math.min.apply(Math,resp.map(function(o){return o.Score.value;}));
-     var Tol = (MaxV-MinV) * 0.30;
-
-	  resp = resp.filter(function (val) {return val.Score.value >= MaxV-Tol ;});
-
-	}
-
-
-  var MaxLength=160;
-
-  //graphURI
-  for (var k=0; k<resp.length; k++){
-
-    var OneResult = {};
-    if (NumMode==1){
-      OneResult = toShow.filter(function (val) {return val.URI === resp[k].EntityURI.value;});
-    }
-    if (NumMode==2){
-      OneResult = toShow.filter(function (val) {return val.URI === resp[k][MainVar].value;});
-    }
-
-
-    if(OneResult.length==0){
-      //New
-      var OneResult= {};
-      OneResult.Weight = 1;
-      if (NumMode==1){
-        OneResult.Type = resp[k].EntityClass.value;
-      } 
-      if (NumMode==2){
-        OneResult.Type = resp[k][TypeVar].value;
-      }
-      
-      var Org = {};
-      if (NumMode==1){
-        Org = resp[k].Endpoint.value;  
-      }
-      if (NumMode==2){
-        Org = resp[k]['Endpoint'].value;  
-      }
-
-      //EndpointsLs.filter(function (val) {return strStartsWith(resp[k].EntityURI.value,val.graphURI); });
-      //var Org = App.FindRepository(resp[k].EntityURI.value);
-      //if (!_.isEmpty(Org)){
-        //Org=Org.name;
-      //}else{
-       // Org='';      
-      //}
-
-      OneResult.Origin = Org;
-      
-      if (NumMode==1){
-        OneResult.Label = resp[k].EntityLabel.value;        
-        OneResult.URI = resp[k].EntityURI.value;
-        OneResult.MatchsProperty =[{p:resp[k].PropertyLabel.value, v:resp[k].PropertyValue.value, l: resp[k].PropertyValue.value.length>MaxLength, s: resp[k].PropertyValue.value.substr(0, MaxLength), c: resp[k].PropertyValue.value.substr(MaxLength)}];            
-      }
-
-      if (NumMode==2){
-        OneResult.Label = resp[k][TitleVar].value;        
-        OneResult.URI = resp[k][MainVar].value;
-        OneResult.MatchsProperty =[{p:SearchVar_, v:resp[k][SearchVar].value, l: resp[k][SearchVar].value.length>MaxLength, s: resp[k][SearchVar].value.substr(0, MaxLength), c: resp[k][SearchVar].value.substr(MaxLength)}];            
-      }
-
-
-      switch(OneResult.Type){
-        case 'http://xmlns.com/foaf/0.1/Person':OneResult.Icon='glyphicon glyphicon-user'; break;
-        case 'http://purl.org/ontology/bibo/Collection':OneResult.Icon='glyphicon glyphicon-folder-open'; break;
-        default : OneResult.Icon='glyphicon glyphicon-file'; break;
-      }
-
-
-      toShow.push(OneResult);
-    }else{
-      //Add
-      OneResult=OneResult[0];
-      OneResult.Weight += 1;
-      if (NumMode==1){
-        var ln = OneResult.MatchsProperty.filter(function(e) { return e.p == resp[k].PropertyLabel.value && e.v ==resp[k].PropertyValue.value;  } ).length;
-        if (ln==0){ 
-          OneResult.MatchsProperty.push({p:resp[k].PropertyLabel.value, v:resp[k].PropertyValue.value, l: resp[k].PropertyValue.value.length>MaxLength, s: resp[k].PropertyValue.value.substr(0, MaxLength), c: resp[k].PropertyValue.value.substr(MaxLength)});  
+                return {
+                    rowsPerPage: 5,
+                    showFilter: true,
+                    showNavigation: 'auto',
+                    showColumnToggles: true,
+                    fields: dataField,
+                };
+            }
         }
-      }
-      if (NumMode==2){
+    });
 
-        var ln = OneResult.MatchsProperty.filter(function(e) { return e.p == SearchVar_ && e.v ==resp[k][SearchVar].value;  } ).length;
-        if (ln==0)
-        {
-          OneResult.MatchsProperty.push({p:SearchVar_, v:resp[k][SearchVar].value, l: resp[k][SearchVar].value.length>MaxLength, s: resp[k][SearchVar].value.substr(0, MaxLength), c: resp[k][SearchVar].value.substr(MaxLength)});  
-        }
-      }
-      OneResult.MatchsProperty.sort(compare2);
+    Template.endpoint.helpers({
+        endpointEntity: function () {
+            //var entities = Properties.find({},{fields: {'subjects': 1, _id: 1}}).fetch();
+            var endpoints = Session.get('endpoints');
+            var response = [];
 
+            response.status = 'EMPTY';
+            if (endpoints && endpoints.length > 0) {
+                console.log('==Si existen edpoints');
+                response.status = 'OK';
+                endpoints.forEach(function (obj) {
+                    console.log(obj.endpoint);
+                    console.log(obj);
+                    var graph = {};
+                    graph.name = obj.name
+                    graph.colorid = obj.colorid;
+                    graph.endpoint = obj.endpoint;
+                    graph.graphURI = obj.graphURI;
+                    graph.description = obj.description;
+                    var entities = Properties.find({endpoint: obj.endpoint,
+                        graphURI: obj.graphURI}
+                    ).fetch();
+
+
+                    entities = jQuery.grep(entities, function (n) {
+                        return n !== undefined;
+                    });
+                    console.log('Properties');
+                    console.log(entities);
+
+
+                    var properties = [];
+
+
+
+                    properties = entities;
+
+                    entities = _.pluck(entities, 'subjects');
+                    //   console.log ("Pluck");
+                    //   console.log (entities);
+                    //console.log('==encontrados: ' + entities.length);
+                    var values = [];
+                    for (var i = 0; i < entities.length; i++) {
+                        values = _.union(values, entities[i]);
+                        //console.log (entities[i][0]);
+                    }
+
+                    graph.endpointEntities = _.uniq(values, false, function (obj) {
+                        return obj.fullName;
+                    });
+                    graph.endpointProperties = properties;
+                    /*      if (graph.endpointProperties [0]  === undefined) 
+                     {
+                     console.log ('Vacio');
+                     
+                     }else {
+                     console.log ('No Vacio');
+                     console.log (graph.endpointProperties[0]);
+                     console.log (graph.endpointProperties[1]);
+                     }
+                     */
+                    var hash = {};
+
+                    for (var j = 0; j < graph.endpointProperties.length; j++) {
+
+                        var entidadesrel = _.pluck(graph.endpointProperties[j].subjects, "name");
+                        var entidadestext = "";
+
+                        for (var h = 0; h < entidadesrel.length; h++) {
+                            entidadestext = entidadesrel[h];
+                            if (hash.hasOwnProperty(entidadestext)) {
+                                hash[entidadestext] = hash[entidadestext] + " " + graph.endpointProperties[j].name;
+                            } else {
+                                hash[entidadestext] = graph.endpointProperties[j].name;
+
+                            }
+                        }
+                        //   console.log ("Rel");
+                        //   console.log (entidadesrel); 
+                        //  graph.endpointProperties[j].enti = entidadestext ;
+                        var name = graph.endpointProperties[j].name;
+                        if (name.length > 10) {
+                            graph.endpointProperties[j].dim = "col-xs-10 col-sm-8 col-md-6";
+                        } else {
+                            graph.endpointProperties[j].dim = "col-xs-6 col-sm-4 col-md-3";
+                        }
+                        if (j % 3 == 0 && j > 0 && name.length > 10) {
+                            var aux = graph.endpointProperties[j - 1];
+                            graph.endpointProperties[j - 1] = graph.endpointProperties[j];
+                            graph.endpointProperties[j] = aux;
+                        }
+                        // console.log("Prop");
+                        //console.log(graph.endpointProperties[j]);
+
+                    }
+                    console.log("HASH ");
+                    console.log(hash);
+
+
+                    for (j = 0; j < graph.endpointEntities.length; j++) {
+
+                        // Ajusta el tamanio div segun el texto
+                        var name = graph.endpointEntities[j].name;
+                        graph.endpointEntities[j].ent = hash[name];
+                        if (name.length > 10) {
+                            graph.endpointEntities[j].dim = "col-xs-10 col-sm-8 col-md-6";
+                        } else {
+                            graph.endpointEntities[j].dim = "col-xs-6 col-sm-4 col-md-3";
+                        }
+                        // Para evitar que se coloque en el ultimo lugar de la fila cuando ocupa dos cuadros
+                        if (j % 3 == 0 && name.length > 10) {
+                            var aux = graph.endpointEntities[j - 1];
+                            graph.endpointEntities[j - 1] = graph.endpointEntities[j];
+                            graph.endpointEntities[j] = aux;
+                        }
+                        console.log("Ent");
+                        console.log(graph.endpointEntities[j]);
+
+                    }
+
+                    Session.set(graph.endpoint + '|' + graph.graphURI, {entities: graph.endpointEntities, properties: graph.endpointProperties});
+                    Meteor.call('SaveEntities', graph.endpoint, graph.graphURI, graph.endpointEntities, function (error, result) {
+                        console.log(result);
+
+                    });
+
+                    response.push(graph);
+                    //console.log(graph);
+                });
+
+                /*var entities = Properties.find( {endpoint: {$in :_.pluck(endpoints, 'endpoint')}, 
+                 graphURI: {$in: _.pluck(endpoints, 'graphURI')}}, 
+                 {sort: {endpoint: -1, graphURI: -1}}).fetch();
+                 entities = _.pluck(entities, 'subjects');
+                 var values = [];
+                 for(var i=0; i<entities.length; i++) {
+                 values = _.union(values, entities[i]);
+                 }
+                 response.status = 'OK';
+                 response.endpointEntities = _.uniq(values, false, function(obj){return obj.fullName;});
+                 response.endpointProperties = entities;
+                 Session.set('entities', entities);*/
+                //Session.set('graphs', response);
+            }
+            //console.log(response);
+            return response;
+            //return _.uniq(values, false, function(obj){return obj.fullName;});
+        }/*,
+         
+         endpointProperty: function(){
+         Session.set('properties', Properties.find().fetch());
+         console.log('#### : ' + Properties.find().fetch().length);
+         return Properties.find();
+         }*/
+    });
+
+    Template.hello.greeting = function () {
+        return "Hello from sparqlfedquery";
     }
-    
-  } 
-}
+
+    Template.hello.helpers({
+        counter: function () {
+            return Session.get("counter");
+        }
+    });
+//*
+
+
+    Template.graph.helpers({
+        Numresultgraph: function () {
+            return Session.get("numresultgraph");
+        }
+    });
+
+    Session.set('auxAct', 0);
+
+    /*
+     Template.header.helpers({
+     access_level: function() {
+     // if  (Meteor.user().profile[1].access > 1) {
+     //  var obj = Meteor.user().profile;
+     // var valaccess =  obj[Object.keys(obj)[0]];
+     console.log ("Usuario segundo");
+     // var usr = Meteor.users.find(Meteor.userId()).fetch();
+     var usr =  Meteor.users.find(Meteor.userId()).fetch()[0].profile[1].access;
+     console.log (usr);
+     return true;
+     //  } else {
+     //       return false;
+     //  }
+     
+     
+     }
+     });*/
+
+    this.facetedRange = (function () {
+
+        try {
+            var ss = $("#slider-range")[0].attributes['data-inf'].value;
+        } catch (s) {
+            return 0;
+        }
+
+
+        var mm = Number($("#slider-range")[0].attributes['data-min'].value);
+        var mx = Number($("#slider-range")[0].attributes['data-max'].value);
+        var mm_ = Number($("#slider-range")[0].attributes['data-min'].value);
+        var mx_ = Number($("#slider-range")[0].attributes['data-max'].value);
+
+
+
+        console.log(mm);
+        console.log(mx);
+        console.log(mm_);
+        console.log(mx_);
+        try {
+            mm_ = $("#slider-range").slider("values", 0)
+            mx_ = $("#slider-range").slider("values", 1)
+        } catch (e) {
+        }
+        var d = JSON.parse($("#slider-range")[0].attributes['data-inf'].value);
+
+        $("#slider-range").empty();
+        Array.prototype.sum = function (prop) {
+            var total = 0
+            for (var i = 0, _len = this.length; i < _len; i++) {
+                total += this[i][prop]
+            }
+            return total
+        }
+
+        var data = d;
+        $("#slider-range").slider({
+            range: true,
+            min: mm,
+            max: mx,
+            values: [mm_, mx_],
+            slide: function (event, ui) {
+                var n = data.filter(function (d) {
+                    return d.key == null || d.key >= ui.values[ 0 ] && d.key <= ui.values[ 1 ];
+                }).sum("count");
+                $("#amount").val("" + ui.values[ 0 ] + " - " + ui.values[ 1 ] + " (" + n + ")");
+            }
+        });
+        var n = data.filter(function (d) {
+            return d.key == null || d.key >= $("#slider-range").slider("values", 0) && d.key <= $("#slider-range").slider("values", 1);
+        }).sum("count");
+        $("#amount").val("" + $("#slider-range").slider("values", 0) +
+                " - " + $("#slider-range").slider("values", 1) + " (" + n + ")");
+
+
+        return 0;
+    });
+
+    Template.nlsearch.helpers({
+        Loading: function () {
+            return Session.get('AuxCargS') > 0;
+        },
+        endpointsAvailable: function () {
+            return Endpoints.find({status: 'A'}).fetch();
+        },
+        resultQuery: function () {
+            var response = App.resultCollectionSL.findOne();
+            var resp = response ? JSON.parse(response.content).results.bindings : [];
+            for (var x = 0; x < resp.length; x++) {
+                resp[x].num = x + 1;
+            }
+            return resp;
+        },
+        resultQueryN: function () {
+            var response = App.resultCollectionSL.findOne();
+            return response != undefined && response != null;
+        },
+        settings: function () {
+            var response = App.resultCollectionSL.findOne();
+            if (response) {
+                var prefixService = Prefixes.find().fetch();
+                var endpoints = Endpoints.find().fetch();
+                var fields = JSON.parse(response.content).head.vars;
+                var dataField = [];
+//JO
+//Adding row number column
+                var item = {};
+                item.key = "cont.value";
+                item.label = "#";
+                item.fn = function (data, object) {
+                    var html = '<p> ' + pad(object.num, 4) + '</p>';
+                    return new Spacebars.SafeString(html);
+                };
+                item.sortOrder = 0;
+                //dataField.push(item);
+//JO*
+                _.forEach(fields, function (field) {
+                    var item = {};
+                    item.key = field + ".value";
+                    item.label = field;
+                    item.fn = function (data, object) {
+                        var typeObject = object[field].type;
+                        if (typeObject == 'uri') {
+                            var prefix = _.find(prefixService, function (obj) {
+                                return object[field].value.indexOf(obj.URI) == 0
+                            });
+                            var showValue;
+                            if (!prefix) { //find endpoint name as prefix
+                                var endpoint = _.find(endpoints, function (obj) {
+                                    return object[field].value.indexOf(obj.graphURI) == 0
+                                });
+                                showValue = endpoint ? (endpoint.name + ':' + object[field].value.substring(endpoint.graphURI.length)) : object[field].value;
+                            } else {
+                                showValue = prefix.prefix + ':' + object[field].value.substring(prefix.URI.length);
+                            }
+                            //var showValue = prefix ? (prefix.prefix+':'+object.value.substring(prefix.URI.length)):object.value;
+                            var html = '<a target="_blank" href="' + object[field].value + '">' + showValue + '</a>';
+                        } else {
+                            var html = '<p> ' + object[field].value + '</p>';
+                        }
+                        return new Spacebars.SafeString(html);
+                    };
+                    dataField.push(item);
+                });
+
+                return {
+                    rowsPerPage: 5,
+                    showFilter: false,
+                    showNavigation: 'auto',
+                    showColumnToggles: false,
+                    fields: dataField,
+                };
+            }
+        }
+    });
+
+    Template.welcomePage.helpers({
+        recoavailable: function () {
+            var presentar;
+            var Recomend2 = Recomendation.find({'userid': Meteor.userId(), 'type': '2'}).fetch();
+            var Recomend1 = Recomendation.find({'type': '1', 'userid': Meteor.userId()}, {$sort: {"score": -1}, limit: 20}).fetch();
+            // presentar = Recomend2 ;
+            presentar = Recomend2.concat(Recomend1);
+            var selecc = [];
+            var i;
+            var ranum = [];
+            if (presentar.length > 4) {
+                console.log(presentar);
+                for (i = 0; i < 5; i++) {
+                    var rand;
+                    do {
+                        rand = Math.round(Math.random() * (presentar.length - 1));
+                        console.log(_.contains(ranum, rand));
+
+                    } while (_.contains(ranum, rand));
+                    ranum.push(rand);
+                    console.log("Dim" + presentar.length);
+                    console.log("ran" + rand);
+                    console.log(presentar [rand]);
+
+                    var classoftype = presentar[rand].typeofclass;
+
+                    if (classoftype.includes("Person")) {
+                        presentar[rand].icon = "images/authorcol.png";
+                        presentar[rand].sizeicon = "25 px;";
+                    } else if (classoftype.includes("Collection")) {
+                        presentar[rand].icon = "images/collection.png";
+                        presentar[rand].sizeicon = "25 px;";
+                    } else {
+
+                        presentar[rand].icon = "images/documento.png";
+                        presentar[rand].sizeicon = "12 px;";
+                    }
+                    selecc[i] = presentar[rand];
+                    console.log(presentar[rand].typeofclass);
+
+                }
+                // presentar[Math.round(Math.random ()*presentar.length())];
+            }
+            // selecc = presentar;
+            // db.recomendation.find({'type':'2', "userid" : "P3u8C9GM6NS6jYuJ4"}).sort({"score":-1}).limit (5)
+            return selecc;
+            // return Recomendation.find({ 'userid': Meteor.userId() }).fetch();
+
+        }
+    });
+
+    Template.search.helpers({
+        facetedOptions: function () {
+            //$("#fac").empty();
+            var n = Session.get("facetedTotals");
+            //console.log(n);
+            var nn = Session.get("facetedTotalsN");
+            if (n == null || n == null && nn == null) {
+                return [];
+            }
+            if (nn != undefined && nn != null) {
+                n.Years = n.Years.map(function (d) {
+                    var r = nn.Years.filter(function (q) {
+                        return q.key == d.key;
+                    });
+                    if (r.length > 0) {
+                        d.count = r[0].count;
+                    } else {
+                        d.count = 0;
+                    }
+                    return d;
+                });
+                n.Types = n.Types.map(function (d) {
+                    var r = nn.Types.filter(function (q) {
+                        return q.key == d.key;
+                    });
+                    if (r.length > 0) {
+                        d.count = r[0].count;
+                    } else {
+                        d.count = 0;
+                    }
+                    return d;
+                });
+                n.Langs = n.Langs.map(function (d) {
+                    var r = nn.Langs.filter(function (q) {
+                        return q.key == d.key;
+                    });
+                    if (r.length > 0) {
+                        d.count = r[0].count;
+                    } else {
+                        d.count = 0;
+                    }
+                    return d;
+                });
+                n.Endpoints = n.Endpoints.map(function (d) {
+                    var r = nn.Endpoints.filter(function (q) {
+                        return q.key == d.key;
+                    });
+                    if (r.length > 0) {
+                        d.count = r[0].count;
+                    } else {
+                        d.count = 0;
+                    }
+                    return d;
+                });
+            }
+            n.Years2 = n.Years.filter(function (d) {
+                return d.key != null;
+            });
+            n.Types = n.Types.map(function (d) {
+                d.key2 = d.key;
+                if (d.key == null) {
+                    d.key2 = 'None';
+                    return d;
+                }
+                d.key2 = d.key.substr(d.key.lastIndexOf('/') + 1);
+                d.key2 = d.key2.substr(d.key2.lastIndexOf('#') + 1);
+                return d;
+            });
+            n.Langs = n.Langs.map(function (d) {
+                d.key2 = d.key;
+                if (d.key == null) {
+                    d.key2 = 'None';
+                }
+                ;
+                return d;
+            });
+            n.Endpoints = n.Endpoints.map(function (d) {
+                d.key2 = d.key;
+                if (d.key == null) {
+                    d.key2 = 'None';
+                }
+                ;
+                return d;
+            });
+
+            n.Types = n.Types.map(function (d) {
+                d.Title = 'Types';
+                return d;
+            });
+            n.Langs = n.Langs.map(function (d) {
+                d.Title = 'Langs';
+                return d;
+            });
+            n.Endpoints = n.Endpoints.map(function (d) {
+                d.Title = 'Endpoints';
+                return d;
+            });
+
+
+            var bbl = (n.Langs.length > 0);
+
+
+
+            var facetes = [{Title: lang.lang('lblYears'), Range: true, Values: n.Years, Values2: JSON.stringify(n.Years), Exists: n.Years2.length > 0, Min: n.Years2.length > 0 ? n.Years2[0].key : 0, Max: n.Years2.length > 0 ? n.Years2[n.Years2.length - 1].key : 0},
+                {Title: lang.lang('lblTypes'), Range: false, Exists: n.Types.length > 0, Values: n.Types},
+                {Title: lang.lang('lblLanguages'), Range: false, Exists: bbl, Values: n.Langs},
+                {Title: lang.lang('lblEndpoints'), Range: false, Exists: n.Endpoints.length > 0, Values: n.Endpoints}];
+
+
+
+            return facetes;
+        },
+        endpointsAvailable: function () {
+            return Endpoints.find({status: 'A'}).fetch();
+        },
+        resultFullQuery: function () {
+            var response = App.resultCollection2.findOne();
+            var rlist = dataSourceSearch(response);
+            return rlist;
+        },
+        BresultFullQuery: function () {
+            var n = Session.get("BResult");
+            return (n != undefined && n == true);
+        }
+        ,
+        NresultFullQuery: function () {
+            var n = Session.get("NResult");
+            if (n && n > 0) {
+                return n + lang.lang('results');
+            } else {
+                return  lang.lang('No-results');
+            }
+        }, DespSug: function () {
+            var des = Session.get("DespSug");
+            if (des) {
+
+                return "glyphicon glyphicon-chevron-up";
+            } else {
+                return "glyphicon glyphicon-chevron-down";
+            }
+
+        }, GeoLink: function () {
+            var des = window.location.protocol + '//' + window.location.host + '/map/' + Session.get("LinkGeo");
+            return des;
+
+        }, DespGeo: function () {
+            var des = Session.get("DespGeo");
+            if (des) {
+
+                return "glyphicon glyphicon-chevron-up";
+            } else {
+                return "glyphicon glyphicon-chevron-down";
+            }
+
+        }, DespFac: function () {
+            var des = Session.get("DespFac");
+            if (des) {
+
+                return "glyphicon glyphicon-chevron-up";
+            } else {
+                return "glyphicon glyphicon-chevron-down";
+            }
+
+         },   comparetype : function ( type1 , type2 ) {
+             return type1 == type2; 
+         } ,
+         graphstats: function () {
+            var objectstat = {} ;
+             objectstat.URI =  Session.get("URIstat");
+             //objectstat.URI = $("#mymodalstat").attr("URI"); 
+             objectstat.type =    $("#mymodalstat").attr("type");
+             
+
+             var Ori = $("#mymodalstat").attr("Origin");
+             objectstat.Origin = Endpoints.find({name: Ori}).fetch()[0].endpoint;
+             console.log ("GRAFICANDO ESTADISTICAS------------------------------------------------");
+             console.log (objectstat.URI);
+             console.log (objectstat.Origin);
+             console.log (objectstat.type);
+             
+              /*if ( objectstat.type == "http://purl.org/ontology/bibo/Document") {
+                objectstat.template = "a";       
+              } else if ( objectstat.type == "http://xmlns.com/foaf/0.1/Person" ) {
+                objectstat.template = "Stat2";
+              }*/
+             /* } else if () {
+
+              } */
+
+            return objectstat;   
+
+             } ,
+        suggestedQueries: function () {
+            Session.get ('actualtype');
+            var ConfigInfo = Configuration.find().fetch();
+
+            var t__ = "T";
+            var EntitySearch = $('input:radio[name=opciones]:checked').val();
+            if (EntitySearch != undefined) {
+                t__ = EntitySearch;
+            } else {
+                return [];
+            }
+
+            var lsMC = [];
+            for (var indtem = 0; indtem < ConfigInfo.length; indtem++) {
+                lsMC = lsMC.concat(ConfigInfo[indtem].ConfEntity);
+            }
+            var cl = lsMC.filter(function (a) {
+                return a.URI == EntitySearch;
+            });
+            cl = cl[0];
+            var w = [];
+            //    alert ("Adiios");
+            var des = Session.get("DespSug");
+            w = loadQueryFirstNode(cl.URI);
+
+            var aux = Session.get("auxAct");
+            var TextSearch = $(".textToSearch").val();
+            for (var q = 0; q < w.length; q++) {
+                if (TextSearch.trim() != "") {
+                    w[q].description = w[q].description.replace("?", TextSearch);
+                }
+            }
+            w = w.filter(function (el) {
+                return el.commend == true;
+            });
+            //  }  // Final If
+            return w;
+        },
+        paginationSettings: function () {
+            var n = Session.get("NResult");
+            n = n ? n : 0;
+            if (n == 0) {
+                //n = 1;
+                $(".pagination").css("display", "none");
+                //  $(".pagination").css("display", "none");
+            } else {
+                $(".pagination").css("display", "block");
+            }
+            var pagcon = {};
+            pagcon.total = Math.ceil(n / 10);
+            $('#page-selection').bootpag({
+                total: pagcon.total,
+                page: 1,
+                maxVisible: 10
+            }).on("page", function (event, num) {
+                if (num != pa) {
+                    pa = num;
+                    App.SearchRun(num - 1, -1);
+                }
+            });
+            return pagcon;
+        }, resourcesavailable: function () {
+
+            return  Session.get('TypesAvailable');
+            /*  var hashEnt = {};
+             var ConfigEnt = [];
+             _.each(Configuration.find().fetch(), function (conf) {
+             console.log("Recursos disponibles");
+             console.log(conf.EntSearch);
+             _.each(conf.EntSearch, function (ent) {
+             var confe = _.find(conf.ConfEntity, function (ce) {
+             return ce.URI == ent
+             });
+             if (!_.isUndefined(confe))
+             {
+             if (!hashEnt.hasOwnProperty(ent)) {
+             hashEnt [ent] = {'Name': confe.URI, 'Imagen': confe.file, 'Description': confe.name};
+             if (Session.get('s2') == confe.URI) {
+             hashEnt[ent].Check = "'true'";
+             }
+             }
+             }
+             
+             });
+             });
+             console.log("Hash");
+             console.log(hashEnt);
+             
+             var arrayent = Object.keys(hashEnt).map(function (key) {
+             return  hashEnt [key];
+             });
+             console.log("Lista");
+             console.log(arrayent);
+             return arrayent;*/
+
+
+        }, numresourceavailable: function () {
+            var hashEnt = {};
+            var ConfigEnt = [];
+            _.each(Configuration.find().fetch(), function (conf) {
+                console.log("Recursos disponibles");
+                console.log(conf.EntSearch);
+                _.each(conf.EntSearch, function (ent) {
+                    var confe = _.find(conf.ConfEntity, function (ce) {
+                        return ce.URI == ent
+                    });
+                    if (!_.isUndefined(confe))
+                    {
+                        if (!hashEnt.hasOwnProperty(ent)) {
+                            hashEnt [ent] = {'Name': confe.URI, 'Imagen': confe.file, 'Description': confe.name};
+                            if (Session.get('s2') == confe.URI) {
+                                hashEnt[ent].Check = "'true'";
+                            }
+                        }
+                    }
+
+                });
+            });
+            console.log("Hash");
+            console.log(hashEnt);
+
+            var arrayent = Object.keys(hashEnt).map(function (key) {
+                return  hashEnt [key];
+            });
+            console.log("Lista");
+            console.log(arrayent);
+            Session.set('TypesAvailable', arrayent);
+            return arrayent.length > 4;
+
+        }, invnumresourceavailable: function () {
+
+        }
+    });
+
+    function get_radio_value(RadioName) {
+        var inputs = document.getElementsByName(RadioName);
+        for (var i = 0; i < inputs.length; i++) {
+            if (inputs[i].checked) {
+                return inputs[i].value;
+            }
+        }
+    }
+    function loadQueryFirstNode(element) {
+        result = {};
+        result.statusCode = 200;
+        result.msg = 'OK';
+        var querylist = [];
+        try {
+
+            var query = Queries.find().fetch();
+            console.log('Querys server0');
+            for (var i = 0; i < query.length; i++)
+            {
+                console.log('Querys server');
+                //  console.log (query[i].jsonGraph.cells.0.subject);
+                var js = JSON.parse(query[i]['jsonGraph']);
+                var ClassV = js.cells[0].subject;
+
+                try {
+                    var spq = query[i].sparql;
+                    //var resp = spq.match(new RegExp("REGEX\\((.*),","g"))[0];
+                    var resp = spq.match(new RegExp("REGEX\\((.*),", "g"));  //[0]
+                    var respp = 0;
+                    if (resp && resp.length > 0) {
+                        resp = resp[0];
+                        respp = 1;
+                    } else {
+                        respp = 2;
+                        resp = spq.match(new RegExp("\\((.*)\\)(.*)\\((.*)\\)", "g"))[0];
+                    }
+                    var SearchVar = '';
+                    var MainVar = '';
+                    if (respp == 1) {
+                        SearchVar = resp.split('(')[1].split(',')[0];
+                        MainVar = spq.match(new RegExp("(.*)\?" + SearchVar + " \.", "g"))[0].split(' ')[0].replace('?', '').split('_')[0];
+                    } else {
+                        MainVar = resp.split(' ?Score ')[0].split('(')[1].replace('?', '').split('_')[0];
+                        //MainVar = spq.match(new RegExp("(.*)\?"+SearchVar+" \.","g"))[0].split(' ')[0].replace('?','').split('_')[0];
+                    }
+
+                    //ClassV = js;
+                    ClassV = this.Properties.findOne({name: MainVar}).objectTypes[0].objectEntity.fullName;
+
+
+
+
+                } catch (q) {
+
+                }
+                // var s  =  js.subject;
+                console.log(js);
+
+
+
+
+                if (ClassV == element && element == 'http://xmlns.com/foaf/0.1/Person' || ClassV == element && element == 'http://purl.org/ontology/bibo/Collection' || element == 'http://purl.org/ontology/bibo/Document' && ClassV != 'http://xmlns.com/foaf/0.1/Person' && ClassV != 'http://purl.org/ontology/bibo/Collection')
+
+                {
+                    console.log('Querys server');
+                    // console.log (query[i].jsonGraph.cells[0].subject);
+                    querylist.push(query[i]);
+                }
+            }
+            return querylist;
+        } catch (e) {
+            console.log(e);
+            result.statusCode = 500;
+            result.msg = e
+        }
+        return querylist;
+    }
+    function dataSourceSearch(response) {
+
+
+        var toShow = [];
+        if (response) {
+            var ConfigInfo = Configuration.find().fetch();
+            var lsMC = [];
+            for (var indtem = 0; indtem < ConfigInfo.length; indtem++) {
+                lsMC = lsMC.concat(ConfigInfo[indtem].ConfEntity);
+            }
+
+            var lsIcon = {};
+            for (var k = 0; k < lsMC.length; k++) {
+                lsIcon['' + lsMC[k].URI] = lsMC[k].icon;
+            }
+
+
+            console.log(response.content);
+
+            var NumMode = Qmode;
+            //alert(NumMode + "");
+            if (NumMode == 2) {
+                var SearchVar = Session.get('SearchVar').replace(/\?/g, '');
+                var MainVar = Session.get('MainVar').replace(/\?/g, '');
+                var TypeVar = Session.get('TypeVar').replace(/\?/g, '');
+                var TitleVar = Session.get('TitleVar').replace(/\?/g, '');
+                var SearchVar_ = Session.get('SearchVar').replace(/\?/g, '').split('_')[0];
+            }
+            var resp = response ? JSON.parse(response.content).results.bindings : [];
+            var MaxLength = 160;
+            var titledoc = "";
+            //graphURI
+            for (var k = 0; k < resp.length; k++) {
+                console.log("Respuesta" + k);
+                console.log(resp[k]);
+                var OneResult = {};
+                if (NumMode == 1) {
+                    OneResult = toShow.filter(function (val) {
+                        return val.URI === resp[k].EntityURI.value;
+                    });
+                }
+                if (NumMode == 2) {
+                    OneResult = toShow.filter(function (val) {
+                        return val.URI === resp[k][MainVar].value;
+                    });
+                }
+
+
+                if (OneResult.length == 0) {
+                    //New
+
+                    var OneResult = {};
+                    OneResult.Weight = 1;
+                    if (NumMode == 1) {
+                        OneResult.Type = resp[k].EntityClass.value;
+                        //    titledoc =  resp[k].EntityLabel.value;
+                    }
+                    if (NumMode == 2) {
+                        OneResult.Type = resp[k][TypeVar].value;
+                        //  titledoc =  resp[k][TitleVar].value;
+                    }
+
+                    var Org = {};
+                    if (NumMode == 1) {
+                        Org = resp[k].Endpoint.value;
+                    }
+                    if (NumMode == 2) {
+                        Org = resp[k]['Endpoint'].value;
+                    }
+
+                    //EndpointsLs.filter(function (val) {return strStartsWith(resp[k].EntityURI.value,val.graphURI); });
+                    //var Org = App.FindRepository(resp[k].EntityURI.value);
+                    //if (!_.isEmpty(Org)){
+                    //Org=Org.name;
+                    //}else{
+                    // Org='';      
+                    //}
+
+                    OneResult.Origin = Org;
+
+                    if (NumMode == 1) {
+                        OneResult.Label = resp[k].EntityLabel.value;
+                        OneResult.URI = resp[k].EntityURI.value;
+                        OneResult.MatchsProperty = [{p: resp[k].PropertyLabel.value, v: resp[k].PropertyValue.value, l: resp[k].PropertyValue.value.length > MaxLength, s: resp[k].PropertyValue.value.substr(0, MaxLength), c: resp[k].PropertyValue.value.substr(MaxLength)}];
+                    }
+
+                    if (NumMode == 2) {
+                        OneResult.Label = resp[k][TitleVar].value;
+                        OneResult.URI = resp[k][MainVar].value;
+                        OneResult.MatchsProperty = [{p: SearchVar_, v: resp[k][SearchVar].value, l: resp[k][SearchVar].value.length > MaxLength, s: resp[k][SearchVar].value.substr(0, MaxLength), c: resp[k][SearchVar].value.substr(MaxLength)}];
+                    }
+
+
+                    OneResult.Icon = lsIcon['' + OneResult.Type];
+
+                    var Resourcesfav = Favresources.find({idUser: Meteor.userId()}).fetch();
+
+                    var favorite = Resourcesfav.find(function (val) {
+                        return  val.urifav == OneResult.URI;
+                    });
+                    if (favorite) {
+
+                        OneResult.Fav = "/images/starblue.png";
+
+                    } else {
+
+                        OneResult.Fav = "/images/stargray.png";
+
+                    }
+
+
+                    // OneResult.Fav = '/images/stargray.png'; 
+
+                    toShow.push(OneResult);
+                } else {
+                    //Add
+                    // 
+
+                    //Título largo
+
+
+
+                    //
+                    // console.log (OneResult);
+                    console.log("Resultado 1");
+                    console.log(OneResult);
+
+                    OneResult = OneResult[0];
+
+                    if (NumMode == 1) {
+                        OneResult.Label = (OneResult.Label.length < resp[k].EntityLabel.value.length) ? resp[k].EntityLabel.value : OneResult.Label;
+                    }
+
+                    if (NumMode == 2) {
+                        OneResult.Label = (OneResult.Label.length < resp[k][TitleVar].value.length) ? resp[k][TitleVar].value : OneResult.Label;
+                    }
+
+                    OneResult.Weight += 1;
+                    if (NumMode == 1) {
+                        var ln = OneResult.MatchsProperty.filter(function (e) {
+                            return e.p == resp[k].PropertyLabel.value && e.v == resp[k].PropertyValue.value;
+                        }).length;
+
+                        if (OneResult.Label != resp[k].EntityLabel.value)
+                        {
+                            ln = 1;
+                            // console.log (resp[k].EntityLabel.value);
+                            //console.log (resp[k].PropertyLabel.value +" + "+ resp[k].PropertyValue.value );
+                        }
+                        if (ln == 0) {
+                            console.log("Agrupar Normal");
+
+                            var actual = OneResult.MatchsProperty.find(function (val) {
+                                return val["p"] == resp[k].PropertyLabel.value;
+                            });
+                            console.log(actual);
+                            console.log(resp[k].PropertyLabel.value);
+                            // console.log (OneResult.MatchsProperty[resp[k].PropertyLabel.value]);
+                            if (actual == undefined) {
+                                console.log("No Agrupa");
+                                //console.log (resp[k].PropertyLabel.value);
+                                OneResult.MatchsProperty.push({p: resp[k].PropertyLabel.value, v: resp[k].PropertyValue.value, l: resp[k].PropertyValue.value.length > MaxLength, s: resp[k].PropertyValue.value.substr(0, MaxLength), c: resp[k].PropertyValue.value.substr(MaxLength)});
+
+                            } else {
+
+                                console.log("Agrupa");
+                                var separador = '';
+                                if (resp[k].PropertyLabel.value == "subject") {
+
+                                    separador = " , ";
+                                } else {
+                                    separador = "<br>";
+                                }
+                                var concatval = actual ["v"] + separador + resp[k].PropertyValue.value;
+                                console.log(concatval);
+                                var valor = OneResult.MatchsProperty.indexOf(actual);
+                                console.log(valor);
+                                OneResult.MatchsProperty[valor] = {p: resp[k].PropertyLabel.value, v: concatval, l: concatval.length > MaxLength, s: concatval.substr(0, MaxLength), c: concatval.substr(MaxLength)};
+
+                            }
+                        }
+                    }
+                    if (NumMode == 2) {
+                        console.log("One sug");
+                        console.log(OneResult);
+
+                        var ln = OneResult.MatchsProperty.filter(function (e) {
+                            return e.p == SearchVar_ && e.v == resp[k][SearchVar].value;
+                            // return e.p == SearchVar_ && e.v == resp[k][SearchVar].value && titledoc == resp[k][TitleVar].value;
+                        }).length;
+
+                        if ((OneResult.Type != resp[k][TypeVar].value) || (OneResult.Label != resp[k][TitleVar].value))
+                        {
+                            ln = 1;
+                            //console.log ("Titulo igual");
+                            //console.log (resp[k][TitleVar].value);
+                            //console.log (resp[k].PropertyLabel.value +" + "+ resp[k].PropertyValue.value );
+                        }
+
+                        if (ln == 0)
+                        {
+
+                            console.log("Agrupar Sug");
+
+                            var actual = OneResult.MatchsProperty.find(function (val) {
+                                return val["p"] == SearchVar_;
+                            });
+                            console.log(actual);
+                            console.log(SearchVar_);
+                            // console.log (OneResult.MatchsProperty[resp[k].PropertyLabel.value]);
+                            if (actual == undefined) {
+                                console.log("No Agrupa");
+                                //console.log (resp[k].PropertyLabel.value);
+                                OneResult.MatchsProperty.push({p: SearchVar_, v: resp[k][SearchVar].value, l: resp[k][SearchVar].value.length > MaxLength, s: resp[k][SearchVar].value.substr(0, MaxLength), c: resp[k][SearchVar].value.substr(MaxLength)});
+
+                            } else {
+
+                                console.log("Agrupa");
+                                var separador = '';
+                                if (SearchVar_ == "subject") {
+
+                                    separador = " , ";
+                                } else {
+                                    separador = "<br>";
+                                }
+                                var concatval = actual ["v"] + separador + resp[k][SearchVar].value;
+                                console.log(concatval);
+                                var valor = OneResult.MatchsProperty.indexOf(actual);
+                                console.log(valor);
+                                OneResult.MatchsProperty[valor] = {p: SearchVar_, v: concatval, l: concatval.length > MaxLength, s: concatval.substr(0, MaxLength), c: concatval.substr(MaxLength)};
+
+
+                            }
+                            // OneResult.MatchsProperty.push({p: SearchVar_, v: resp[k][SearchVar].value, l: resp[k][SearchVar].value.length > MaxLength, s: resp[k][SearchVar].value.substr(0, MaxLength), c: resp[k][SearchVar].value.substr(MaxLength)});
+                        }
+                    }
+                    OneResult.MatchsProperty.sort(compare2);
+
+                }
+
+            }
+        }
 //toShow.sort(compare);
+        console.log("Resultado a graficar");
+        console.log(toShow);
 
-return toShow;
-}
+        return toShow;
+    }
+
+    function compare(a, b) {
+        if (a.Weight < b.Weight)
+            return 1;
+        if (a.Weight > b.Weight)
+            return -1;
+        return 0;
+    }
+    function compare2(a, b) {
+        if (a.p < b.p)
+            return -1;
+        if (a.p > b.p)
+            return 1;
+        return 0;
+    }
+
+    function strStartsWith(str, prefix) {
+        return str.indexOf(prefix) === 0;
+    }
 
 
+    function logRenders() {
+        _.each(Template, function (template, name) {
+            var oldRender = template.rendered;
+            var counter = 0;
 
-function compare(a,b) {
-  if (a.Weight < b.Weight)
-    return 1;
-  if (a.Weight > b.Weight)
-    return -1;
-  return 0;
-}
-function compare2(a,b) {
-  if (a.p < b.p)
-    return -1;
-  if (a.p > b.p)
-    return 1;
-  return 0;
-}
+            template.rendered = function () {
+                console.log(name, "render count: ", ++counter);
+                oldRender && oldRender.apply(this, arguments);
+            };
+        });
+    }
+
+    function language() {
+
+        var idiomEng = {
+            "semantic-search": "Semantic search",
+            "choose-repositories": "Choose the repositories to query with the search engine:", //Seleccione los repositorios sobre los cuales se ejecutaran las búsquedas:
+            "start-search-engine": "Start search engine", //Iniciar motor de consulta
+            "lblRange": "Range",
+            "lblYears": "Years",
+            "lblTypes": "Types",
+            "lblEndpoints": "Repositories",
+            "lblLanguages": "Languages",
+            "FoS_0": "Art",
+            "FoS_1": "Biology",
+            "FoS_2": "Business",
+            "FoS_3": "Chemistry",
+            "FoS_4": "Computer science",
+            "FoS_5": "Economics",
+            "FoS_6": "Engineering",
+            "FoS_7": "Environmental science",
+            "FoS_8": "Geography",
+            "FoS_9": "Geology",
+            "FoS_10": "History",
+            "FoS_11": "Materials science",
+            "FoS_12": "Mathematics",
+            "FoS_13": "Medicine",
+            "FoS_14": "Philosophy",
+            "FoS_15": "Physics",
+            "FoS_16": "Political science",
+            "FoS_17": "Psychology",
+            "FoS_18": "Sociology",
+            "welcome-title": "Bibliographic Resources  Searcher",
+            "resources-search": "Search by: All",
+            "placeholder-search": "Terms of search",
+            "search": "GO",
+            "Autores": "Authors",
+            "Documentos": "Documents",
+            "Colecciones": "Collections",
+            "tip-author": "Authors",
+            "tip-document": "Documents",
+            "tip-collection": "Collections",
+            "search-option": "Search by : ",
+            "advance-search": "Advance Search",
+            "sug": "Suggestions",
+            "fac": "Faceted Search",
+            "noData": "No Data",
+            "text-more": "more",
+            "text-less": "less",
+            "view-source": "View Source",
+            "view-rdf": "View RDF",
+            "view-graph": "View Graph",
+            "Name": "Name",
+            "Title": "Title",
+            "Subject": "Subject",
+            "subject": "Subject",
+            "Language": "Language",
+            "Description": "Description",
+            "Type": "Type",
+            "Abstract": "Abstract",
+            "results": " results",
+            "No-results": "No results",
+            "panel-info": "Panel Info",
+            "warning": "Warning",
+            "warning-data": "The selected item contains a lot of resources, so it could slow down the exploration. Do you want to display all data ?.",
+            "afirmative": "Yes ",
+            "sample": "Sample ",
+            "More Info": "More Info",
+            "dashboard": "DASHBOARD",
+            "clean-dash": "Clear dashboard",
+            "load-json": "Load JSON",
+            "zoom-out": "Zoom out",
+            "zoom-in": "Zoom in",
+            "query-editor": "Query Editor",
+            "graph-query": "Graph Query",
+            "query-title": "(*)Query Title",
+            "query-des": "Query Description",
+            "run-query": "Run Query",
+            "save-query": "Save Query",
+            "delete-query": "Delete Query",
+            "raw-node": "Raw Node",
+            "raw-node-value": "Raw Node Value",
+            "entity": "Entity",
+            "property": "Property",
+            "entities": "Entities",
+            "properties": "Properties",
+            "disp-endpoints": "Available Endpoints",
+            "Graph": "Graph",
+            "Status": "Status",
+            "Optional": "Optional",
+            "close": "close",
+            "New": "New",
+            "graph-url": "Graph URL (Required)",
+            "identifier": "Identifier (Required)",
+            "graph-color": "Graph Color",
+            "load-schema": "Load Schema (It should take a while depending on Graph size)",
+            "Register": "Register",
+            "val-node": "Node Value",
+            "simple-match": "Simple match",
+            "save": "Save",
+            "console-error": "Console Error",
+            "avoid-sparql": "Avoid SPARQL Validation on Client",
+            "result-query": "Result Query",
+            "delete": "Delete",
+            "msg-delete": "Are you sure you want to delete the Endpoint?",
+            "template-title": "Template Queries",
+            "Home": "Home",
+            "Search": "Search",
+            "NL Search": "NL Search",
+            "Statistics": "Statistics",
+            "query-temp": "Query Templates",
+            "query-builder": "Query Builder",
+            "ava-endpoints": "Available Endpoints",
+            "new-endpoint": "New SPARQL endpoint",
+            "Help": "Help",
+            "Options": "Options",
+            "Collections": "Collections",
+            "Documents": "Documents",
+            "Persons": "Persons",
+            "title-g1": "Resources",
+            "sub-title-g1": "Total amount of resources within the registered repositories",
+            "title-g2": "Repositories",
+            "sub-title-g2": "Registered repositories",
+            "top-topics": "Top Topics",
+            "group-by": "Group by:",
+            "Year": "Year",
+            "All": "All",
+            "top-collections": "Top Collections",
+            "Repository": "Repository",
+            "top-persons": "Top Persons",
+            "Global": "Global",
+            "Stats": "Stats",
+            "Profile": "Profile",
+            "Close": "Close",
+            "Change_password": "Change password",
+            "Sign_out": "Sign out",
+            "Sign_in": "Sign in",
+            "Create_account": "Create account",
+            "Forgot_password": "Forgot password",
+            "Change_password": "Change password",
+            "New_password": "New password",
+            "Set_password": "Set password",
+            "Current_password": "Current password",
+            "New_password": "New password",
+            "My_Profile": "My Profile",
+            "Names": "Names",
+            "Direction": "Direction",
+            "Occupation": "Occupation",
+            "Student": "Student",
+            "Teacher": "Teacher",
+            "Researcher": "Researcher",
+            "Other": "Other",
+            "Interest_Areas": "Interest Areas",
+            "Sciences": "Sciencies",
+            "Mathematics": "Mathematics",
+            "Literature": "Literature",
+            "chemistry": "Chemistry",
+            "Email": "Email Address",
+            "Spanish": "Spanish",
+            "English": "English",
+            "Access_Level": "Access Level",
+            "User": "Normal User",
+            "Advanced_User": "Advanced User",
+            "Admin": "Administrator",
+            "Send": "Save",
+            "Manage": "Manage",
+            "Accounts": "Accounts",
+            "Users_List": "Users List",
+            "wildcard": "suggestion node",
+            "Search_History": "Search History",
+            "Favorite_Resources": "Favorite Resources",
+            "My_Searches": "My Searches",
+            "Resource": " Resource",
+            "Sources": "Sources",
+            "Date": "Date",
+            "Filters": "Filters",
+            "Search_action": "Search",
+            "it": "italien",
+            "Configuration_panel": "CONFIGURATION PANEL",
+            "export": "Export",
+            "import": "Import",
+            "graph_vis": "Graph Explorer",
+            "entity_search": "Entities Search",
+            "stats_conf": "Stats configuration",
+            "entity_conf": "Entity Configuration",
+            "entity_name": "Entity name",
+            "entity_uri": "Entity URI",
+            "pick_image": "Choose Image",
+            "upload_image": "Upload  Image",
+            "attr_desc": "Identification attribute",
+            "autocomplete": "Autocomplete",
+            "attr_index": "Indexed Attribute",
+            "apply_filter": "Apply Special Filter",
+            "choose_filter": "Choose  filter ",
+            "lang": "Language",
+            "choose_icon": "Pick a icon",
+            "stats_conf": "Stats Configuration",
+            "rel_analized": "Analized Relation",
+            "graph_type": "Kind of graphic",
+            "hist": "Histogram",
+            "pie": "Pie",
+            "import_export": "Import/Export Configuration",
+            "rel": "Relation",
+            "edit": "Edit",
+            "Prop_des": "Descriptive Property",
+            "Obj_Name": "Name",
+            "queries": "Queries",
+            "confpanel": "Configuration",
+            "Etiq": "Labels",
+            "Number": "Number",
+            "String": "String",
+            "Data_type": "Data type",
+            "Chart_type": "Chart type"
+
+        };
+
+        var idiomEsp = {
+            "semantic-search": "Búsqueda Semántica",
+            "choose-repositories": "Seleccione los repositorios sobre los cuales se ejecutaran las búsquedas:",
+            "start-search-engine": "Iniciar motor de consulta",
+            "lblRange": "Rango",
+            "lblYears": "Años",
+            "lblTypes": "Tipos",
+            "lblEndpoints": "Repositorios",
+            "lblLanguages": "Lenguajes",
+            "FoS_0": "Arte",
+            "FoS_1": "Biología",
+            "FoS_2": "Negocios",
+            "FoS_3": "Química",
+            "FoS_4": "Ciencias de la computación",
+            "FoS_5": "Economía",
+            "FoS_6": "Ingeniería",
+            "FoS_7": "Ciencias medioambientales",
+            "FoS_8": "Geografía",
+            "FoS_9": "Geología",
+            "FoS_10": "Historia",
+            "FoS_11": "Ciencias de los materiales",
+            "FoS_12": "Matemáticas",
+            "FoS_13": "Medicina",
+            "FoS_14": "Filosofía",
+            "FoS_15": "Física",
+            "FoS_16": "Ciencias políticas",
+            "FoS_17": "Psicología",
+            "FoS_18": "Sociología",
+            "welcome-title": "Buscador de Recursos Bibliográficos.",
+            "resources-search": "Buscando por: Todo",
+            "placeholder-search": "Terminos de búsqueda",
+            "search": "Buscar",
+            "Autores": "Autores",
+            "Documentos": "Documentos",
+            "Colecciones": "Colecciones",
+            "tip-author": "Autores",
+            "tip-document": "Documentos",
+            "tip-collection": "Colecciones",
+            "search-option": "Buscando por : ",
+            "advance-search": "Búsqueda Avanzada",
+            "sug": "Sugerencias",
+            "fac": "Búsqueda por facetas",
+            "noData": "No hay datos",
+            "text-more": "Más",
+            "text-less": "Menos",
+            "view-source": "Ver Fuente",
+            "view-rdf": "Ver RDF",
+            "view-graph": "Ver Grafo",
+            "Name": "Nombre Completo",
+            "First Name": "Nombres",
+            "Last Name": "Apellidos",
+            "Title": "Título",
+            "Subject": "Tema",
+            "subject": "Tema",
+            "Language": "Idioma",
+            "Description": "Descripción",
+            "Type": "Tipo",
+            "Abstract": "Resumen",
+            "results": " resultados",
+            "No-results": "Sin resultados",
+            "panel-info": "Información",
+            "warning": "Atención",
+            "warning-data": "El elemento seleccionado contiene una gran cantidad de recursos, por lo que podria relantizar la exploración. ¿Desea desplegar todos los datos?.",
+            "afirmative": "Sí ",
+            "sample": "Muestra ",
+            "More Info": "Más Información",
+            "dashboard": "TABLERO",
+            "clean-dash": "Limpiar Área",
+            "load-json": "Cargar JSON",
+            "zoom-out": "Alejar",
+            "zoom-in": "Acercar",
+            "query-editor": "Editor",
+            "graph-query": "Consulta",
+            "query-title": "(*)Título de la consulta",
+            "query-des": "Descripción de la consulta",
+            "run-query": "Ejecutar Consulta",
+            "save-query": "Guardar Consulta",
+            "delete-query": "Borrar Consulta",
+            "raw-node": "Nodo Genérico",
+            "raw-node-value": "Valor del Nodo Genérico",
+            "entity": "Entidad",
+            "property": "Propiedad",
+            "entities": "Entidades",
+            "properties": "Propiedades",
+            "disp-endpoints": "Endpoints Disponibles",
+            "Graph": "Grafo",
+            "Status": "Estado",
+            "Optional": "Opcional",
+            "close": "Cerrar",
+            "New": "Nuevo",
+            "graph-url": "URL del Esquema (Requerido)",
+            "identifier": "Identificador (Requirido)",
+            "graph-color": "Color del Grafo",
+            "load-schema": "Cargar Esquema (Podría tardar un tiempo, dependiendo del tamaño del esquema)",
+            "Register": "Registrar",
+            "val-node": "Valor del Nodo",
+            "simple-match": "Coincidencia Simple",
+            "save": "Guardar",
+            "console-error": "Consola de Error",
+            "avoid-sparql": "Evitar validación del cliente SPARQL",
+            "result-query": "Resultado de la consulta",
+            "delete": "Borrar",
+            "msg-delete": "¿Esta seguro que quiere borrar el endpoint?",
+            "template-title": "Plantilla de Consultas",
+            "Home": "Inicio",
+            "Search": "Buscador",
+            "NL Search": "Buscador LN",
+            "Statistics": "Estadísticas",
+            "query-temp": "Plantilla de Consultas",
+            "query-builder": "Constructor de Consultas",
+            "ava-endpoints": "Endpoints Disponibles",
+            "new-endpoint": "Nuevo SPARQL endpoint",
+            "Help": "Ayuda",
+            "Options": "Opciones",
+            "Collections": "Colecciones",
+            "Documents": "Documentos",
+            "Persons": "Personas",
+            "title-g1": "Recursos",
+            "sub-title-g1": "Monto total de recursos dentro de los repositorios registrados",
+            "title-g2": "Repositorios",
+            "sub-title-g2": "Repositorios Registrados",
+            "top-topics": "Temas Destacados",
+            "group-by": "Agrupado por:",
+            "Year": "Año",
+            "All": "Todos",
+            "top-collections": "Colecciones Destacadas",
+            "Repository": "Repositorios",
+            "top-persons": "Personas Destacadas",
+            "Global": "Globales",
+            "Stats": "Estadísticas",
+            "Profile": "Mi Perfil",
+            "Close": "Cerrar",
+            "Change_password": "Cambiar Contraseña",
+            "Sign_out": "Cerrar Sesión",
+            "Sign_in": "Registrarse",
+            "Create_account": "Crear Cuenta",
+            "Forgot_password": "Contraseña Olvidada",
+            "Change_password": "Cambiar Contraseña",
+            "New_password": "Nueva Contraseña",
+            "Set_password": "Colocar Contraseña",
+            "Current_password": "Password Actual",
+            "New_password": "Nuevo password",
+            "My_Profile": "Mi Perfil",
+            "Names": "Nombres",
+            "Direction": "Dirección",
+            "Occupation": "Cargo",
+            "Student": "Estudiante",
+            "Teacher": "Profesor",
+            "Researcher": "Investigador",
+            "Other": "Otro",
+            "Interest_Areas": "Areas de Interes",
+            "Sciences": "Ciencias",
+            "Mathematics": "Matemáticas",
+            "Literature": "Literatura",
+            "chemistry": "Química",
+            "Email": "Correo Electrónico",
+            "Spanish": "Español",
+            "English": "Inglés",
+            "Access_Level": "Nivel de Acceso",
+            "User": "Usuario Básico",
+            "Advanced_User": "Usuario Avanzado",
+            "Admin": "Administrador",
+            "Send": "Guardar",
+            "Manage": "Administrar",
+            "Accounts": "Cuentas",
+            "Users_List": "Lista de Usuarios",
+            "wildcard": "nodo de sugerencia",
+            "Search_History": "Historial de Búsqueda",
+            "Favorite_Resources": "Recursos Favoritos",
+            "My_Searches": "Mis Consultas",
+            "Resource": " Recurso",
+            "Sources": "Fuentes",
+            "Date": "Fecha",
+            "Filters": "Filtros",
+            "Search_action": "Búsqueda",
+            "it": "italian",
+            "Configuration_panel": "PANEL DE CONFIGURACIÓN",
+            "import": "Importar",
+            "export": "Exportar",
+            "graph_vis": "Visualizador Gráfico",
+            "entity_search": "Búsqueda de Entidades",
+            "stats_conf": "Configuración de Estadísticas",
+            "entity_conf": "Configurar Entidad",
+            "entity_name": "Nombre de la Entidad",
+            "entity_uri": "URI de la entidad",
+            "pick_image": "Seleccionar  Imagen",
+            "upload_image": "Subir  Imagen",
+            "attr_desc": "Atributo identificativo",
+            "autocomplete": "Autocompletado",
+            "attr_index": "Atributos Indexados",
+            "apply_filter": "Aplicar Filtro Especial ",
+            "choose_filter": "Selección de Filtro ",
+            "lang": "Lenguaje",
+            "choose_icon": "Seleccione un icono",
+            "stats_conf": "Configurar Estadísticas",
+            "rel_analized": "Relación Analizada",
+            "graph_type": "Tipo de Gráfico",
+            "hist": "Histograma",
+            "pie": "Pastel",
+            "import_export": "Importar/Exportar configuraciones",
+            "rel": "Relación",
+            "edit": "Editar",
+            "Prop_des": "Propiedad Descriptiva",
+            "Obj_Name": "Nombre",
+            "queries": "Consultas",
+            "confpanel": "Configuración",
+            "Etiq": "Etiquetas",
+            "Number": "Número",
+            "String": "Texto",
+            "Data_type": "Tipo de Campo",
+            "Chart_type": "Tipo de Gráfico"
+        };
 
 
-function strStartsWith(str, prefix) {
-  return str.indexOf(prefix) === 0;
-}
+        lang.init("USER_PROFILE", "es");
+        //  lang.init("SESSION","en");
+        lang.setDictionnary("es", idiomEsp);
+        lang.setDictionnary("en", idiomEng);
+        //lang.setDictionnary("it",dicoIt);
 
+    }
+    ;
 
 //*
-Template.hello.events({
-  'click button': function () {
-    console.log('just a test');
-  }
-});
-
-Meteor.startup(function() {
-  console.log('inicializacion');
-  return $(function() {
-    App.router = new Router();
-    console.log('inicializacion OK');
-    return Backbone.history.start({
-      pushState: true
+    Template.hello.events({
+        'click button': function () {
+            console.log('just a test');
+        }
     });
-  });
-});
+
+    /*
+     Template.header.events({
+     
+     setEvents: function (divNode) {
+     $("#lang-esp").click(function () {   
+     alert ("Hola");
+     lang.init("SESSION","es");
+     //   change_language("es");
+     
+     });
+     
+     $("#lang-en").click(function () {   
+     
+     // lang.init("SESSION","en");
+     // change_language("en");
+     
+     });
+     
+     
+     }
+     
+     
+     
+     });
+     
+     
+     Template.header.helpers({
+     setEvents: function (divNode) {
+     $("#lang-esp").click(function () {   
+     alert ("Hola");
+     lang.init("SESSION","es");
+     //   change_language("es");
+     
+     });
+     
+     $("#lang-en").click(function () {   
+     
+     // lang.init("SESSION","en");
+     // change_language("en");
+     
+     });
+     
+     
+     }
+     
+     });
+     */
+    function deleteUser(e) {
+        alert("borrado");
+        console.log("Borradpo");
+    }
+
+
+
+    Meteor.startup(function () {
+        console.log('inicializacion');
+        language();
+        Hooks.init();
+        return $(function () {
+            App.router = new Router();
+            console.log('inicializacion OK');
+            return Backbone.history.start({
+                pushState: true
+            });
+        });
+    });
+
 
 
 
 
 //--------------------------------------
-function Query (endpoint, graph, query){
-  var aux=undefined;
-  Meteor.call('runQuery', endpoint, graph, query, function(error, result) {
-    if(result) {
-      aux = result;
-    }else{
-      aux ='';  
+    function Query(endpoint, graph, query) {
+        var aux = undefined;
+        Meteor.call('runQuery', endpoint, graph, query, function (error, result) {
+            if (result) {
+                aux = result;
+            } else {
+                aux = '';
+            }
+
+        });
+        while (aux === undefined) {
+            sleep();
+        }
+        ;
+        return aux;
+    }
+    function sleep() {
+        try {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", 'www.facebook.com', false); // false for synchronous request
+            xmlHttp.send(null);
+        } catch (e) {
+
+
+        }
     }
 
-  });
-  while(aux===undefined){ 
-    sleep(); 
-  };
-  return aux;
-}
-
-
-function sleep() {
-  try{
-    var xmlHttp = new XMLHttpRequest();
-      xmlHttp.open( "GET", 'www.facebook.com', false ); // false for synchronous request
-      xmlHttp.send( null );
-    }catch(e){
-
-
+    function getConfig() {
+        var img = Configuration.find().fetch();
+        console.log("Configuraciones");
+        console.log(img);
     }
-  }
+
 
 
 
 }
+
 

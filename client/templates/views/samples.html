@@ -1,6 +1,7 @@
 <template name="samples">
-	<div class="container-fluid" sytle="overflow: scroll">
-	<h1>Template Queries</h1>
+	<div class="container-fluid queryspanel" >
+	<div  class="generatedquery">
+	<div class="listquerys">  <h1><p style="margin-bottom: 30px;" > {{lang "template-title"}} </p></h1></div>
 	    <!--<table class="table table-bordered table-striped table-hover " sytle="overflow: scroll">
 	    <thead>
 	        <tr>
@@ -20,4 +21,5 @@
 		</table-->
 		{{> reactiveTable collection=queriesAvailable settings=settings }}
 	</div>
+        </div>    
 </template>

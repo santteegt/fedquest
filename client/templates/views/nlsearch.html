@@ -1,0 +1,75 @@
+<template name="nlsearch">
+    <div class="search-section container-fluid" style="overflow: scroll"> 
+        <div class="first-search"> 
+	    <div class="firstsection">
+                <div class="title-seach text-center">
+                    Natural Languaje Query
+                </div>  
+            </div>
+        </div>
+        
+        <div class="row text-center">
+            
+            <div id='InConfig' >
+                <h2>{{lang "semantic-search"}}</h2>
+            <!--  <a href="#" class="avanzado" onclick="hide (event);"> {{lang "advance-search"}} </a>  -->
+            <div>
+                <p>{{lang "choose-repositories"}}</p>
+            </div>
+            
+            <br/>
+            <!-- <div class="oculto" > -->
+		 <div class="input-group" style='margin: 0 auto;'>
+                    <div style="float: left;">
+                    <input type="checkbox" class="optional" id="AllRepo" name="repositoriesListAll"   ><i>All</i>&nbsp;&nbsp;</div>
+			{{#each endpointsAvailable}}							
+        			<div style="float: left;"><input type="checkbox" data-base="{{base}}" checked="true"  class="optional" data-endpoint="{{endpoint}}" data-graphuri="{{graphURI}}" data-name="{{name}}"  name="repositoriesList" >{{name}}&nbsp;&nbsp;</div>
+			{{/each}}
+
+                </div>
+		<!-- </div> -->
+                
+            
+                <br/>
+                
+                <button type="button" class="btn btn-default" onclick="Init_SPARKLIS(event);">
+                    <span class="glyphicon glyphicon-play" aria-hidden="true"></span> {{lang "start-search-engine"}}
+                </button>
+            </div>
+            
+            <!--
+            <object id ='DSSL' type="text/html" data="/NLTool/sparklis/osparklis.html" width="100%" height="400px" >
+                </object>
+            -->
+            
+            <div id="DataSource" style="display: none">
+                <iframe id ='DSSL' src="/NLTool/sparklis/osparklis.html" width="100%" height="400px">
+                    
+                </iframe> 
+            </div>    
+            
+            
+            
+            <div  style="overflow-x:scroll; text-align:left">
+                
+                {{#if Loading}}
+                <p ><img width="15px" height="15px"  src="images/loader.gif" alt="cedia"> <strong>Loading ... Please wait.</strong></p>
+                {{/if}}
+                
+                {{#if resultQueryN}}
+                <div class="heading">
+                    <p >Resultados:</p>
+                </div>
+                
+                {{> reactiveTable collection=resultQuery settings=settings }}
+                {{/if}}
+              </div>
+            
+        </div>
+        
+        <footer >
+            *Powered by <a target="_blank" href="http://www.irisa.fr/LIS/ferre/sparklis/osparklis.html">SPARKLIS</a>, a Semantic Web tool created by <a target="_blank" href="http://www.irisa.fr/LIS/Members/ferre/">Sébastien Ferré</a> at <a target="_blank" href="http://www.irisa.fr/">IRISA</a>, <a target="_blank" href="http://www.univ-rennes1.fr/">University Rennes 1</a>
+        </footer>
+        
+    </div>
+</template>

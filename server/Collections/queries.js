@@ -14,14 +14,17 @@ Meteor.publish("queries", function() {
 Queries.deny({
     // Records can't be deleted or edited
     remove: function(userId, doc) {
-        return false;
+        console.log ("No permitido");
+        return true;
     },
     update: function (userId, doc) {
-        return false;
+        console.log ("No permitido");
+        return true;
     },
     // Client can add records
     insert: function(userId, doc) {
-        return false;
+        console.log ("No permitido");
+        return true;
     }
 });
 

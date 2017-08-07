@@ -1,0 +1,96 @@
+<template name="profile">
+	<!-- <div class="login-style">  {{> atForm }} </div>-->
+<!-- <div class="login-style">  {{> atForm state='signUp' }} </div> -->
+<div class="container-fluid profile">
+	<!-- <h2 class="lu-title">{{ lang "My_Profile"}}</h2>-->
+<!--<span class="text"> hola , usuario <strong>{{currentUser.email}}</strong> </span>-->
+<!--<div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 col-xs-offset-0 col-sm-offset-0 col-md-offset-2 col-lg-offset-2 toppad" >-->
+<div class="col-xs-12 col-sm-12 col-md-10 col-lg-10 col-xs-offset-1 col-sm-offset-1 col-md-offset-1 col-lg-offset-1 toppad" >
+   <div class="panel " id="profile_panel">
+        <div class="panel-heading" id ="titleprofile">
+              <h2 class="panel-title"><b>{{ lang "My_Profile"}}</b></h2>
+            </div> 
+            <div class="panel-body" style="padding: 20px">
+              <div class="row">
+            <div class="col-md-3 col-lg-3 " align="center"> <img alt="User Pic" width ="150px" src="https://cdn3.iconfinder.com/data/icons/black-easy/512/538474-user_512x512.png" class="img-circle img-responsive"> </div>
+  <!-- <div class="text-center container col-md-6 col-md-offset-3 "> -->
+  <div class=" col-md-9 col-lg-9 "> 
+    
+ <form role="form" class="Profile-user form-horizontal " >
+ 	 <div class="form-group">
+    <label for="name" class="control-label col-sm-3"> {{lang "Names"}}:</label>
+    <div class="col-sm-9">
+    <input type="text" class="form-control" id="name">
+    </div>
+  </div>
+   <div class="form-group" >
+    <label for="direccion" class="control-label col-sm-3">{{lang "Direction"}}:</label>
+     <div class="col-sm-9">
+    <input type="text" class="form-control" id="dir">
+  </div>  </div>
+   <div class="form-group">
+    <label for="Cargo" class="control-label col-sm-3">{{ lang "Occupation"}}:</label>
+   <div class=" col-xs-5 col-sm-5 selectContainer">
+    <select class="form-control" id="level">
+    <option value= 0 >{{ lang "Student"}}</option>
+    <option value= 1 >{{ lang "Teacher"}}</option>
+    <option value= 2 >{{ lang "Researcher"}}</option>
+    <option value= 3 >{{ lang "Other"}}</option>
+     </select>
+   </div>
+  </div>
+   <div class="form-group" id="area-checkbox">
+<label for="Area" class="control-label col-sm-3">{{ lang "Interest_Areas"}}:</label>
+<div class="col-sm-9" style="align-content: left; text-align: left;">
+    {{#each IntAreas}}
+        <label class="checkbox-inline"><input type="checkbox" value={{pos}} >{{lbl}}</label>
+    {{/each}}
+
+   </div>
+    </div>
+
+  <div class="form-group">
+    <label for="email" class="control-label col-sm-3">{{ lang "Email" }}:</label>
+    <div class="col-sm-9">
+    <input type="email" class="form-control" id="email" disabled>
+  </div>
+  </div> <!--
+  <div class="form-group">
+    <label for="pwd" class="control-label col-sm-3">Password:</label>
+    <div class="col-sm-9">
+    <input type="password" class="form-control" id="pwd">
+    </div>
+  </div>-->
+   <div class="form-group">
+<label for="idioma" class="control-label col-sm-3">{{ lang "Language"}}:</label>
+ <div class=" col-xs-5 col-sm-5 selectContainer">
+    <select class="form-control " id="language">
+    <option value="es">{{ lang "Spanish"}}</option>
+    <option value="en">{{ lang "English"}}</option>
+     </select>
+    </div>
+    </div>
+<div class="form-group">
+<label for="access" class="control-label col-sm-3">{{ lang "Access_Level"}}:</label>
+ <div class=" col-xs-5 col-sm-5 selectContainer">
+    <select class="form-control " id="accessLevel">
+    <option value= 0 >{{ lang "User" }}</option>
+    <option value= 1 >{{ lang "Advanced_User" }}</option>
+    <option value= 2 >{{ lang "Admin"}}</option>
+     </select>
+    </div>
+    </div>
+
+
+  
+</form>
+</div>
+</div>
+                </div>
+<div class="panel-footer"> 
+<button type="button" class="btn btn-primary" onClick = "profileSend(event)">{{ lang "Send"}}</button>
+</div>
+</div>
+</div>
+</div>
+</template>

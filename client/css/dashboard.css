@@ -150,6 +150,7 @@ div.entity p {
   display: table-cell;
   vertical-align: middle;
   text-align: center;
+  padding:2px ;
 }
 
 div.property {
@@ -166,6 +167,7 @@ div.property p {
   display: table-cell;
   vertical-align: middle;
   text-align: center;
+  padding: 2px;
 }
 
 

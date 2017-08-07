@@ -21,7 +21,7 @@ Endpoints.deny({
     },
     // Client can add records
     insert: function(userId, doc) {
-        return false;
+       return false;
     }
 });
 

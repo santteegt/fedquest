@@ -1,0 +1,507 @@
+<template name="confpanel">
+	
+     <section class="pagina1">
+    <div class="container-fluid conf_panel " >
+    <div class="TitleConf">  <h3> {{ lang "Configuration_panel"}} </h3></div> <br>
+
+    <form role="form-horizontal" class="Profile-user form-horizontal col-sm-10 col-sm-offset-1" id="EntitiesForm" >
+    	<div class="form-group">
+        <label for= "RepoSelec" class="control-label col-sm-3"> Endpoint </label>      
+    
+
+
+        <div class="col-sm-4">
+        {{> selectendpoint}}
+        </div>
+         <button type="button" class="col-sm-offset-3" id="xportbutton" onclick="eventport (event)"  > {{ lang "import" }}/{{lang "export"}}
+          </button>
+        </div>
+        
+     
+        {{> reactiveTable collection=EntitiesLoad settings=settingsent }} 
+
+      <button type="button" class="btn btn-default" id="newEntitybutton" onclick="newEntity(event)"  >
+      <span class="glyphicon glyphicon-plus-sign"></span></button>
+      </form>
+     <!-- {{> dialogEntity}} -->
+             <hr /> 
+        </div>
+
+      </section>
+       <section class="pagina2"> 
+         <div class="container-fluid confpanelsec2 " >
+          <div class="TitleStat">  <h4> {{ lang "graph_vis"}} </h4></div> 
+          <div class="btn-toolbar">&nbsp; </div>
+         <div class="form-group col-sm-12 col-sm-offset-3 ">
+              <!--   <label for= "IndexLabel" class="control-label col-sm-3"> Visualizador Gráfico  </label> -->
+             <div class="col-sm-6"> 
+              {{> graphselectionprop listori="distriList" listdest="selectDistriList" }}
+
+         </div> 
+         </div>
+         </div> 
+   </section>
+   <section>
+         <div class="container-fluid confpanelsec2 " >
+          <div class="TitleStat">  <h4> {{ lang "entity_search"}}</h4></div> 
+          <div class="btn-toolbar">&nbsp; </div>
+         <div class="form-group col-sm-12 col-sm-offset-3">
+         <!--    <label for= "IndexLabel" class="control-label col-sm-3"> Búsqueda de Entidades  </label> -->
+         <div class="col-sm-6"> 
+              {{> graphselectionprop listori="distriListbus" listdest="selectDistriListbus" }}
+         </div> 
+         </div>
+         <div class="btn-toolbar">&nbsp; </div>
+           <div class="form-group form-horizontal col-sm-offset-1">
+            <label for= "RelLabel" class="control-label col-sm-4"> Propiedad Fuente </label>
+            <div class="col-sm-4 col-sm-offset-1">
+            {{>  completpropertysingle identifier = "FontProp"}}
+            </div>
+          </div> 
+         </div>
+   </section>
+     <section>
+     <div class="container-fluid confpanelsec2" >
+       <div class="TitleStat">  <h4> {{lang "stats_conf"}} </h4></div> 
+     <!-- <label for= "StaticsLabel" class="control-label col-sm-3"> Estadísticas  </label> -->
+      <div class="form-group col-sm-10 col-sm-offset-1">
+       {{> reactiveTable collection=StatLoad settings=settingstat }}
+        <button type="button" class="btn btn-default" id="newStatbutton" onclick="newStat(event)"  > 
+        <span class="glyphicon glyphicon-plus-sign"></span></button>
+     </div>
+     </div>
+   
+     </section>
+  
+</template>
+
+<template name = "selectendpoint"  >
+       <select   id="endpointpicker"  >
+       <option> --- </option>
+       {{#each endpointsAvailable}}
+      <!-- <option value="{{name}}"> {{name}} </option> class="selectpicker" multiple-->
+    <!--  {{> optendpoint}} -->
+    <option value="{{endpoint}}" graph="{{endpoint}}"> {{name}} </option>
+        {{/each}} 
+      </select>
+</template>
+
+<template name="optendpoint">
+   <option value="{{endpoint}}" graph="{{endpoint}}"> {{name}} </option>
+</template>
+
+
+<template name = "completproperty"  >
+       <select   id="propertypicker" class="selectpicker" multiple >
+       <option> --- </option>
+       {{#each PropertiesAvailable  }}
+      <!-- <option value="{{name}}"> {{name}} </option>-->
+      {{> optproperty}}
+        {{/each}} 
+      </select>
+</template>
+
+<template name = "indexproperty"  >
+       <select   id="indexpropertypicker" class="selectpicker" multiple >
+       <option> --- </option>
+       {{#each PropertiesAvailable  }}
+      <!-- <option value="{{name}}"> {{name}} </option>-->
+      {{> optproperty}}
+        {{/each}} 
+      </select>
+</template>
+
+<template name = "multiproperty"  >
+       <select   id="{{identifier}}" class="selectpicker" multiple >
+       <option> --- </option>
+       {{#each PropertiesAvailable  }}
+      <!-- <option value="{{name}}"> {{name}} </option>-->
+      {{> optproperty}}
+        {{/each}} 
+      </select>
+</template>
+
+
+<template name="optproperty">
+   <option value="{{fullName}}"> {{name}} </option>
+</template>
+
+<template name = "completentity"  >
+       <select   id="{{identifier}}"  >
+       <option> --- </option>
+       {{#each EntitiesAvailable  }}
+      <!-- <option value="{{name}}"> {{name}} </option>-->
+      {{> optentity}}
+        {{/each}} 
+      </select>
+</template>
+
+<template name="optentity">
+   <option value="{{fullName}}"> {{name}} ({{fullName}}) </option>
+</template>
+
+
+<template name = "completpropertysingle"  >
+       <select   id="{{identifier}}" >
+       <option> --- </option>
+       {{#each PropertiesAvailableSingle   }}
+      <!-- <option value="{{name}}"> {{name}} </option>-->
+      {{> optpropsingle}}
+        {{/each}} 
+      </select>
+</template>
+
+<template name="optpropsingle">
+   <option value="{{fullName}}" selected="{{isSelected}}" > {{name}} </option>
+</template>
+
+<template name="graphselectionprop">
+     
+     <div class="form-group">
+     {{#unless noRender}}
+     <select id="{{listori}}" identificador="{{parametro}}" class ="col-sm-4" name="distriList" multiple="multiple" style="height: 250px; margin: 0px 2px 0px 3px;">
+            <!-- <option>  </option> -->
+       {{#each EntitiesAvailable listori }}
+      <!-- <option value="{{name}}"> {{name}} </option> class="selectpicker" multiple-->
+       {{> graphoptions }}
+        {{/each}} 
+         
+    </select>
+          {{/unless}}  
+
+<!-- <a href="javascript:void(0);" onclick="addopt ('Hola')" id="addPop">Add</a>
+        <a href="javascript:void(0);"  onclick="removeopt('Hola')" id="removePop">Remove</a> -->
+         <div class="form-group col-sm-3  ">
+          <table class= "col-md-offset-4" >
+          <tr>
+            <button type="button" class="btn btn-default" id="addPop" onclick="addopt('{{listori}}','{{listdest}}')"  >
+         <span class="glyphicon glyphicon-chevron-right"></span></button>
+          </tr>
+          <tr>
+          <button type="button" class="btn btn-default" id="removePop" onclick="removeopt('{{listori}}','{{listdest}}')"  >
+         <span class="glyphicon glyphicon-chevron-left"></span></button>
+          </tr>
+          </table>
+        </div>
+
+      <select id="{{listdest}}"  class = "col-sm-4"  name="selectDistriList" multiple="multiple" style="height: 250px; margin: 0px 2px 0px 3px;">
+         {{#each EntitiesSelected listori }}
+      <!-- <option value="{{name}}"> {{name}} </option> class="selectpicker" multiple-->
+       {{> graphoptions }}
+        {{/each}} 
+        </select>
+      </div>
+</template>
+
+<template name="graphoptions">
+   <option value="{{fullName}}"> {{name}} </option>
+</template>
+
+<!-- class="selectpicker" multiple
+<template name= "MultipleSelectAuto">
+  {{#Multiselect name='autocomplete-multi-selected' menuItems=myMenuItems selectedList=mySelectedList }}
+    <option value={{value}} {{selectedAttr}}>{{caption}}</option>
+  {{/Multiselect}}
+</template>   -->
+<!--
+<template name="msExample">
+  {{#Multiselect name='example-multiple-selected' menuItems=myMenuItems selectedList=mySelectedList configOptions=myConfigOptions}}
+    <option value={{value}} {{selectedAttr}}>{{caption}}</option>
+  {{/Multiselect}}
+</template>-->
+
+
+    <template name="dialogEntity">
+    <div class="modal fade" id="ConfigEntity" tabindex="1" role="dialog" aria-labelledby="Configuration" aria-hidden="true">
+        <div class="modal-dialog" id = "Entitydialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
+            <h4 class="modal-title" id="myModalLabel"> {{lang  "entity_conf" }}</h4>
+          </div>
+          
+          <div class="modal-body" style="text-align: left" >
+            <form   role="form-horizontal" class="dialogent form-horizontal" id="ModalFormEntity">
+             <div class="form-group">
+              <label for= "NameLabel" class="control-label col-sm-3"> {{ lang "entity_name"}} </label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" id="ClassName">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for= "UriLabel" class="control-label col-sm-3"> {{ lang "entity_uri"}}</label>
+              <div class="col-sm-4">
+               <!--   <input type="text" class="form-control" id="ClassURI">  -->
+               {{> completentity  identifier="entitypicker" }}
+             </div> 
+           </div>
+           <div class="form-group">
+            <label for= "ImgLabel" class="control-label col-sm-3">  {{ lang  "pick_image" }} </label>
+            <div class="col-sm-8">
+              <!-- <input type="file" id="ClassImg" accept="image/*"> -->
+                
+                {{> uploadedFiles}}
+            </div>
+            </div>
+             <div class="form-group">
+            <label for= "ImgLabel" class="control-label col-sm-3"> {{ lang "upload_image"}}  </label>
+            <div class="col-sm-9">
+              <!-- <input type="file" id="ClassImg" accept="image/*"> -->
+                
+                 {{> uploadForm    identifier = "FileImage"}}
+            </div>
+           
+          </div>
+          <div class="form-group">
+          <label for= "DesLabel" class="control-label col-sm-3"> {{ lang "attr_desc" }}  </label>
+            <div class="col-sm-4">
+            {{>  completpropertysingle  identifier = "propertypickersingle" }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label for= "CompleteLabel" class="control-label col-sm-3"> {{ lang "autocomplete"}}  </label>
+            <div class="col-sm-4">
+              {{> multiproperty identifier = "propertypicker"}}
+         <!--{{> completproperty}} -->
+       </div>
+     </div>
+ 
+    <div class="form-group">
+      <label for= "IndexLabel" class="control-label col-sm-3"> {{ lang "attr_index"}}  </label>
+      <div class="col-sm-4">
+          <!-- <select class="selectpicker" multiple>  
+           <option>Título</option>
+           <option>Subject</option>
+           <option>Abstract</option>
+         </select> -->
+         <!-- {{>  indexproperty}} -->
+         {{> multiproperty identifier = "indexpropertypicker"}}
+         
+       </div>
+     </div>
+     <div class="form-group">
+      <label for= "EspFilterLabel" class="control-label col-sm-3">  {{ lang "apply_filter"}}  </label>
+      <div class="col-sm-4">
+       <input type="checkbox" id ="checkfilter" > 
+     </div>
+   </div>
+
+   <div class="form-group" id="FilterType">
+     <label for= "IndexLabel" class="control-label col-sm-3"> {{ lang "choose_filter" }} </label>
+     <div class="col-sm-6">
+       <label class="checkbox-inline">
+         <input type="checkbox" id="checkboxEnLinea1" value=1 > {{ lang "Type"}}
+       </label>
+       <label class="checkbox-inline">
+        <input type="checkbox" id="checkboxEnLinea2" value=2 > {{ lang "Year"}}
+      </label>
+      <label class="checkbox-inline">
+        <input type="checkbox" id="checkboxEnLinea3" value=3 > {{ lang "lang"}}
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+           <label for= "IndexLabel" class="control-label col-sm-3"> {{ lang "choose_icon" }}  </label>
+           <div class="col-sm-4">
+         <button class="btn btn-default" id="iconselect" name="icon" role="iconpicker"></button>
+           </div>
+        </div> 
+
+
+</form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-sm btn-primary" onClick = "SendConfiguration(event)">{{ lang "Register"}}</button>
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ lang "close"}}</button>
+</div>
+
+</div>
+</div>
+</div>
+</template>
+
+
+ <template name="dialogStat">
+    <div class="modal fade" id="ConfigStat" tabindex="1" role="dialog" aria-labelledby="Configuration" aria-hidden="true">
+        <div class="modal-dialog" id = "Statdialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
+            <h4 class="modal-title" id="myModalLabel"> {{ lang "stats_conf"}} </h4>
+          </div>
+          
+          <div class="modal-body" style="text-align: left" >
+            <form   role="form-horizontal" class="dialogent form-horizontal" id="ModalFormStat">
+             <div class="form-group">
+              <label for= "NameLabel" class="control-label col-sm-3"> {{ lang "entity_name" }}</label>
+              <div class="col-sm-4">
+                <input type="text" class="form-control" id="StatClassName">
+              </div>
+            </div>
+             <div class="form-group">
+              <label for= "UriLabel" class="control-label col-sm-3"> {{ lang "entity_uri" }}</label>
+              <div class="col-sm-4">
+               <!--   <input type="text" class="form-control" id="ClassURI">  -->
+               {{> completentity identifier="StatURIpicker" }}
+             </div> 
+           </div>
+            <div class="form-group">
+            <label for= "DesLabel" class="control-label col-sm-3"> 
+            {{ lang "attr_desc"}}  </label>
+            <div class="col-sm-4">
+           <!-- {{> multiproperty identifier = "StatDesPicker"}} -->
+             {{>  completpropertysingle identifier = "StatDesPicker"}} 
+            </div>
+          </div>
+          <div class="form-group">
+          <label for= "TypeLabel" class="control-label col-sm-3"> {{ lang "Data_type" }}  </label>
+            <div class="col-sm-6">
+          <input type="radio" name="TypeFieldStat" value="String"> {{lang "String"}} 
+          <input type="radio" name="TypeFieldStat" value="Number">  {{ lang "Number"}}
+          <input type="radio" name="TypeFieldStat" value="Date">  {{ lang "Date"}}
+          </div>
+          </div>
+          <div class="form-group">
+            <label for= "RelLabel" class="control-label col-sm-3"> {{ lang "rel_analized"}} </label>
+            <div class="col-sm-4">
+            {{> multiproperty identifier = "StatRelPicker"}}
+            <!-- {{>  completpropertysingle identifier = "StatRelPicker"}} -->
+            </div>
+          </div>
+          <div class="form-group">
+          <label for= "TypeLabel" class="control-label col-sm-3"> {{ lang "Chart_type"}}  </label>
+            <div class="col-sm-6">
+          <input type="radio" name="TypeStat" value="Pie"> {{lang "pie"}} 
+          <input type="radio" name="TypeStat" value="Hist">  {{ lang "hist"}}
+          <input type="radio" name="TypeStat" value="Etiq">  {{ lang "Etiq"}}
+          </div>
+          </div>
+          </form>
+          </div>
+          <div class="modal-footer">
+         <button type="button" class="btn btn-sm btn-primary" onClick = "SendStatConfiguration(event)">{{ lang "Register"}}</button>
+         <button type="button" class="btn btn-default" data-dismiss="modal">{{ lang "close"}}</button>
+         </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+
+<!--
+<template name="uploadForm">
+  {{#with currentUpload}}
+    Uploading <b>{{file.name}}</b>: 
+    <span id="progress">{{progress.get}}%</span>
+  {{else}}
+     <div class="form-group ">
+    <input id={{"fileInput"}} class="col-sm-6" type="file" /> 
+     <button type="button" class="btn btn-default btn-xs col-sm-1"  title="Delete" id="deleteimgbutton" onclick="deleteimg(event)"  > <span class="glyphicon glyphicon-minus"></span></button> 
+    </div>
+  
+  {{/with}}
+</template> -->
+
+<template name="uploadForm">
+  {{#with currentUpload}}
+    Uploading <b>{{file.name}}</b>: 
+    <span id="progress">{{progress.get}}%</span>
+  {{else}}
+     <div class="form-group ">
+    <input id="{{identifier}}" class="col-sm-6" type="file" /> 
+    {{#if deletebutton identifier }}
+     <button type="button" class="btn btn-default btn-xs col-sm-1"  title="Delete" id="deleteimgbutton" onclick="deleteimg(event)"  > <span class="glyphicon glyphicon-minus"></span></button> 
+      {{/if}}
+    </div>
+  <!--  <p><small>Upload file in jpeg or png format, with size less or equal to 10MB</small></p> -->
+  {{/with}}
+</template> 
+<!--
+<template name="uploadForm2">
+  {{#with currentUpload}}
+    Uploading <b>{{file.name}}</b>: 
+    <span id="progress">{{progress.get}}%</span>
+  {{else}}
+     <div class="form-group ">
+    <input id="{{identifier}}" class="col-sm-6" type="file" /> 
+    
+    </div>
+
+  {{/with}}
+</template> -->
+
+<template name="uploadFiles">
+  {{#with currentUpload}}
+    Uploading <b>{{file.name}}</b>: 
+    <span id="progress">{{progress.get}}%</span>
+  {{else}}
+     <div class="form-group ">
+    <input id="fileInput" class="col-sm-6" type="file" /> 
+    </div>
+  <!--  <p><small>Upload file in jpeg or png format, with size less or equal to 10MB</small></p> -->
+  {{/with}}
+</template>
+
+
+
+  <template name="uploadedFiles">
+  {{#if countFiles}} 
+    <select class="image-picker" id="selectedimag">
+      <!-- <select class="image-picker show-html" id="selectedimag"> -->
+      {{#each uploadedFiles}}
+    {{> optimag }}
+  <!--  <option data-img-src="{{URL _id }}" data-img-class="Algo" data-img-alt="{{name}}" value="{{name}}">  Imagen  </option>  -->
+      {{/each}}
+      
+    </select>
+
+  
+   {{else}} 
+    <div>No files uploaded, yet</div>
+  {{/if}} 
+</template> 
+
+<template name = "optimag">
+ <option data-img-src="{{URL _id }}" class="OptImag" data-img-class="OptImag" data-img-alt="{{name}}" id="{{ _id }}" value="{{URL _id }}">  {{name}}  </option>
+</template> 
+
+
+
+<template name="dialogxport">
+    <div class="modal fade" id="Configport" tabindex="1" role="dialog" aria-labelledby="Configuration" aria-hidden="true">
+        <div class="modal-dialog" id = "portdialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">{{ lang "close"}}</span></button>
+            <h4 class="modal-title" id="myModalLabel"> {{ lang "import_export"}}</h4>
+          </div>
+          
+          <div class="modal-body" style="text-align: left" >
+            <h4> {{ lang "export"}} </h4>
+             {{ > selectmultiendpoint }}
+            <button type="button" class="col-sm-offset-2" id="exportbutton" onclick="exportevent (event)"  > {{ lang "export"}}
+            </button>
+            <hr /> 
+            <h4> {{ lang "import"}} </h4>
+            {{> uploadForm  identifier ="cFilesConfig" }}
+             <hr /> 
+          </div>
+           <div class="modal-footer">
+         <button type="button" class="btn btn-default" data-dismiss="modal">{{ lang "close"}}</button>
+         </div>
+        </div>
+      </div>
+    </div>
+
+  </template>
+
+  <template name = "selectmultiendpoint"  >
+       <select   id="endpointmultipicker" class="selectpicker" multiple >
+       <option> --- </option>
+       {{#each endpointsAvailable}}
+
+      <!-- <option value="{{name}}"> {{name}} </option> class="selectpicker" multiple-->
+      {{> optendpoint}}
+        {{/each}} 
+      </select>
+</template>

@@ -17,32 +17,86 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/" draggable="false">Home</a></li>
-	    <li><a href="/search" draggable="false">Search</a></li>
-            <li><a href="/samples" draggable="false">Query Templates</a></li>
-            <li><a href="/dashboard" draggable="false">Query Builder</a></li>
-            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" draggable="false" id="options">Options<span class="caret"></span></a>
+           <!-- <li><a href="/" draggable="false">{{ lang "Home" }}</a></li> -->
+	    <li><a href="/search" draggable="false">{{ lang "Search" }}</a></li>
+            <li><a href="/nlsearch" draggable="false">{{ lang "NL Search" }} ( <i>&beta;</i> )</a></li>
+            <li><a href="/stats" draggable="false">{{ lang "Statistics"}}</a></li>
+            {{#if access_adv }} 
+            <li><a href="/samples" draggable="false">{{lang "query-temp"}}</a></li>
+            {{#if optbuttondis }}
+               <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" draggable="false" id="options">{{lang "query-builder"}}<span class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
                 <li role="presentation" class="dropdown-header" draggable="false">SPARQL endpoint</li>
-                <li><a href="#" data-toggle="modal" data-target="#availableEndpoint" draggable="false">Available Endpoints</a></li>
-                <li><a href="#" data-toggle="modal" data-target="#newEndpoint" draggable="false">New SPARQL endpoint</a></li>
-                <!--
+                <li><a href="#" data-toggle="modal" data-target="#availableEndpoint" draggable="false">{{ lang "ava-endpoints"}}</a></li>
+                <li><a href="#" data-toggle="modal" data-target="#newEndpoint" draggable="false">{{ lang "new-endpoint"}}</a></li>
+                </ul>
+            </li>
+            {{else}}
+            <li><a href="/dashboard" draggable="false">{{lang "query-builder"}}</a></li>
+            {{/if}}
+            {{/if}}
+            <!--<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" draggable="false" id="options">{{ lang "Options"}}<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li role="presentation" class="dropdown-header" draggable="false">SPARQL endpoint</li>
+                <li><a href="#" data-toggle="modal" data-target="#availableEndpoint" draggable="false">{{ lang "ava-endpoints"}}</a></li>
+                <li><a href="#" data-toggle="modal" data-target="#newEndpoint" draggable="false">{{ lang "new-endpoint"}}</a></li>
+                
+              
                 <li class="divider"></li>
                 <li role="presentation" class="dropdown-header">Otros</li>
                 <li><a href="#">Separated link</a></li>
-                -->
+                
               </ul>
-            </li>
-            
-            <li><a href="#" data-toggle="modal" data-target="#myModal" draggable="false">Help</a></li>
+            </li> -->
+            {{#if access_level }} 
+             <!--<li><a href="/profile"  draggable="false">{{lang "Administrar"}}</a></li> -->
+             <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" draggable="false" id="profile">{{ lang "Manage"}}
+              <span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <!-- <li role="presentation" class="dropdown-header" draggable="false">SPARQL endpoint</li> -->
+                <li><a href="/profile" data-toggle="modal" draggable="false">{{ lang "My_Profile"}}</a></li>
+                <li><a href="/adminpanel" data-toggle="modal"  draggable="false">{{ lang "Accounts"}}</a></li>
+                <li><a href="/favsearch" data-toggle="modal"  draggable="false"> {{ lang "queries"}} </a></li>
+                <li><a href="/configpanel" data-toggle="modal"  draggable="false"> {{ lang "confpanel" }} </a></li>
+               </ul>
+               </li>
+            {{ else}}
+              {{#if currentUser}}  
+              <li><a href="/profile"  draggable="false">{{lang "Profile"}}</a></li> 
+              <li><a href="/favsearch" data-toggle="modal"  draggable="false"> {{ lang "queries"}} </a></li>
+              {{ else}}
 
+              {{/if}}
+             {{/if}}
+             <!--<li><a href="#" data-toggle="modal" data-target="#myModal" draggable="false">{{lang "Help"}}</a></li>  -->
+           <li><a href="/help" data-toggle="modal" draggable="false">{{lang "Help"}}</a></li>  
+          <!--  <li>  <div class="navbar-right"> {{> loginButtons}} </div></li> -->
           </ul>
-
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="" data-toggle="modal" data-target="#myModal" draggable="false">Login</a></li>            
+           <ul class="nav navbar-nav navbar-right">
+            <li> {{> loginButtons}}</li>            
           </ul>
-
+         
+            <!-- <div class="nav navbar-nav navbar-right"> {{> loginButtons}} </div>-->
         </div>
       </div>
     </div>
+
+      <div class="modal fade" id="myModal1" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content ">
+        <div class="modal-header modal-show">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"> LOGGING</h4>
+        </div>
+        <div class="modal-body">
+            {{> loginButtons}}
+          <!--   {{> atForm state='signUp' }} -->
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
+
+
+

@@ -1,0 +1,17 @@
+{
+  "name": "prueba",
+  "private": true,
+  "scripts": {
+    "start": "meteor run"
+  },
+  "dependencies": {
+    "codemirror": "^5.14.2",
+    "d3": "^3.5.16",
+    "d3-cloud": "^1.2.1",
+    "d3-tip": "^0.6.7",
+    "d3pie": "^0.1.9",
+    "jquery": "^2.2.3",
+    "meteor-node-stubs": "^0.2.3",
+    "similarity": "^1.1.0"
+  }
+}

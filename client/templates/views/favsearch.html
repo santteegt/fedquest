@@ -1,0 +1,18 @@
+<template name="favsearch">
+	<!-- <div class="login-style">  {{> atForm }} </div>-->
+<!-- <div class="login-style">  {{> atForm state='signUp' }} </div> -->
+<div class="container-fluid histandfav ">
+<!--  <div class="favsearchclass" style = "margin-top:50px">
+	<h2 class="lu-title"> {{ lang "My_Searches"}}</h2>
+</div> -->
+<div class="Hist"  style = "margin-top:80px" >
+<h3> {{lang "Search_History"}}</h3>
+{{> reactiveTable collection=histsearch settings=settingshist }}
+</div>
+<div class="Hist" style = "margin-top:30px">
+<h3> {{ lang "Favorite_Resources" }} </h3>
+
+{{> reactiveTable collection=favres settings=settingsfav }} 
+</div>
+</div>
+</template>

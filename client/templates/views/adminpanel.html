@@ -1,0 +1,45 @@
+<template name="adminpanel">
+	<div class="container-fluid adminPan " >
+            <div  class="generatedquery">
+	<div class="listusers">  <h1> {{ lang "Users_List"}} </h1></div>
+	    <!--<table class="table table-bordered table-striped table-hover " sytle="overflow: scroll">
+	    <thead>
+	        <tr>
+	            <th>Title</th>
+	            <th>Description</th>
+	        </tr>
+	    </thead>
+	    <tbody>
+
+	    	{{#each queriesAvailable}}
+	        <tr>
+	            <td><a href="/dashboard/{{_id}}">{{title}}</a></td>
+	            <td>{{description}}</td>
+	        </tr>
+	        {{/each}}
+	    </tbody>
+		</table-->
+	<div id="UsersList">
+		{{> reactiveTable collection=usersAvailable settings=settings }}
+	</div>
+	</div>
+	 <div class="modal fade" id="myConfirmDelete" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content ">
+        <div class="modal-header modal-show">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Atención</h4>
+        </div>
+        <div class="modal-body">
+          <p>Esta seguro de borrar el usuario seleccionado</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" id="delete-yes" >Si</button>
+          <button type="button" class="btn btn-default" id="delete-no" data-dismiss="modal"> No</button>
+          <!--  <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>-->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</template>

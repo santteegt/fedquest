@@ -1,0 +1,164 @@
+<template name="_loginButtonsLoggedInDropdown-over">
+  <div class="login-link-and-dropdown-list">
+    <a class="login-link-text" id="login-name-link">
+      {{displayName}} ▾
+    </a>
+
+    {{#if dropdownVisible}}
+      <div id="login-dropdown-list" class="accounts-dialog">
+        <a class="login-close-text">{{ lang "Close"}}</a>
+        <div class="login-close-text-clear"></div>
+
+        {{#if inMessageOnlyFlow}}
+          {{> _loginButtonsMessages}}
+        {{else}}
+          {{#if inChangePasswordFlow}}
+            {{> _loginButtonsChangePassword}}
+          {{else}}
+            {{> _loginButtonsLoggedInDropdownActions}}
+          {{/if}}
+        {{/if}}
+      </div>
+    {{/if}}
+  </div>
+</template>
+
+
+<template name="_loginButtonsLoggedInDropdownActions-over">
+  {{#if allowChangingPassword}}
+    <div class="login-button" id="login-buttons-open-change-password">
+      {{ lang "Change_password" }}
+    </div>
+  {{/if}}
+
+  <div class="login-button" id="login-buttons-logout">
+    {{ lang "Sign_out"}}
+  </div>
+
+  {{> _loginButtonsMessages}}
+</template>
+
+
+<!--            -->
+<!-- LOGGED OUT -->
+<!--            -->
+<template name="_loginButtonsLoggedOutDropdown-over">
+  <div class="login-link-and-dropdown-list {{additionalClasses}}">
+    {{#if dropdownVisible}}
+      {{! This text is covered by the dropdown, but duplicating it here
+          makes the position of "Close" match the position of this text. }}
+      <a class="login-link-text" id="login-sign-in-link">{{ lang "Sign_in" }} ▾</a>
+      <div id="login-dropdown-list" class="accounts-dialog">
+        <a class="login-close-text">{{ lang "Close"}}</a>
+        {{#if loggingIn}}
+          {{> _loginButtonsLoggingIn}}
+        {{/if}}
+        <div class="login-close-text-clear"></div>
+        {{> _loginButtonsLoggedOutAllServices}}
+      </div>
+    {{else}}
+      {{#if loggingIn}}
+        {{! Not normally visible, but if the user closes the dropdown during login.}}
+        {{> _loginButtonsLoggingIn}}
+      {{else}}
+        <a class="login-link-text" id="login-sign-in-link">{{ lang "Sign_in" }} ▾</a>
+      {{/if}}
+    {{/if}}
+  </div>
+</template>
+
+<template name="_loginButtonsLoggedOutPasswordService-over">
+  {{#if inForgotPasswordFlow}}
+    {{> _forgotPasswordForm}}
+  {{else}}
+    <div class="login-form login-password-form">
+      {{#each fields}}
+        {{> _loginButtonsFormField}}
+      {{/each}}
+
+      {{> _loginButtonsMessages}}
+
+      <div class="login-button login-button-form-submit" id="login-buttons-password">
+        {{#if inSignupFlow}}
+          {{ lang "Create_account"}}
+        {{else}}
+          {{ lang "Sign_in"}}
+        {{/if}}
+      </div>
+
+      {{#if inLoginFlow}}
+        {{#if showCreateAccountLink}}
+          <div class="additional-link-container">
+            <a id="signup-link" class="additional-link">{{ lang "Create_account"}}</a>
+          </div>
+        {{/if}}
+
+        {{#if showForgotPasswordLink}}
+          <div class="additional-link-container">
+            <a id="forgot-password-link" class="additional-link">{{ lang "Forgot_password" }}</a>
+          </div>
+        {{/if}}
+      {{/if}}
+
+      {{#if inSignupFlow}}
+        {{> _loginButtonsBackToLoginLink}}
+      {{/if}}
+    </div>
+  {{/if}}
+</template>
+
+
+<template name="_loginButtonsBackToLoginLink-over">
+  <div class="additional-link-container">
+    <a id="back-to-login-link" class="additional-link">{{ lang "Sign_in"}}</a>
+  </div>
+</template>
+
+
+<template name="_loginButtonsFormField-over">
+  {{#if visible}}
+    <div id="login-{{fieldName}}-label-and-input">
+      <label id="login-{{fieldName}}-label" for="login-{{fieldName}}">
+        {{fieldLabel}}
+      </label>
+      <input id="login-{{fieldName}}" type="{{inputType}}" />
+    </div>
+  {{/if}}
+</template>
+
+<template name="_loginButtonsChangePassword-over">
+  {{#each fields}}
+    {{> _loginButtonsFormField}}
+  {{/each}}
+
+  {{> _loginButtonsMessages}}
+
+  <div class="login-button login-button-form-submit" id="login-buttons-do-change-password">
+    {{ lang "Change_password" }}
+  </div>
+</template>
+
+<template name="_resetPasswordDialog-over">
+  {{#if inResetPasswordFlow}}
+    <div class="hide-background"></div>
+
+    <div class="accounts-dialog accounts-centered-dialog">
+      <label id="reset-password-new-password-label" for="reset-password-new-password">
+        {{ lang "New_password" }}
+      </label>
+
+      <div class="reset-password-new-password-wrapper">
+        <input id="reset-password-new-password" type="password" />
+      </div>
+ 
+      {{> _loginButtonsMessages}}
+
+      <div class="login-button login-button-form-submit" id="login-buttons-reset-password-button">
+        {{ lang "Set_password" }}
+
+      </div>
+
+      <a class="accounts-close" id="login-buttons-cancel-reset-password">&times;</a>
+    </div>
+  {{/if}}
+</template>
