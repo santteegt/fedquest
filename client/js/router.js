@@ -102,7 +102,12 @@ this.Router = Backbone.Router.extend({
         $('div.navbar .collapse li a#options').hide();
         $('div.navbar .collapse li a#options').css('pointer-events', 'none');
         console.log('entra a search');
+
+        Tracker.autorun(function () {
+            if (Session.get("Conf")) {
         new SearchView(decodeURIComponent(s1), decodeURIComponent(s2), decodeURIComponent(s3)).render();
+         }}
+         );
     },
     nlsearch: function ( ) {
         $('div.navbar .collapse li a#options').hide();
